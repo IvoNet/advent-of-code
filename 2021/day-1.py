@@ -96,11 +96,13 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 
 def get_data(infile) -> str:
+    """Read the puzzle input without extra lines"""
     with open(infile, "r") as fi:
         return fi.read().strip()
 
 
 def get_threes(data: list) -> list:
+    """Slice the data into items of three increased by one and then summed per three"""
     if len(data) < 3:
         return data
     ret = []
@@ -109,7 +111,7 @@ def get_threes(data: list) -> list:
     return ret
 
 
-def increase_counter(values: list):
+def increase_counter(values: list[int]):
     level = values[0]
     count = 0
     for item in values[1:]:
@@ -120,7 +122,7 @@ def increase_counter(values: list):
 
 
 def main():
-    values = [int(x) for x in (get_data("day-1.txt").split("\n"))]
+    values = [int(x) for x in get_data("day-1.txt").split("\n")]
     print("Answer part 1: ", increase_counter(values))
     print("Answer part 2: ", increase_counter(get_threes(values)))
 
@@ -128,4 +130,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-# Answer: 1226
