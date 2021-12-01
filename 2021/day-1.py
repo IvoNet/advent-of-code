@@ -94,20 +94,26 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 """
 
+from itertools import islice
+
 from ivonet import get_data
 
 
-def get_threes(data: list) -> list:
-    """Slice the data into items of three increased by one and then summed per three"""
+def take(n, iterable):
+    "Return first n items of the iterable as a list"
+    return list(islice(iterable, n))
+
+
+def sum_three(data: list[int]) -> list[int]:
+    """group by next three per item in list"""
     if len(data) < 3:
-        return data
-    ret = []
-    for idx, item in enumerate(data[:-2]):
-        ret.append(sum(data[idx:idx + 3]))
-    return ret
+        return []
+    return [sum(data[i:i + 3]) for i in range(len(data) - 2)]
 
 
 def increase_counter(values: list[int]):
+    if not values:
+        return 0
     level = values[0]
     count = 0
     for item in values[1:]:
@@ -120,7 +126,7 @@ def increase_counter(values: list[int]):
 def main():
     values = [int(x) for x in get_data("day-1.txt").split("\n")]
     print("Answer part 1: ", increase_counter(values))
-    print("Answer part 2: ", increase_counter(get_threes(values)))
+    print("Answer part 2: ", increase_counter(sum_three(values)))
 
 
 if __name__ == '__main__':
