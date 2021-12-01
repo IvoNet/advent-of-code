@@ -94,11 +94,7 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 """
 
-
-def get_data(infile) -> str:
-    """Read the puzzle input without extra lines"""
-    with open(infile, "r") as fi:
-        return fi.read().strip()
+from ivonet import get_data
 
 
 def get_threes(data: list) -> list:
@@ -129,4 +125,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

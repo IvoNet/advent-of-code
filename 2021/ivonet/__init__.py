@@ -7,3 +7,9 @@ __license__ = "Apache 2.0"
 __doc__ = """
 
 """
+
+
+def get_data(infile) -> str:
+    """Read the puzzle input without extra lines"""
+    with open(infile, "r") as fi:
+        return fi.read().strip()
