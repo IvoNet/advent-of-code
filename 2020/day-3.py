@@ -18,15 +18,31 @@ __doc__ = """
 from ivonet import get_data
 
 
-def part_1(data):
-    pass
+def part_1(data, right=3, down=1):
+    trees = 0
+    for i in range(1, len(data)):
+        x = i * right
+        y = i * down
+        if y > len(data):
+            break
+        while x >= len(data[y]):
+            data[y] += data[y]
+        if data[y][x] == "#":
+            trees += 1
+    return trees
 
 
 def part_2(data):
-    pass
+    a = part_1(data, right=1, down=1)
+    b = part_1(data, right=3, down=1)
+    c = part_1(data, right=5, down=1)
+    d = part_1(data, right=7, down=1)
+    e = part_1(data, right=1, down=2)
+    # print(a, b, c, d, e)
+    return a * b * c * d * e
 
 
 if __name__ == '__main__':
     source = get_data("day-3.txt")
-    print("Part 1:", part_1(source))  #
-    print("part 2:", part_2(source))  #
+    print("Part 1:", part_1(source))  # 289
+    print("part 2:", part_2(source))  # 5522401584
