@@ -15,93 +15,56 @@ __doc__ = """
 
 """
 
+from collections import defaultdict
+from queue import Queue
+from typing import List
+
 from ivonet import get_data
 
 SHINY_GOLD = "shiny gold"
 
-all_bags = {}
 
-all_names = set()
-
-
-class UnknownBag(Exception):
-    pass
-
-
-class Bag(object):
-
-    def __init__(self, data: str) -> None:
-        self.data = data.replace(" bags", "").replace("bag", "").replace(".", "").replace("  ", " ")
-        parts = list(map(str.strip, self.data.split("contain")))
-        self.name = parts[0]
-        all_names.add(self.name)
-        parts = list(map(str.strip, parts[1].split(",")))
-        self.contain = {}
-        for bag in parts:
-            if bag == "no other":
-                break
-            items = bag.split(" ")
-            amount = int(items[0])
-            name = " ".join(items[1:])
-            self.contain[name] = [name, amount]
-            all_names.add(name)
-        all_bags[self.name] = self
-
-    def __str__(self) -> str:
-        return f"{self.name} -> {list(self.contain.keys())}"
-
-    def __repr__(self) -> str:
-        return f"{self.name}"
-
-    def __eq__(self, o: object) -> bool:
-        return o.name == self.name
-
-    def __hash__(self) -> int:
-        return hash(self.name)
-
-    def has_bag(self, bag) -> bool:
-        if type(bag) == str:
-            return bag in self.contain
-        return bag.name in self.contain
-
-    def amount(self, bag) -> int:
-        if not self.has_bag(bag):
-            return 0
-        if type(bag) == str:
-            return self.contain.get(bag, 0)
-        return self.contain.get(bag.name, 0)
-
-
-def get_direct(bags, search_for):
-    ret = []
-    for bag in bags:
-        if bag.has_bag(search_for):
-            ret.append(bag)
-    return ret
+def parse(data: List) -> dict:
+    tree = defaultdict(set)
+    for rule in data:
+        parent, children_str = rule.split(" bags contain ")
+        if "no other bags" in children_str:
+            tree[parent.strip()] = set()
+            continue
+        children_with_count = children_str.replace("bags", "").replace("bag", "").replace(".", "").split(", ")
+        for child_wit_count in children_with_count:
+            count, child = child_wit_count.strip().split(" ", maxsplit=1)
+            tree[parent.strip()].add((int(count), child))
+    return tree
 
 
 def part_1(data):
-    bags = list(map(Bag, data))
-    shiny_gold = all_bags[SHINY_GOLD]
+    # Tree stores the bags that containing bags
+    tree = parse(data)
 
-    # find the direct ones
-    alles = set()
-    direct = get_direct(bags, shiny_gold)
-    alles = alles.union(direct)
-    for bag in direct:
-        for name in bag.contain:
-            l = get_direct(bags, name)
-            alles = alles.union(l)
-    for bag in alles.copy():
-        l = get_direct(bags, bag)
-        alles = alles.union(l)
-    print(len(bags))
-    # print(alles)
-    print(len(alles))
+    # reverse tree: stores the set of bags containing a given bag
+    reversed_tree = defaultdict(set)
+    for parent, children in tree.items():
+        for _, child in children:
+            reversed_tree[child].add(parent)
+
+    result = set()
+    q = Queue()
+    q.put(SHINY_GOLD)
+
+    while not q.empty():
+        bag = q.get()
+        result.add(bag)
+        for next_bag in reversed_tree[bag]:
+            if next_bag not in result:
+                q.put(next_bag)
+
+    result.remove(SHINY_GOLD)
+    return len(result)
 
 
 def part_2(data):
-    pass
+    tree = parse
 
 
 if __name__ == '__main__':
