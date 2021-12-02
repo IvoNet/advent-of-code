@@ -18,10 +18,15 @@ __doc__ = """
 from ivonet import get_data
 
 
-def main():
-    data = get_data("day-X.txt")
-    # code here
+def part_1(data):
+    pass
+
+
+def part_2(data):
+    pass
 
 
 if __name__ == '__main__':
-    main()
+    source = get_data("day-3.txt")
+    print(part_1(source))
+    print(part_2(source))

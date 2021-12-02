@@ -128,7 +128,7 @@ def increase_counter(values: list[int]) -> int:
 
 
 def main():
-    values = list(map(int, get_data("day-1.txt").split("\n")))
+    values = list(map(int, get_data("day-1.txt")))
     print("Answer part 1: ", increase_counter(values))
     print("Answer part 2: ", increase_counter(consecutive_element_pairing(values, 3, sum)))
 
