@@ -15,18 +15,30 @@ __doc__ = """
 
 """
 
-from ivonet import get_data
+from ivonet import read_data
 
 
-def part_1(data):
-    pass
+class Group(object):
+
+    def __init__(self, data: str) -> None:
+        self.data = data
+        self.group_answers = data.strip().split("\n")
+        self.member_count = len(self.group_answers)
+        self.combined_answers = set(list("".join(self.group_answers)))
+        self.count = len(self.combined_answers)
+        self.intersection = set(self.group_answers[0]).intersection(*self.group_answers)
+        self.intersection_count = len(self.intersection)
 
 
-def part_2(data):
-    pass
+def part_1_2(data):
+    groups = data.split("\n\n")
+    converted_groups = list(map(Group, groups))
+    count = sum(i.count for i in converted_groups)
+    intersection_count = sum(i.intersection_count for i in converted_groups)
+    return count, intersection_count
 
 
 if __name__ == '__main__':
-    source = get_data("day-X.txt")
-    print(part_1(source))
-    print(part_2(source))
+    source = read_data("day-6.txt")
+    print(part_1_2(source)[0])
+    print(part_1_2(source)[1])
