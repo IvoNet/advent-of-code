@@ -94,23 +94,28 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 """
 
+from typing import List
+
 from ivonet import get_data, consecutive_element_pairing
 
 
-def sum_tripplewise(data: list[int]) -> list[int]:
+# First successful attempt
+def sum_tripplewise(data: List[int]) -> List[int]:
     """group by next three per item in list"""
     if len(data) < 3:
         return []
     return [sum(data[i:i + 3]) for i in range(len(data) - 2)]
 
 
-def sum_consecutive_triple_element_pairing(data: list[int]) -> list[int]:
+# Second successfully attempt
+def sum_consecutive_triple_element_pairing(data: List[int]) -> List[int]:
     if len(data) < 3:
         return []
     return list(map(sum, zip(data, data[1:], data[2:])))
 
 
-def increase_counter(values: list[int]):
+def increase_counter(values: list[int]) -> int:
+    """Counts how many measurements are larger than the previous measurement"""
     if not values:
         return 0
     level = values[0]
@@ -125,11 +130,7 @@ def increase_counter(values: list[int]):
 def main():
     values = list(map(int, get_data("day-1.txt").split("\n")))
     print("Answer part 1: ", increase_counter(values))
-    print("Answer part 2: ", increase_counter(sum_tripplewise(values)))
-    print("Answer part 2: ", increase_counter(sum_consecutive_triple_element_pairing(values)))
-    print(consecutive_element_pairing([1, 2, 3, 4, 5, 6, 7, 8, 9]))
-
-    # print(list(map(list, zip([values, values[1:], values[2:]]))))
+    print("Answer part 2: ", increase_counter(consecutive_element_pairing(values, 3, sum)))
 
 
 if __name__ == '__main__':
