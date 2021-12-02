@@ -63,8 +63,20 @@ def part_1(data):
     return len(result)
 
 
+def walk(bags, root):
+    if len(bags[root]) == 0:
+        print(root)
+        return 0
+
+    result = 0
+    for count, bag in bags[root]:
+        result += count + count * walk(bags, bag)
+    return result
+
+
 def part_2(data):
-    tree = parse
+    tree = parse(data)
+    return walk(tree, SHINY_GOLD)
 
 
 if __name__ == '__main__':
