@@ -48,14 +48,27 @@ def part_1(data):
         else:
             step = data[idx]
 
-    print(accumulator)
+    return accumulator, running
 
 
 def part_2(data):
-    pass
+    my_app = data.copy()
+    for idx, command in enumerate(data):
+        cmd, offset = parse(command)
+        if cmd == "nop" and offset != 0:
+            my_app[idx] = f"jmp {offset}"
+        if cmd == "jmp":
+            my_app[idx] = f"nop {offset}"
+        if cmd == "acc":
+            continue
+        accumulator, running = part_1(my_app)
+        if not running:
+            # print(idx, data[idx])
+            return accumulator
+        my_app = data.copy()
 
 
 if __name__ == '__main__':
     source = get_data("day-8.txt")
-    print(part_1(source))
+    print(part_1(source)[0])  # 1489
     print(part_2(source))
