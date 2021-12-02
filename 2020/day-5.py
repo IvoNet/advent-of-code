@@ -67,8 +67,6 @@ def part_1(data):
                 rows = front
             else:
                 rows = back
-        if not len(rows) == 1:
-            raise ValueError("More than one row left in the list " + str(rows))
         row = rows[0]
         columns = COLLUMS.copy()
         for col in seat[7:]:
@@ -77,8 +75,6 @@ def part_1(data):
                 columns = lower
             else:
                 columns = upper
-        if not len(columns) == 1:
-            raise ValueError("More than one cols left in the list " + str(columns))
         col = columns[0]
         seat = int(row) * 8 + int(col)
         if seat > highest_seat:
@@ -92,10 +88,9 @@ def part_2(data):
     start = seats[0]
     for seat in seats[1:]:
         if seat - start != 1:
-            print(start, seat)
-            break
+            return start + 1
         start = seat
-    return start + 1
+    raise ValueError("Should have found your seat by now")
 
 
 if __name__ == '__main__':
