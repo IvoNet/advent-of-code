@@ -11,10 +11,15 @@ __doc__ = """
 from typing import List, Callable
 
 
-def get_data(infile: str) -> List:
+def read_data(infile: str) -> str:
     """Read the puzzle input without extra lines"""
     with open(infile, "r") as fi:
-        return fi.read().strip().split("\n")
+        return fi.read().strip()
+
+
+def get_data(infile: str) -> List:
+    """Read the puzzle input without extra lines and split into rows"""
+    return read_data(infile).split("\n")
 
 
 def consecutive_element_pairing(data: List[int],
