@@ -18,16 +18,56 @@ __doc__ = """
 from ivonet import get_data
 
 
+def filter_binaries_on_idx_value(data, idx, value):
+    ret = []
+    for x in data:
+        if x[idx] == value:
+            ret.append(x)
+    return ret
+
+
+def binair_counter(data, idx):
+    """creates a binary str from the idx of the data list and then counts the 1 and 0"""
+    new_bin = "".join([x[idx] for x in data])
+    c0 = new_bin.count("0")
+    c1 = new_bin.count("1")
+    return c0, c1
+
+
+def oxygen(data, idx):
+    """Recursive function to calculate the one binary based on the oxygen rule"""
+    if len(data) == 1:
+        return data
+
+    c0, c1 = binair_counter(data, idx)
+    if c0 > c1:
+        new_data = filter_binaries_on_idx_value(data, idx, "0")
+    else:
+        new_data = filter_binaries_on_idx_value(data, idx, "1")
+
+    return oxygen(new_data, idx + 1)
+
+
+def co_two(data, idx):
+    """Recursive function to calculate the one binary based on the co2 rule"""
+    if len(data) == 1:
+        return data
+
+    c0, c1 = binair_counter(data, idx)
+    if c0 <= c1:
+        new_data = filter_binaries_on_idx_value(data, idx, "0")
+    else:
+        new_data = filter_binaries_on_idx_value(data, idx, "1")
+
+    return co_two(new_data, idx + 1)
+
+
 def part_1(data):
     gamma = ""
     epsilon = ""
     for idx in range(len(data[0])):
-        new_bin = ""
-        for bin in data:
-            new_bin += bin[idx]
-        c1 = new_bin.count("0")
-        c2 = new_bin.count("1")
-        if c1 > c2:
+        c0, c1 = binair_counter(data, idx)
+        if c0 > c1:
             gamma += "1"
             epsilon += "0"
         else:
@@ -38,55 +78,6 @@ def part_1(data):
     return gamma * epsilon
 
 
-def filter(data, idx, value):
-    ret = []
-    for x in data:
-        if x[idx] == value:
-            ret.append(x)
-    return ret
-
-
-def oxygen(data, idx, max=11):
-    if idx > max:
-        print(data)
-        return data
-    if len(data) == 1:
-        return data[0]
-
-    new_bin = ""
-    for bin in data:
-        new_bin += bin[idx]
-    c1 = new_bin.count("0")
-    c2 = new_bin.count("1")
-    if c1 > c2:
-        new_data = filter(data, idx, "0")
-    else:
-        new_data = filter(data, idx, "1")
-
-    return oxygen(new_data, idx + 1)
-
-
-def co_two(data, idx, max=11):
-    print(data, idx)
-    # if idx > max:
-    #     print(data)
-    #     return data
-    if len(data) == 1:
-        return data
-
-    new_bin = ""
-    for bin in data:
-        new_bin += bin[idx]
-    c1 = new_bin.count("0")
-    c2 = new_bin.count("1")
-    if c1 <= c2:
-        new_data = filter(data, idx, "0")
-    else:
-        new_data = filter(data, idx, "1")
-
-    return co_two(new_data, idx + 1)
-
-
 def part_2(data):
     ox = int(oxygen(data, 0)[0], 2)
     co = int(co_two(data, 0)[0], 2)
@@ -94,18 +85,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = """00100
-11110
-10110
-10111
-10101
-01111
-00111
-11100
-10000
-11001
-00010
-01010""".split()
     source = get_data("day-3.txt")
-    print("Part 1:", part_1(source))  #
-    print("part 2:", part_2(source))  #
+    print("Part 1:", part_1(source))  # 4103154
+    print("part 2:", part_2(source))  # 4245351
