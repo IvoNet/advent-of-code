@@ -26,14 +26,14 @@ class UnitTests(unittest.TestCase):
 
     def test_example_data(self):
         source = """"""
-        self.assertEqual(part_1(source), None)
-        self.assertEqual(part_2(source), None)
+        self.assertEqual(None, part_1(source))
+        self.assertEqual(None, part_2(source))
 
     def test_part_1(self):
-        self.assertEqual(part_1(self.source), -1)
+        self.assertEqual(-1, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(part_2(self.source), -1)
+        self.assertEqual(-1, part_2(self.source))
 
 
 if __name__ == '__main__':

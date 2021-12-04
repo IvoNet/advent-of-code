@@ -19,8 +19,11 @@ import unittest
 
 from ivonet import read_data
 
+VALUE_IDX = 0
+MARK_IDX = 1
 
-def parse_puzzles(data):
+
+def parse_puzzles(data: list[str]) -> list[list[list[list[int]]]]:
     puzzles = []
     for record in data:
         puzzle = []
@@ -30,58 +33,60 @@ def parse_puzzles(data):
     return puzzles
 
 
-def mark(puzzle, draw):
-    for row in puzzle:
-        for col in row:
-            if col[0] == draw:
-                col[1] = 1
-    return puzzle
-
-
-def check_horizontal(marked_puzzle):
-    for row in marked_puzzle:
-        if sum(x[1] for x in row) == 5:
-            return True
-    return False
-
-
-def check_vertical(marked_puzzle):
-    for i in range(len(marked_puzzle[0])):
-        count = 0
-        for row in marked_puzzle:
-            count += row[i][1]
-        if count == 5:
-            return True
-    return False
-
-
-def sum_unmarked(puzzle):
-    total = 0
-    for row in puzzle:
-        for col in row:
-            if col[1] == 0:
-                total += col[0]
-    return total
-
-
-def parse(data):
+def parse(data: str):
     source = data.split("\n\n")
     draws = [int(x) for x in source[0].strip().split(",")]
     puzzles = parse_puzzles(source[1:])
     return draws, puzzles
 
 
-def part_1(data):
+def mark(puzzle: list[list[list[int]]], draw: int) -> list[list[list[int]]]:
+    for row in puzzle:
+        for col in row:
+            if col[VALUE_IDX] == draw:
+                col[MARK_IDX] = 1
+    return puzzle
+
+
+def check_horizontal(puzzle: list[list[list[int]]]) -> bool:
+    """If the sum of all marks per row is equal to the length
+    of the row all are marked and we have a winner.
+    """
+    for row in puzzle:
+        if sum(x[MARK_IDX] for x in row) == len(row):
+            return True
+    return False
+
+
+def check_vertical(puzzle: list[list[list[int]]]) -> bool:
+    """If the sum of marked position per index per row is equal to the number of rows in the puzzle
+    we have a winner in the vertical way.
+    """
+    for i in range(len(puzzle[0])):
+        count = 0
+        for row in puzzle:
+            count += row[i][1]
+        if count == 5:
+            return True
+    return False
+
+
+def sum_only(puzzle: list[list[list[int]]], mark: int = 0) -> int:
+    """Sum of al unmarked numbers in the puzzle."""
+    return sum(col for row in puzzle for col, marked in row if marked == mark)
+
+
+def part_1(data: str) -> int:
     draws, puzzles = parse(data)
     for draw in draws:
         for puzzle in puzzles:
             marked_puzzle = mark(puzzle, draw)
             win = check_horizontal(marked_puzzle) or check_vertical(marked_puzzle)
             if win:
-                return draw * sum_unmarked(puzzle)
+                return draw * sum_only(puzzle)
 
 
-def part_2(data):
+def part_2(data: str) -> int:
     draws, puzzles = parse(data)
     for draw in draws:
         for puzzle in puzzles[::]:
@@ -90,7 +95,7 @@ def part_2(data):
             if win:
                 puzzles.remove(puzzle)
             if not puzzles:
-                return draw * sum_unmarked(puzzle)
+                return draw * sum_only(puzzle)
 
 
 class UnitTests(unittest.TestCase):
@@ -116,14 +121,14 @@ class UnitTests(unittest.TestCase):
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7"""
-        self.assertEqual(part_1(source), 4512)
-        self.assertEqual(part_2(source), 1924)
+        self.assertEqual(4512, part_1(source))
+        self.assertEqual(1924, part_2(source))
 
     def test_part_1(self):
-        self.assertEqual(part_1(self.source), 58838)
+        self.assertEqual(58838, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(part_2(self.source), 6256)
+        self.assertEqual(6256, part_2(self.source))
 
 
 if __name__ == '__main__':
