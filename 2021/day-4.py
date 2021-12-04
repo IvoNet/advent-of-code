@@ -18,77 +18,80 @@ __doc__ = """
 from ivonet import read_data
 
 
-def prettyprint(puzzle):
-    puzzle = puzzle.split(" ")
-    for x in range(0, len(puzzle), 5):
-        for y in puzzle[x:x + 5]:
-            print(f"{y:>4} ", end="")
-        print()
-    print()
-    for x in range(0, len(puzzle), 5):
-        for y in puzzle[x:x + 5]:
-            if "*" in y:
-                print("X", end="")
-            else:
-                print("#", end="")
-        print()
-    print()
+def parse_puzzles(data):
+    puzzles = []
+    for record in data:
+        puzzle = []
+        for row in record.split("\n"):
+            puzzle.append([[int(x), 0] for x in row.strip().replace("  ", " ").replace(" ", ",").split(",")])
+        puzzles.append(puzzle)
+    return puzzles
 
 
-def parse_data(data):
-    d = data.split("\n\n")
-    draws = d[0].split(",")
-    puzzles = [x.replace("\n", " ").replace("  ", " ").replace("  ", " ").replace("  ", " ").strip() for x in d[1:]]
-    return draws, puzzles
+def mark(puzzle, draw):
+    for row in puzzle:
+        for col in row:
+            if col[0] == draw:
+                col[1] = 1
+    return puzzle
 
 
-def check_horizontal(puzzle):
-    puzzle = puzzle.strip().split(" ")
-    win = False
-    for x in range(0, len(puzzle) + 1, 5):
-        if " ".join(puzzle[x:x + 5]).count("*") == 5:
-            win = True
-    return win
+def check_horizontal(marked_puzzle):
+    for row in marked_puzzle:
+        if sum(x[1] for x in row) == 5:
+            return True
+    return False
 
 
-def check_vertical(puzzle):
-    puzzle = puzzle.strip().split(" ")
-    for x in range(5):
+def check_vertical(marked_puzzle):
+    for i in range(len(marked_puzzle[0])):
         count = 0
-        for y in range(5):
-            if "*" in puzzle[x + (y * 5)]:
-                count += 1
+        for row in marked_puzzle:
+            count += row[i][1]
         if count == 5:
             return True
     return False
 
 
+def sum_unmarked(puzzle):
+    total = 0
+    for row in puzzle:
+        for col in row:
+            if col[1] == 0:
+                total += col[0]
+    return total
+
+
+def parse(data):
+    source = data.split("\n\n")
+    draws = [int(x) for x in source[0].strip().split(",")]
+    puzzles = parse_puzzles(source[1:])
+    return draws, puzzles
+
+
 def part_1(data):
-    draws, puzzles = parse_data(data)
+    draws, puzzles = parse(data)
     for draw in draws:
-        new_state = []
         for puzzle in puzzles:
-            if f" {draw} " in puzzle:
-                print(draw)
-                puzzle = puzzle.replace(f" {draw} ", f" {draw}* ")
-            new_state.append(puzzle)
-            print(draw)
-            prettyprint(puzzle)
-            win = check_horizontal(puzzle) or check_vertical(puzzle)
+            marked_puzzle = mark(puzzle, draw)
+            win = check_horizontal(marked_puzzle) or check_vertical(marked_puzzle)
             if win:
-                unmarked = [int(x) for x in puzzle.split(" ") if "*" not in x]
-                unmarked = sum(unmarked)
-                print(draw, unmarked, puzzle)
-                return unmarked * int(draw)
-        puzzles = new_state
+                return draw * sum_unmarked(puzzle)
 
 
 def part_2(data):
-    pass
+    draws, puzzles = parse(data)
+    for draw in draws:
+        for puzzle in puzzles[::]:
+            marked_puzzle = mark(puzzle, draw)
+            win = check_horizontal(marked_puzzle) or check_vertical(marked_puzzle)
+            if win:
+                puzzles.remove(puzzle)
+            if not puzzles:
+                return draw * sum_unmarked(puzzle)
 
 
 if __name__ == '__main__':
-    source = read_data("day-4.txt")
     source = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
@@ -108,5 +111,6 @@ if __name__ == '__main__':
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7"""
+    source = read_data("day-4.txt")
     print("Part 1:", part_1(source))  #
     print("part 2:", part_2(source))  #
