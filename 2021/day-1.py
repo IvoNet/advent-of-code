@@ -96,7 +96,8 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 from typing import List
 
-from ivonet import get_data, consecutive_element_pairing
+from ivonet import get_data
+from ivonet.itertools import consecutive_element_pairing
 
 
 # First successful attempt
