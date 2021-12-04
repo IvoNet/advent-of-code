@@ -62,7 +62,7 @@ def check_vertical(puzzle: list[list[list[int]]]) -> bool:
     """If the sum of marked position per index per row is equal to the number of rows in the puzzle
     we have a winner in the vertical way.
     """
-    for i in range(len(puzzle[0])):
+    for i in range(len(puzzle)):
         count = 0
         for row in puzzle:
             count += row[i][1]
