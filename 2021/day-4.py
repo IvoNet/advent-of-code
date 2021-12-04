@@ -94,6 +94,8 @@ def part_2(data):
 
 
 class UnitTests(unittest.TestCase):
+    source = read_data("day-4.txt")
+
     def test_example_data(self):
         source = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
@@ -117,9 +119,12 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(part_1(source), 4512)
         self.assertEqual(part_2(source), 1924)
 
+    def test_part_1(self):
+        self.assertEqual(part_1(self.source), 58838)
+
+    def test_part_2(self):
+        self.assertEqual(part_2(self.source), 6256)
+
 
 if __name__ == '__main__':
     unittest.main()
-    source = read_data("day-4.txt")
-    print("Part 1:", part_1(source))  #
-    print("part 2:", part_2(source))  #
