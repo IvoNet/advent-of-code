@@ -27,14 +27,12 @@ def parse(data: str):
     """Make the data usable by parsing it into the needed components"""
     source = data.split("\n\n")
     draws = [int(x) for x in source[0].strip().split(",")]
-    data1 = source[1:]
-    puzzles1 = []
-    for record in data1:
+    puzzles = []
+    for record in source[1:]:
         puzzle = []
         for row in record.split("\n"):
-            puzzle.append([[int(x1), 0] for x1 in row.strip().replace("  ", " ").replace(" ", ",").split(",")])
-        puzzles1.append(puzzle)
-    puzzles = puzzles1
+            puzzle.append([[int(x1), 0] for x1 in row.strip().split()])
+        puzzles.append(puzzle)
     return draws, puzzles
 
 
@@ -45,6 +43,11 @@ def mark(puzzle: list[list[list[int]]], draw: int) -> list[list[list[int]]]:
             if col[VALUE_IDX] == draw:
                 col[MARK_IDX] = 1
     return puzzle
+
+
+def sum_only_mark(puzzle: list[list[list[int]]], mark: int = 0) -> int:
+    """Sum of al unmarked numbers in the puzzle."""
+    return sum(col for row in puzzle for col, marked in row if marked == mark)
 
 
 def check_horizontal(puzzle: list[list[list[int]]]) -> bool:
@@ -67,16 +70,11 @@ def check_vertical(puzzle: list[list[list[int]]]) -> bool:
     return False
 
 
-def sum_only_mark(puzzle: list[list[list[int]]], mark: int = 0) -> int:
-    """Sum of al unmarked numbers in the puzzle."""
-    return sum(col for row in puzzle for col, marked in row if marked == mark)
-
-
 def part_1(data: str) -> int:
     """Find the first puzzle to win"""
     draws, puzzles = parse(data)
     for draw in draws:
-        for puzzle in puzzles:
+        for puzzle in puzzles[::]:
             marked_puzzle = mark(puzzle, draw)
             if check_horizontal(marked_puzzle) or check_vertical(marked_puzzle):
                 return draw * sum_only_mark(puzzle)
