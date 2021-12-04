@@ -23,24 +23,23 @@ VALUE_IDX = 0
 MARK_IDX = 1
 
 
-def parse_puzzles(data: list[str]) -> list[list[list[list[int]]]]:
-    puzzles = []
-    for record in data:
-        puzzle = []
-        for row in record.split("\n"):
-            puzzle.append([[int(x), 0] for x in row.strip().replace("  ", " ").replace(" ", ",").split(",")])
-        puzzles.append(puzzle)
-    return puzzles
-
-
 def parse(data: str):
+    """Make the data usable by parsing it into the needed components"""
     source = data.split("\n\n")
     draws = [int(x) for x in source[0].strip().split(",")]
-    puzzles = parse_puzzles(source[1:])
+    data1 = source[1:]
+    puzzles1 = []
+    for record in data1:
+        puzzle = []
+        for row in record.split("\n"):
+            puzzle.append([[int(x1), 0] for x1 in row.strip().replace("  ", " ").replace(" ", ",").split(",")])
+        puzzles1.append(puzzle)
+    puzzles = puzzles1
     return draws, puzzles
 
 
 def mark(puzzle: list[list[list[int]]], draw: int) -> list[list[list[int]]]:
+    """Mark your bingo chart on the draw if it is in the puzzle"""
     for row in puzzle:
         for col in row:
             if col[VALUE_IDX] == draw:
@@ -63,39 +62,36 @@ def check_vertical(puzzle: list[list[list[int]]]) -> bool:
     we have a winner in the vertical way.
     """
     for i in range(len(puzzle)):
-        count = 0
-        for row in puzzle:
-            count += row[i][1]
-        if count == 5:
+        if sum(row[i][MARK_IDX] for row in puzzle) == len(puzzle):
             return True
     return False
 
 
-def sum_only(puzzle: list[list[list[int]]], mark: int = 0) -> int:
+def sum_only_mark(puzzle: list[list[list[int]]], mark: int = 0) -> int:
     """Sum of al unmarked numbers in the puzzle."""
     return sum(col for row in puzzle for col, marked in row if marked == mark)
 
 
 def part_1(data: str) -> int:
+    """Find the first puzzle to win"""
     draws, puzzles = parse(data)
     for draw in draws:
         for puzzle in puzzles:
             marked_puzzle = mark(puzzle, draw)
-            win = check_horizontal(marked_puzzle) or check_vertical(marked_puzzle)
-            if win:
-                return draw * sum_only(puzzle)
+            if check_horizontal(marked_puzzle) or check_vertical(marked_puzzle):
+                return draw * sum_only_mark(puzzle)
 
 
 def part_2(data: str) -> int:
+    """Find the last puzzle to complete"""
     draws, puzzles = parse(data)
     for draw in draws:
         for puzzle in puzzles[::]:
             marked_puzzle = mark(puzzle, draw)
-            win = check_horizontal(marked_puzzle) or check_vertical(marked_puzzle)
-            if win:
+            if check_horizontal(marked_puzzle) or check_vertical(marked_puzzle):
                 puzzles.remove(puzzle)
             if not puzzles:
-                return draw * sum_only(puzzle)
+                return draw * sum_only_mark(puzzle)
 
 
 class UnitTests(unittest.TestCase):
