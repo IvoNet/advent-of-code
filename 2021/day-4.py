@@ -15,6 +15,8 @@ __doc__ = """
 
 """
 
+import unittest
+
 from ivonet import read_data
 
 
@@ -91,8 +93,9 @@ def part_2(data):
                 return draw * sum_unmarked(puzzle)
 
 
-if __name__ == '__main__':
-    source = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+class UnitTests(unittest.TestCase):
+    def test_example_data(self):
+        source = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
  8  2 23  4 24
@@ -111,6 +114,12 @@ if __name__ == '__main__':
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7"""
+        self.assertEqual(part_1(source), 4512)
+        self.assertEqual(part_2(source), 1924)
+
+
+if __name__ == '__main__':
+    unittest.main()
     source = read_data("day-4.txt")
     print("Part 1:", part_1(source))  #
     print("part 2:", part_2(source))  #

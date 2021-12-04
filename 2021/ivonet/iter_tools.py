@@ -42,10 +42,6 @@ class UnitTests(unittest.TestCase):
             consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3,
                                         map_to_func=lambda z: "".join([str(x) for x in z])),
             ['123', '234', '345', '456'])
-        self.assertEqual(
-            consecutive_element_pairing(["1", "2"], consecutive_element=3,
-                                        map_to_func=lambda z: (z, None)),
-            ['123', '234', '345', '456'])
 
 
 if __name__ == '__main__':
