@@ -22,18 +22,20 @@ def part_2(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day-X.txt")
+    source = get_data("day-6.txt")
+    test_source = """""".split("\n")
 
-    def test_example_data(self):
-        source = """"""
-        self.assertEqual(None, part_1(source))
-        self.assertEqual(None, part_2(source))
+    def test_example_data_part_1(self):
+        self.assertEqual(None, part_1(self.test_source))
+
+    def test_example_data_part_2(self):
+        self.assertEqual(None, part_2(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(-1, part_1(self.source))
+        self.assertEqual(None, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(-1, part_2(self.source))
+        self.assertEqual(None, part_2(self.source))
 
 
 if __name__ == '__main__':
