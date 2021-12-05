@@ -29,16 +29,17 @@ def grid_maker(grid: defaultdict, startx: int, starty: int, stopx: int, stopy: i
     """Draws a line in the grid based on the given starting and stopping coordinates.
     You can choose to allow diagonal lines or not.
     """
-    xrange = range_maker(startx, stopx)
-    yrange = range_maker(starty, stopy)
-
     if startx == stopx:
+        yrange = range_maker(starty, stopy)
         for y in yrange:
             grid[(startx, y)] += 1
     elif starty == stopy:
+        xrange = range_maker(startx, stopx)
         for x in xrange:
             grid[(x, starty)] += 1
     elif diagonal:
+        xrange = range_maker(startx, stopx)
+        yrange = range_maker(starty, stopy)
         for x, y in zip(xrange, yrange):
             grid[(x, y)] += 1
 
@@ -54,11 +55,11 @@ def process_coordinates(data: list[str], diagonal) -> int:
     return count_crossing_lines(grid)
 
 
-def part_1(data, diagonal=False):
+def part_1(data: list[str], diagonal=False):
     return process_coordinates(data, diagonal)
 
 
-def part_2(data, diagonal=True):
+def part_2(data: list[str], diagonal=True):
     return process_coordinates(data, diagonal)
 
 
