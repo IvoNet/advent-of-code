@@ -19,6 +19,14 @@ def grid_adder(grid, x, y):
         grid[(x, y)] = 1
 
 
+def count_crossing_lines(grid):
+    count = 0
+    for value in grid.values():
+        if value >= 2:
+            count += 1
+    return count
+
+
 def part_1(data):
     rows = data.split("\n")
     grid = {}
@@ -42,11 +50,7 @@ def part_1(data):
                 grid_adder(grid, x, start_y)
         grid_adder(grid, end_x, end_y)
         # print(start_x, start_y, end_x, end_y, grid)
-    count = 0
-    for value in grid.values():
-        if value >= 2:
-            count += 1
-    return count
+    return count_crossing_lines(grid)
 
 
 def part_2(data):
@@ -56,27 +60,33 @@ def part_2(data):
         start, end = row.split(" -> ")
         start_x, start_y = map(int, start.split(","))
         end_x, end_y = map(int, end.split(","))
-        step = 1
         if start_x == end_x:
-            if start_y > end_y:
+            starts = start_y
+            ends = end_y
+            if starts > ends:
+                ends -= 1
                 step = -1
-            for y in range(start_y, end_y, step):
-                grid_adder(grid, start_x, y)
-            grid_adder(grid, end_x, end_y)
-        elif start_y == end_y:
-            if start_x > end_x:
+            else:
+                ends += 1
+                step = 1
+            steps = range(starts, ends, step)
+            for y in steps:
+                grid_adder(grid, starts, y)
+        if start_y == end_y:
+            starts = start_y
+            ends = end_y
+            if starts > ends:
+                ends -= 1
                 step = -1
-            for x in range(start_x, end_x, step):
-                grid_adder(grid, x, start_y)
-            grid_adder(grid, end_x, end_y)
-        else:  # diagonale
-            pass
-        # print(start_x, start_y, end_x, end_y, grid)
-    count = 0
-    for value in grid.values():
-        if value >= 2:
-            count += 1
-    return count
+            else:
+                ends += 1
+                step = 1
+            steps = range(starts, ends, step)
+            for y in steps:
+                grid_adder(grid, starts, y)
+        if start_y == end_y:
+
+    return count_crossing_lines(grid)
 
 
 class UnitTests(unittest.TestCase):
@@ -100,7 +110,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(5306, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(part_2(self.source), 0)
+        self.assertEqual(None, part_2(self.source))
 
 
 if __name__ == '__main__':
