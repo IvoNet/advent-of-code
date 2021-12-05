@@ -13,6 +13,8 @@ from itertools import permutations
 
 from ivonet import get_data, consecutive_element_pairing
 
+MINIMAL_PAIRING_LEN: int = 2
+
 
 def part_1(data, preamble=25):
     data = list(map(int, data))
@@ -31,7 +33,7 @@ def part_1(data, preamble=25):
 def part_2(data, preamble=25):
     to_find = part_1(data, preamble)
     data_ints = list(map(int, data))
-    for i in range(2, len(data_ints)):
+    for i in range(MINIMAL_PAIRING_LEN, len(data_ints)):
         sums = list(consecutive_element_pairing(data_ints, i, sum))
         if to_find in sums:
             find_idx = sums.index(to_find)
@@ -45,7 +47,7 @@ def part_2(data, preamble=25):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day-9.txt")
+    source = get_data("day_9.txt")
     test_source = """35
 20
 15

@@ -87,7 +87,7 @@ from ivonet import get_data
 
 
 def part_1():
-    rows = get_data("day-2.txt")
+    rows = get_data("day_2.txt")
     x = 0
     y = 0
     for course in rows:
@@ -103,7 +103,7 @@ def part_1():
 
 
 def part_2():
-    rows = get_data("day-2.txt")
+    rows = get_data("day_2.txt")
     x = 0
     y = 0
     aim = 0

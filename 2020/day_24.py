@@ -134,7 +134,7 @@ def get_neigbors(x, y, with_self=False):
 
 def main():
     tiles = defaultdict()
-    data = get_data("day-24.txt")
+    data = get_data("day_24.txt")
     # data = example
     lines = data.split("\n")
     black_tiles = set()

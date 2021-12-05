@@ -103,6 +103,6 @@ def test():
 
 if __name__ == '__main__':
     test()
-    source = get_data("day-17.txt")
+    source = get_data("day_17.txt")
     print("Part 1:", part_1(source))  #
     print("part 2:", part_2(source))  #

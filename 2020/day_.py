@@ -27,6 +27,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = get_data("day-X.txt")
+    source = get_data("day_X.txt")
     print("Part 1:", part_1(source))  #
     print("part 2:", part_2(source))  #

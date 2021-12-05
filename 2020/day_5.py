@@ -94,6 +94,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = get_data("day-5.txt")
+    source = get_data("day_5.txt")
     print("Part 1:", part_1(source)[1])  # 955
     print("part 2:", part_2(source))  #

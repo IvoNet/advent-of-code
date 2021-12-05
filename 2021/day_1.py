@@ -96,8 +96,9 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 from typing import List
 
-from ivonet import get_data
 from ivonet.itertools import consecutive_element_pairing
+
+from ivonet import get_data
 
 
 # First successful attempt
@@ -129,7 +130,7 @@ def increase_counter(values: list[int]) -> int:
 
 
 def main():
-    values = list(map(int, get_data("day-1.txt")))
+    values = list(map(int, get_data("day_1.txt")))
     print("Answer part 1: ", increase_counter(values))
     print("Answer part 2: ", increase_counter(consecutive_element_pairing(values, 3, sum)))
 

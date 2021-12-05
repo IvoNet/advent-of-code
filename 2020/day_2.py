@@ -50,6 +50,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = get_data("day-2.txt")
+    source = get_data("day_2.txt")
     print(part_1(source))  # 469
     print(part_2(source))  # 267

@@ -22,7 +22,7 @@ def part_2(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day-X.txt")
+    source = get_data("day_X.txt")
 
     def test_example_data(self):
         source = """"""

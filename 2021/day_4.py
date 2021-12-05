@@ -93,7 +93,7 @@ def part_2(data: str) -> int:
 
 
 class UnitTests(unittest.TestCase):
-    source = read_data("day-4.txt")
+    source = read_data("day_4.txt")
 
     def test_example_data(self):
         source = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1

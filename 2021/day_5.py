@@ -64,7 +64,7 @@ def part_2(data: list[str], diagonal=True):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day-5.txt")
+    source = get_data("day_5.txt")
 
     def test_example_data(self):
         source = """0,9 -> 5,9
