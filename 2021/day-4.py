@@ -23,7 +23,7 @@ VALUE_IDX = 0
 MARK_IDX = 1
 
 
-def parse(data: str):
+def parse(data: str) -> tuple[list[int], list[list[list[list[int]]]]]:
     """Make the data usable by parsing it into the needed components"""
     source = data.split("\n\n")
     draws = [int(x) for x in source[0].strip().split(",")]
@@ -31,7 +31,7 @@ def parse(data: str):
     for record in source[1:]:
         puzzle = []
         for row in record.split("\n"):
-            puzzle.append([[int(x1), 0] for x1 in row.strip().split()])
+            puzzle.append([[int(x), 0] for x in row.strip().split()])
         puzzles.append(puzzle)
     return draws, puzzles
 
