@@ -13,10 +13,7 @@ from ivonet import read_data
 
 
 def grid_adder(grid, x, y):
-    try:
-        grid[(x, y)] += 1
-    except KeyError:
-        grid[(x, y)] = 1
+    grid[(x, y)] = grid.get((x, y), 0) + 1
 
 
 def count_crossing_lines(grid):
@@ -42,10 +39,10 @@ def grid_maker(grid, startx, starty, stopx, stopy, diagonal=False):
             grid_adder(grid, x, y)
 
 
-def range_maker(startpoint, stoppoint):
-    if startpoint > stoppoint:
-        return range(startpoint, stoppoint - 1, -1)
-    return range(startpoint, stoppoint + 1)
+def range_maker(starting_point, stopping_point):
+    if starting_point > stopping_point:
+        return range(starting_point, stopping_point - 1, -1)
+    return range(starting_point, stopping_point + 1)
 
 
 def process_coordinates(data, diagonal):
