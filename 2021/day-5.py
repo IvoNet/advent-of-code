@@ -27,33 +27,7 @@ def count_crossing_lines(grid):
     return count
 
 
-def part_1(data):
-    rows = data.split("\n")
-    grid = {}
-    for row in rows:
-        start, end = row.split(" -> ")
-        start_x, start_y = map(int, start.split(","))
-        end_x, end_y = map(int, end.split(","))
-        if not (start_x == end_x or start_y == end_y):
-            # print("diagonal:", start_x, start_y, end_x, end_y)
-            continue
-        step = 1
-        if start_x == end_x:
-            if start_y > end_y:
-                step = -1
-            for y in range(start_y, end_y, step):
-                grid_adder(grid, start_x, y)
-        else:  # start_y == end_y:
-            if start_x > end_x:
-                step = -1
-            for x in range(start_x, end_x, step):
-                grid_adder(grid, x, start_y)
-        grid_adder(grid, end_x, end_y)
-        # print(start_x, start_y, end_x, end_y, grid)
-    return count_crossing_lines(grid)
-
-
-def grid_maker(grid, startx, starty, stopx, stopy):
+def grid_maker(grid, startx, starty, stopx, stopy, diagonal=False):
     xrange = range_maker(startx, stopx)
     yrange = range_maker(starty, stopy)
 
@@ -63,7 +37,7 @@ def grid_maker(grid, startx, starty, stopx, stopy):
     elif starty == stopy:
         for x in xrange:
             grid_adder(grid, x, starty)
-    else:
+    elif diagonal:
         for x, y in zip(xrange, yrange):
             grid_adder(grid, x, y)
 
@@ -74,16 +48,23 @@ def range_maker(startpoint, stoppoint):
     return range(startpoint, stoppoint + 1)
 
 
-def part_2(data):
+def process_coordinates(data, diagonal):
     rows = data.split("\n")
     grid = {}
     for row in rows:
         start, end = row.split(" -> ")
         start_x, start_y = map(int, start.split(","))
         end_x, end_y = map(int, end.split(","))
-        grid_maker(grid, start_x, start_y, end_x, end_y)
-    # pprint(grid)
+        grid_maker(grid, start_x, start_y, end_x, end_y, diagonal=diagonal)
     return count_crossing_lines(grid)
+
+
+def part_1(data, diagonal=False):
+    return process_coordinates(data, diagonal)
+
+
+def part_2(data, diagonal=True):
+    return process_coordinates(data, diagonal)
 
 
 class UnitTests(unittest.TestCase):
