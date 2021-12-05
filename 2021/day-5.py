@@ -8,47 +8,45 @@ __doc__ = """
 """
 
 import unittest
+from collections import defaultdict
 
-from ivonet import read_data
-
-
-def grid_adder(grid, x, y):
-    grid[(x, y)] = grid.get((x, y), 0) + 1
+from ivonet import get_data
 
 
-def count_crossing_lines(grid):
-    count = 0
-    for value in grid.values():
-        if value >= 2:
-            count += 1
-    return count
+def count_crossing_lines(grid: defaultdict) -> int:
+    """Count all crossing lines in the grid."""
+    return sum(i >= 2 for i in grid.values())
 
 
-def grid_maker(grid, startx, starty, stopx, stopy, diagonal=False):
-    xrange = range_maker(startx, stopx)
-    yrange = range_maker(starty, stopy)
-
-    if startx == stopx:
-        for y in yrange:
-            grid_adder(grid, startx, y)
-    elif starty == stopy:
-        for x in xrange:
-            grid_adder(grid, x, starty)
-    elif diagonal:
-        for x, y in zip(xrange, yrange):
-            grid_adder(grid, x, y)
-
-
-def range_maker(starting_point, stopping_point):
+def range_maker(starting_point: int, stopping_point: int) -> range:
+    """Create a range taking up and down into account"""
     if starting_point > stopping_point:
         return range(starting_point, stopping_point - 1, -1)
     return range(starting_point, stopping_point + 1)
 
 
-def process_coordinates(data, diagonal):
-    rows = data.split("\n")
-    grid = {}
-    for row in rows:
+def grid_maker(grid: defaultdict, startx: int, starty: int, stopx: int, stopy: int, diagonal: bool = False):
+    """Draws a line in the grid based on the given starting and stopping coordinates.
+    You can choose to allow diagonal lines or not.
+    """
+    xrange = range_maker(startx, stopx)
+    yrange = range_maker(starty, stopy)
+
+    if startx == stopx:
+        for y in yrange:
+            grid[(startx, y)] += 1
+    elif starty == stopy:
+        for x in xrange:
+            grid[(x, starty)] += 1
+    elif diagonal:
+        for x, y in zip(xrange, yrange):
+            grid[(x, y)] += 1
+
+
+def process_coordinates(data: list[str], diagonal) -> int:
+    """Build the grid based on the given data and count the crossing lines."""
+    grid = defaultdict(int)
+    for row in data:
         start, end = row.split(" -> ")
         start_x, start_y = map(int, start.split(","))
         end_x, end_y = map(int, end.split(","))
@@ -65,7 +63,7 @@ def part_2(data, diagonal=True):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_data("day-5.txt")
+    source = get_data("day-5.txt")
 
     def test_example_data(self):
         source = """0,9 -> 5,9
@@ -77,7 +75,7 @@ class UnitTests(unittest.TestCase):
 0,9 -> 2,9
 3,4 -> 1,4
 0,0 -> 8,8
-5,5 -> 8,2"""
+5,5 -> 8,2""".split("\n")
         self.assertEqual(5, part_1(source))
         self.assertEqual(12, part_2(source))
 
