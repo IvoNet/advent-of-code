@@ -53,6 +53,27 @@ def part_1(data):
     return count_crossing_lines(grid)
 
 
+def grid_maker(grid, startx, starty, stopx, stopy):
+    xrange = range_maker(startx, stopx)
+    yrange = range_maker(starty, stopy)
+
+    if startx == stopx:
+        for y in yrange:
+            grid_adder(grid, startx, y)
+    elif starty == stopy:
+        for x in xrange:
+            grid_adder(grid, x, starty)
+    else:
+        for x, y in zip(xrange, yrange):
+            grid_adder(grid, x, y)
+
+
+def range_maker(startpoint, stoppoint):
+    if startpoint > stoppoint:
+        return range(startpoint, stoppoint - 1, -1)
+    return range(startpoint, stoppoint + 1)
+
+
 def part_2(data):
     rows = data.split("\n")
     grid = {}
@@ -60,32 +81,8 @@ def part_2(data):
         start, end = row.split(" -> ")
         start_x, start_y = map(int, start.split(","))
         end_x, end_y = map(int, end.split(","))
-        if start_x == end_x:
-            starts = start_y
-            ends = end_y
-            if starts > ends:
-                ends -= 1
-                step = -1
-            else:
-                ends += 1
-                step = 1
-            steps = range(starts, ends, step)
-            for y in steps:
-                grid_adder(grid, starts, y)
-        if start_y == end_y:
-            starts = start_y
-            ends = end_y
-            if starts > ends:
-                ends -= 1
-                step = -1
-            else:
-                ends += 1
-                step = 1
-            steps = range(starts, ends, step)
-            for y in steps:
-                grid_adder(grid, starts, y)
-        if start_y == end_y:
-
+        grid_maker(grid, start_x, start_y, end_x, end_y)
+    # pprint(grid)
     return count_crossing_lines(grid)
 
 
@@ -110,7 +107,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(5306, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(17787, part_2(self.source))
 
 
 if __name__ == '__main__':
