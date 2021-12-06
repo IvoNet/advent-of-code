@@ -13,24 +13,8 @@ from collections import defaultdict
 
 from ivonet import read_data
 
-INITIAL_STATE_NEW = 8
-END_STATE = 0
 
-
-def part_1(data, days=80):
-    fishes = list(map(int, data.split(",")))
-    # print(fishes)
-    for i in range(1, days + 1):
-        new_fishes = fishes.count(0)
-        fishes = [6 if x == 0 else x - 1 for x in fishes]
-        for _ in range(new_fishes):
-            fishes.append(8)
-        # print(i, new_fishes)
-    return len(fishes)
-
-
-def part_2(data, days=256):
-    fishes = sorted(map(int, data.split(",")))
+def growth_calulator(fishes: list[int], days: int = 80):
     bucket = defaultdict(int)
     bucket[1] = fishes.count(1)
     bucket[2] = fishes.count(2)
@@ -38,7 +22,7 @@ def part_2(data, days=256):
     bucket[4] = fishes.count(4)
     bucket[5] = fishes.count(5)
     bucket[6] = fishes.count(6)
-    for i in range(1, days + 1):
+    for _ in range(1, days + 1):
         temp = defaultdict(int)
         temp[0] = bucket[1]
         temp[1] = bucket[2]
@@ -53,9 +37,17 @@ def part_2(data, days=256):
     return sum(bucket.values())
 
 
+def part_1(data, days=80):
+    return growth_calulator(data, days)
+
+
+def part_2(data, days=256):
+    return growth_calulator(data, days)
+
+
 class UnitTests(unittest.TestCase):
-    source = read_data("day_6.txt")
-    test_source = """3,4,3,1,2"""
+    source = list(map(int, read_data("day_6.txt").split(",")))
+    test_source = [3, 4, 3, 1, 2]
 
     def test_example_data_part_1(self):
         self.assertEqual(5934, part_1(self.test_source, 80))
