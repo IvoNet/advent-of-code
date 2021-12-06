@@ -15,7 +15,7 @@ the cube remains active. Otherwise, the cube becomes inactive.
 If a cube is inactive but exactly 3 of its neighbors are active, the cube 
 becomes active. Otherwise, the cube remains inactive.
 
-product neigbors
+product neighbors
 
 [(-1, -1, -1),
  (-1, -1, 0),
@@ -96,7 +96,7 @@ def part_2(data):
 
 
 def test():
-    pprint(list(product([-1, 0, 1], repeat=3)))
+    pprint(list(product([-1, 0, 1], repeat=2)))
 
     sys.exit()
 

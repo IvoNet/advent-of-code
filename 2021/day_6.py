@@ -14,7 +14,7 @@ from collections import defaultdict
 from ivonet import read_data
 
 
-def growth_calulator(fishes: list[int], days: int = 80):
+def growth_calculator(fishes: list[int], days: int = 80):
     bucket = defaultdict(int)
     bucket[1] = fishes.count(1)
     bucket[2] = fishes.count(2)
@@ -38,11 +38,11 @@ def growth_calulator(fishes: list[int], days: int = 80):
 
 
 def part_1(data, days=80):
-    return growth_calulator(data, days)
+    return growth_calculator(data, days)
 
 
 def part_2(data, days=256):
-    return growth_calulator(data, days)
+    return growth_calculator(data, days)
 
 
 class UnitTests(unittest.TestCase):
