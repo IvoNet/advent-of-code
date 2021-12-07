@@ -10,20 +10,18 @@ __doc__ = """
 
 import unittest
 
+import matplotlib.pyplot as plt
 from numpy import mean
 
 from ivonet import read_data
-
-
-def fuel_calc_1(steps):
-    return sum(i for i in range(1, steps + 1))
-
-
-def fuel_calc(steps):
-    return (steps + 1) / 2 * steps
+from ivonet.calc import step_sequence_calc
 
 
 def part_1(data):
+    """
+    >>> part_1([16,1,2,0,4,2,7,1,2,14])
+    37
+    """
     minimal_fuel = 0
     for align in data:
         fuel = sum(abs(x - align) for x in data)
@@ -33,17 +31,24 @@ def part_1(data):
 
 
 def part_2(data):
-    """Must be in the neighborhood of the average be so lets start there.
     """
-    avg = int(mean(data))
+    >>> part_2([16,1,2,0,4,2,7,1,2,14])
+    168
+    """
     minimal_fuel = 0
-    # for align in range(avg - 2, avg + 2):  # faster but not by much anymore
-    for align in range(len(data)):
-        fuel = sum(fuel_calc(abs(x - align)) for x in data)
+    avg = int(mean(data))
+    for align in range(avg - 2, avg + 2):  # faster but not by much anymore
+        # for align in range(len(data)):
+        fuel = sum(step_sequence_calc(abs(x - align)) for x in data)
         if not minimal_fuel or minimal_fuel > fuel:
             minimal_fuel = fuel
-            print(align, minimal_fuel)
     return int(minimal_fuel)
+
+
+def plot(data):
+    plt.plot(data)
+    plt.ylabel("crabs")
+    plt.show()
 
 
 class UnitTests(unittest.TestCase):
@@ -64,4 +69,5 @@ class UnitTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    # plot(list(map(int, read_data("day_7.txt").split(","))))
     unittest.main()

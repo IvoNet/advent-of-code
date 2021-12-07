@@ -8,7 +8,10 @@ __doc__ = """
 
 """
 
-from typing import List
+__all__ = [
+    "calc",
+    "iter_tools",
+]
 
 
 def read_data(infile: str) -> str:
@@ -17,7 +20,7 @@ def read_data(infile: str) -> str:
         return fi.read().strip()
 
 
-def get_data(infile: str) -> List:
+def get_data(infile: str) -> list:
     """Read the puzzle input without extra lines"""
     with open(infile, "r") as fi:
         return fi.read().strip().split("\n")
