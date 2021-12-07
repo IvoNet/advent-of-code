@@ -10,36 +10,40 @@ __doc__ = """
 
 import unittest
 
+from numpy import mean
+
 from ivonet import read_data
 
 
+def fuel_calc_1(steps):
+    return sum(i for i in range(1, steps + 1))
+
+
 def fuel_calc(steps):
-    fuel = 0
-    for i in range(1, steps + 1):
-        fuel += i
-    return fuel
+    return (steps + 1) / 2 * steps
 
 
 def part_1(data):
-    minimal_fuel = 100000000000000000000000000
-    for allign in data:
-        fuel = 0
-        for x in data:
-            fuel += abs(x - allign)
-        if minimal_fuel > fuel:
+    minimal_fuel = 0
+    for align in data:
+        fuel = sum(abs(x - align) for x in data)
+        if not minimal_fuel or minimal_fuel > fuel:
             minimal_fuel = fuel
     return minimal_fuel
 
 
 def part_2(data):
-    minimal_fuel = 100000000000000000000000000000000000000
-    for allign in range(len(data)):
-        fuel = 0
-        for x in data:
-            fuel += fuel_calc(abs(x - allign))
-        if minimal_fuel > fuel:
+    """Must be in the neighborhood of the average be so lets start there.
+    """
+    avg = int(mean(data))
+    minimal_fuel = 0
+    for align in range(avg - 2, avg + 2):  # faster but not by much anymore
+        # for align in range(len(data)):
+        fuel = sum(fuel_calc(abs(x - align)) for x in data)
+        if not minimal_fuel or minimal_fuel > fuel:
             minimal_fuel = fuel
-    return minimal_fuel
+            print(align, minimal_fuel)
+    return int(minimal_fuel)
 
 
 class UnitTests(unittest.TestCase):
