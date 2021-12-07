@@ -37,8 +37,8 @@ def part_2(data):
     """
     avg = int(mean(data))
     minimal_fuel = 0
-    for align in range(avg - 2, avg + 2):  # faster but not by much anymore
-        # for align in range(len(data)):
+    # for align in range(avg - 2, avg + 2):  # faster but not by much anymore
+    for align in range(len(data)):
         fuel = sum(fuel_calc(abs(x - align)) for x in data)
         if not minimal_fuel or minimal_fuel > fuel:
             minimal_fuel = fuel
