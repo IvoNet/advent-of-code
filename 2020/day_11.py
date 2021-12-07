@@ -20,14 +20,6 @@ GROUND = -1
 NEIGHBORS = [x for x in product([-1, 0, 1], repeat=2) if x != (0, 0)]
 
 
-def parse(data):
-    matrix = {}
-    for y, row in enumerate(data):
-        for x, col in enumerate(row):
-            matrix[(x, y)] = 0 if col == 'L' else -1
-    return matrix
-
-
 def neighbors(coord: tuple, grid=(99, 90)):
     width = grid[0] - 1
     height = grid[1] - 1
@@ -41,6 +33,14 @@ def neighbors(coord: tuple, grid=(99, 90)):
             continue
         adjacent.append((xx, yy))
     return adjacent
+
+
+def parse(data):
+    matrix = {}
+    for y, row in enumerate(data):
+        for x, col in enumerate(row):
+            matrix[(x, y)] = 0 if col == 'L' else -1
+    return matrix
 
 
 def print_matrix(matrix, grid=(99, 90), end=""):
