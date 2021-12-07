@@ -13,6 +13,13 @@ import unittest
 from ivonet import read_data
 
 
+def fuel_calc(steps):
+    fuel = 0
+    for i in range(1, steps + 1):
+        fuel += i
+    return fuel
+
+
 def part_1(data):
     minimal_fuel = 100000000000000000000000000
     for allign in data:
@@ -21,15 +28,7 @@ def part_1(data):
             fuel += abs(x - allign)
         if minimal_fuel > fuel:
             minimal_fuel = fuel
-            print(allign, fuel)
     return minimal_fuel
-
-
-def fuel_calc(steps):
-    fuel = 0
-    for i in range(1, steps + 1):
-        fuel += i
-    return fuel
 
 
 def part_2(data):
@@ -57,7 +56,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(343441, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(98925151, part_2(self.source))
 
 
 if __name__ == '__main__':
