@@ -157,8 +157,8 @@ output values. What do you get if you add up all of the output values?
 
 import unittest
 
-from ivonet import read_rows
-from ivonet import sort_str, str_minus_str, str_minus_len
+from ivonet import read_rows, sort_dict_on_values
+from ivonet import sort_str, str_minus_len
 
 UNIQUE_NUMBERS_LEN = {
     2: 1,
@@ -180,34 +180,63 @@ def part_1(data):
 
 class Display(object):
     def __init__(self, data) -> None:
+        self.orig = data
         self.numbers = {}
         self.str_numbers = {}
         pat, out = data.split(" | ")
         self.pat = [sort_str(x) for x in pat.split()]
         self.out = [sort_str(x) for x in out.split()]
         self.slink_list = self.pat.copy()
-        for x in self.pat:
-            self.__first_pass(x)
+
         self.__analysis()
 
     def __set_num(self, num: int, s: str):
         self.numbers[num] = s
         self.str_numbers[s] = num
         self.slink_list.remove(s)
-        # print(num, s, self.pat_popper)
-
-    def __first_pass(self, s: str):
-        num = UNIQUE_NUMBERS_LEN.get(len(s), None)
-        if num:
-            self.__set_num(num, s)
 
     def __get_sizes(self, size: int):
         return [x for x in self.slink_list if len(x) == size]
 
+    def __find_1_4_7_8(self):
+        """These numbers have unique length so are easy to identify"""
+        for s in self.pat:
+            num = UNIQUE_NUMBERS_LEN.get(len(s), None)
+            if num:
+                self.__set_num(num, s)
+
+    def __find_3(self):
+        """"""
+        for x in self.__get_sizes(5):
+            if str_minus_len(x, self.numbers[7]) == 2:
+                self.__set_num(3, x)
+                break
+
+    def __find_9(self):
+        for x in self.__get_sizes(6):
+            if str_minus_len(x, self.numbers[3]) == 1:
+                self.__set_num(9, x)
+                break
+
+    def __find_5_and_2(self):
+        for x in self.__get_sizes(5):
+            if str_minus_len(x, self.numbers[9]) == 0:
+                self.__set_num(5, x)
+            else:
+                self.__set_num(2, x)
+
+    def __find_6_and_0(self):
+        for x in self.__get_sizes(6):
+            if str_minus_len(x, self.numbers[5]) == 1:
+                self.__set_num(6, x)
+            else:
+                self.__set_num(0, x)  # ==2
+
     def __analysis(self):
         """
-        - all found numbers ar removed from the list to parse
-        - when saying 5 - 1 it means the string representation of the two subracted e.g. dab(7) - ab(1) = d -> len 1
+        - all found numbers are removed from the list to parse
+        - when saying 5 - 1 it means the string representation of the two subtracted e.g. dab(7) - ab(1) = d -> len 1
+        - the ordering of the method calls is important!
         - [1, 4, 7, 8] are known by size so easy
         - in five range:
           - 3 -> if len 3 - 7 == 2 -> unique when subtracting 7 of the others in the range
@@ -220,24 +249,11 @@ class Display(object):
           - 6 -> if len str(6) - 5 == 1
           - 0 -> if len str(6) - 5 == 2 (or the else of 6)
         """
-        for x in self.__get_sizes(5):
-            if len(str_minus_str(x, self.numbers[7])) == 2:
-                self.__set_num(3, x)
-                break
-        for x in self.__get_sizes(6):
-            if str_minus_len(x, self.numbers[3]) == 1:
-                self.__set_num(9, x)
-                break
-        for x in self.__get_sizes(5):
-            if str_minus_len(x, self.numbers[9]) == 0:
-                self.__set_num(5, x)
-            else:
-                self.__set_num(2, x)
-        for x in self.__get_sizes(6):
-            if str_minus_len(x, self.numbers[5]) == 1:
-                self.__set_num(6, x)
-            else:
-                self.__set_num(0, x)  # ==2
+        self.__find_1_4_7_8()
+        self.__find_3()
+        self.__find_9()
+        self.__find_5_and_2()
+        self.__find_6_and_0()
 
     def result(self):
         nr = ""
@@ -249,15 +265,26 @@ class Display(object):
                 return None
         return int(nr)
 
+    def print(self):
+        self.str_numbers = sort_dict_on_values(self.str_numbers)
+        ret = f"{self.orig} -> {self.result()}\n"
+        for key in self.str_numbers:
+            ret += f"{key:<7} = {self.str_numbers[key]}\n"
+        return ret
+
     def __str__(self) -> str:
-        return f"{self.pat} | {self.result}"
+        return self.print()
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"{self.pat} - {self.result()}"
 
 
 def part_2(data):
-    return sum(x.result() for x in [Display(x) for x in data])
+    source = [Display(x) for x in data]
+    for x in source:
+        print(x)
+
+    return sum(x.result() for x in source)
 
 
 class UnitTests(unittest.TestCase):

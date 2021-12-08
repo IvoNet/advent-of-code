@@ -23,6 +23,10 @@ __all__ = [
     "read_rows",
     "read_data",
     "read_ints",
+    # iter
+    "consecutive_element_pairing",
+    "plist",
+    "sort_dict_on_values",
     # calc
     "fibonacci",
     "step_sequence_calc",
@@ -56,9 +60,6 @@ __all__ = [
     "int_to_roman",
     # grid
     "neighbors",
-    # iter
-    "consecutive_element_pairing",
-    "plist",
     # alphabet
     "alphabet",
     "alphabet_idx",

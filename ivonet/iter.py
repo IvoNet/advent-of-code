@@ -4,8 +4,18 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
-import unittest
 from typing import List, Callable
+
+
+def sort_dict_on_values(dct: dict) -> dict:
+    """sort a dict in its values
+
+    >>> sort_dict_on_values({1: 2, 3: 4, 4: 3, 2: 1, 0: 0})
+    {0: 0, 2: 1, 1: 2, 4: 3, 3: 4}
+    >>> sort_dict_on_values({'one':1,'three':3,'five':5,'two':2,'four':4})
+    {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}
+    """
+    return {k: v for k, v in sorted(dct.items(), key=lambda item: item[1])}
 
 
 def consecutive_element_pairing(data: List,
@@ -35,6 +45,7 @@ def plist(lst: list):
         print(x)
 
 
-
 if __name__ == '__main__':
-    unittest.main()
+    import doctest
+
+    doctest.testmod()
