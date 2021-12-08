@@ -29,3 +29,7 @@ def get_data(infile: str) -> list:
 def plist(lst: list):
     for x in lst:
         print(x)
+
+
+def sort_str(s: str):
+    return "".join(sorted(s))

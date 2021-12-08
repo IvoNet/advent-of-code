@@ -8,7 +8,7 @@ __doc__ = """"""
 
 import unittest
 
-from ivonet import get_data, plist
+from ivonet import get_data, plist, sort_str
 
 UNIQUE_NUMBERS = {
     1: 2,
@@ -24,7 +24,7 @@ UNIQUE_NUMBERS_LEN = {
 }
 
 ORIG_NUMBERS = {
-    0: "abcef",
+    0: "abcefg",
     1: "cf",
     2: "acdeg",
     3: "acdfg",
@@ -99,35 +99,112 @@ class Display(object):
        - 1,4,7,8 directly identifiable
        - 2 if len = 5 and...
        - 3 if len = 4 and contains all of 1 and 7
+
+
+               a = top = [0, 2, 3, 5, 6, 7, 8, 9]
+        b = tle = [0, 4, 5, 6, 8, 9]
+        c = tri = [0, 1, 2, 3, 4, 7, 8, 9]
+        d = mdl = [2, 3, 4, 5, 6, 8, 9]
+        e = ble = [0, 2, 6, 8]
+        f = bri = [0, 1, 3, 4, 5, 6, 7, 8, 9]
+        g = btm = [0, 2, 3, 5, 6, 8, 9]
+        # 7 - 1 = top
+
     """
 
     def __init__(self, data) -> None:
         self.numbers = {}
+        self.strs = {}
         self.line = data
         pat, out = data.split(" | ")
-        pat = pat.split()
-        out = out.split()
-        self.pat = []
-        self.out = []
-        for x in pat:
-            num = self.number_it(x)
-            self.pat.append([x, num])
-        for x in out:
-            num = self.number_it(x)
-            self.out.append([x, num])
+        self.pat = [sort_str(x) for x in pat.split()]
+        self.out = [sort_str(x) for x in out.split()]
+        self.pat_popper = self.pat.copy()
+        for x in self.pat:
+            self.number_it(x)
+        for x in self.out:
+            self.number_it(x)
+        self.analysis()
+
+    def set_num(self, num: int, s: str):
+        self.numbers[num] = s
+        self.strs[s] = num
+        self.pat_popper.remove(s)
 
     def number_it(self, s: str):
         num = UNIQUE_NUMBERS_LEN.get(len(s), None)
         if num:
-            self.numbers[num] = s
-            return num
-        if len(s) == 5:
-            if sum(1 for l in self.numbers.get(1, "z") if l in s) == 2:
-                if sum(1 for l in self.numbers.get(7, "z") if l in s) == 3:
-                    # s = 3
-                    self.numbers[3] = s
+            self.set_num(num, s)
 
-        return num
+    def str_minus_str(self, s1, s2):
+        a = s1
+        b = s2
+        return "".join([x for x in a if x not in b])
+
+    def str_minus_len(self, s1, s2):
+        return len(self.str_minus_str(s1, s2))
+
+    def analysis(self):
+        """
+        5:
+       - 2 - 1 = adeg
+         2 - 7 = deg
+         2 - 4 = adeg
+         8 - 4 = aeg
+       - 3 - 7 = dg (uniek)
+         3 - 1 = adg
+         3 - 4 = ag
+         8 - 3 = be
+       - 5 - 1 = abdg
+         5 - 7 = bdg
+         5 - 4 = ag  !! eerst drie identificeren dan 5 met 4
+         5 - 9 = --
+       6:
+       - 0 - 1 = abeg
+         0 - 7 =
+       - 6 - 1 = abdeg
+         6 - 7 = bdeg
+         6 - 4 = aeg
+         6 - 3 = be !! 3 again
+       - 9 - 3 = b !! 3 again
+        """
+        # original segment distribution
+        top = [x for x in self.numbers[7] if x not in self.numbers[1]][0]
+        # three is len 5 and has all of 7 in it as the only other 5 len
+        for x in self.pat_popper[:]:
+            if len(x) == 5:  # [2, 3 ,5]
+                print(self.str_minus_str(x, self.numbers[7]))
+                if len(self.str_minus_str(x, self.numbers[7])) == 2:
+                    self.set_num(3, x)
+                    break
+        for x in self.pat_popper[:]:  # finding 6 and 9 or 0
+            if len(x) == 6:
+                if len(self.str_minus_str(x, self.numbers[3])) == 1:
+                    self.set_num(9, x)
+                    break
+        for x in self.pat_popper[:]:  # finding 6 and 9 or 0
+            if len(x) == 6 and x != self.numbers[9] and x != self.numbers[3]:
+                s1 = self.str_minus_str(x, self.numbers[9])
+                s2 = self.str_minus_str(self.numbers[8], self.numbers[9])
+                print(s1, s2)
+                if s1 == s2:
+                    self.set_num(0, x)
+
+        self.check_output()
+
+    def check_output(self):
+        print(self.numbers)
+        print(self.strs)
+        print(self.pat_popper)
+        nr = ""
+        for x in self.out:
+            try:
+                nr += str(self.numbers[x])
+            except KeyError:
+                print("Not complete yet")
+                return None
+        print(nr)
+        return int(nr)
 
     def __str__(self) -> str:
         return f"{self.pat} | {self.out}"
@@ -141,7 +218,51 @@ def part_2(data):
        acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf
        8                   3     7                 4           1
 
+       - 0 (6) alles van 8 behalve d
+       - 1 (2)
+       - 2 (5) 1 verschil met 3 (e vs f)
+       - 2 - 7 = deg
+       - 3 (5)
+       - 3 - 7 = dg
+       - 4 (4)
+       - 5 (5) alles van 6 behalve e
+       - 5     alles van 9 behalve c
+       - 5 - 7 = bdg
+       - 6 (6) bevat volledig 5 plus e
+       - 6     alles van 8 behalve c
+       - 6     verschil met 9 is c en e
+       - 7 (3)
+       - 7     - 1 = a (top)
+       - 7     past volledig in 0, 3, 8, 9
+       - 8 (7) past alles in maar mist
+       - 8 - 0 = d
+       - 8 - 1 = abdeg
+       - 8 - 2 = bf
+       - 8 - 3 = be
+       - 8 - 4 = aeg
+       - 8 - 5 = ce
+       - 8 - 6 = c
+       - 8 - 7 = bdeg
+       - 8 - 9 = e
+       - 9 (6) alles van 8 behalve e
+
+       - len 2 = [1]
+       - len 3 = [7]
+       - len 4 = [4]
+       - len 5 = [2, 3, 5]
+       - len 6 = [6, 9]
+       - len 7 = [8]
+
+       - wat identificeert 2,3,5 en 6,9
+         - lengte
+
+
+
+
     """
+    for x in ORIG_NUMBERS:
+        print(f"{x} - len[{len(ORIG_NUMBERS[x])}] - {ORIG_NUMBERS[x]}")
+
     source = [Display(x) for x in data]
     plist(source)
 
