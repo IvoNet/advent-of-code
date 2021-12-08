@@ -122,8 +122,6 @@ class Display(object):
         self.pat_popper = self.pat.copy()
         for x in self.pat:
             self.number_it(x)
-        for x in self.out:
-            self.number_it(x)
         self.analysis()
 
     def set_num(self, num: int, s: str):
@@ -169,11 +167,9 @@ class Display(object):
        - 9 - 3 = b !! 3 again
         """
         # original segment distribution
-        top = [x for x in self.numbers[7] if x not in self.numbers[1]][0]
-        # three is len 5 and has all of 7 in it as the only other 5 len
+        print(self.pat)
         for x in self.pat_popper[:]:
             if len(x) == 5:  # [2, 3 ,5]
-                print(self.str_minus_str(x, self.numbers[7]))
                 if len(self.str_minus_str(x, self.numbers[7])) == 2:
                     self.set_num(3, x)
                     break
@@ -182,24 +178,33 @@ class Display(object):
                 if len(self.str_minus_str(x, self.numbers[3])) == 1:
                     self.set_num(9, x)
                     break
-        for x in self.pat_popper[:]:  # finding 6 and 9 or 0
-            if len(x) == 6 and x != self.numbers[9] and x != self.numbers[3]:
-                s1 = self.str_minus_str(x, self.numbers[9])
-                s2 = self.str_minus_str(self.numbers[8], self.numbers[9])
-                print(s1, s2)
-                if s1 == s2:
-                    self.set_num(0, x)
+        sixes = [x for x in self.pat_popper if len(x) == 6]
+        print("sixes:", sixes)
+        print(self.pat_popper)
+        if len(self.str_minus_str(sixes[0], self.numbers[3])) == 2:
+            self.set_num(0, sixes[0])
+            self.set_num(6, sixes[1])
+        else:
+            self.set_num(0, sixes[1])
+            self.set_num(6, sixes[0])
+        fives = [x for x in self.pat_popper if len(x) == 5]
+        check_5 = self.str_minus_str(self.numbers[8], self.numbers[9])
+        if check_5 in fives[0]:
+            self.set_num(5, fives[1])
+            self.set_num(2, fives[0])
+        else:
+            self.set_num(5, fives[0])
+            self.set_num(2, fives[1])
 
         self.check_output()
 
     def check_output(self):
         print(self.numbers)
-        print(self.strs)
         print(self.pat_popper)
         nr = ""
         for x in self.out:
             try:
-                nr += str(self.numbers[x])
+                nr += str(self.strs[x])
             except KeyError:
                 print("Not complete yet")
                 return None
@@ -214,57 +219,12 @@ class Display(object):
 
 
 def part_2(data):
-    """
-       acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf
-       8                   3     7                 4           1
-
-       - 0 (6) alles van 8 behalve d
-       - 1 (2)
-       - 2 (5) 1 verschil met 3 (e vs f)
-       - 2 - 7 = deg
-       - 3 (5)
-       - 3 - 7 = dg
-       - 4 (4)
-       - 5 (5) alles van 6 behalve e
-       - 5     alles van 9 behalve c
-       - 5 - 7 = bdg
-       - 6 (6) bevat volledig 5 plus e
-       - 6     alles van 8 behalve c
-       - 6     verschil met 9 is c en e
-       - 7 (3)
-       - 7     - 1 = a (top)
-       - 7     past volledig in 0, 3, 8, 9
-       - 8 (7) past alles in maar mist
-       - 8 - 0 = d
-       - 8 - 1 = abdeg
-       - 8 - 2 = bf
-       - 8 - 3 = be
-       - 8 - 4 = aeg
-       - 8 - 5 = ce
-       - 8 - 6 = c
-       - 8 - 7 = bdeg
-       - 8 - 9 = e
-       - 9 (6) alles van 8 behalve e
-
-       - len 2 = [1]
-       - len 3 = [7]
-       - len 4 = [4]
-       - len 5 = [2, 3, 5]
-       - len 6 = [6, 9]
-       - len 7 = [8]
-
-       - wat identificeert 2,3,5 en 6,9
-         - lengte
-
-
-
-
-    """
     for x in ORIG_NUMBERS:
         print(f"{x} - len[{len(ORIG_NUMBERS[x])}] - {ORIG_NUMBERS[x]}")
 
     source = [Display(x) for x in data]
     plist(source)
+    return sum(x.check_output() for x in source)
 
 
 class UnitTests(unittest.TestCase):
