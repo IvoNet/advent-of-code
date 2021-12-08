@@ -24,3 +24,8 @@ def get_data(infile: str) -> list:
     """Read the puzzle input without extra lines"""
     with open(infile, "r") as fi:
         return fi.read().strip().split("\n")
+
+
+def plist(lst: list):
+    for x in lst:
+        print(x)
