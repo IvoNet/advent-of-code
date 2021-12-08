@@ -8,6 +8,10 @@ __doc__ = """
 
 """
 
+import sys
+
+sys.setrecursionlimit(100000)
+
 from ivonet.alphabet import *
 from ivonet.calc import *
 from ivonet.files import *
@@ -25,9 +29,9 @@ __all__ = [
     "read_ints",
     # iter
     "consecutive_element_pairing",
-    "plist",
     "sort_dict_on_values",
     "lmap",
+    "pretty",
     "flatten",
     "min_max",
     "max_minus_min",
@@ -37,6 +41,8 @@ __all__ = [
     "positive_floats",
     "words",
     "keyvalues",
+    "make_hashable",
+    "invert_dict",
     # calc
     "fibonacci",
     "step_sequence_calc",

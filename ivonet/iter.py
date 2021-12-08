@@ -90,7 +90,7 @@ def keyvalues(d: dict) -> list[tuple]:
 
 
 def sort_dict_on_values(dct: dict) -> dict:
-    """sort a dict in its values
+    """Sort a dict in its values but stay the same dict
 
     >>> sort_dict_on_values({1: 2, 3: 4, 4: 3, 2: 1, 0: 0})
     {0: 0, 2: 1, 1: 2, 4: 3, 3: 4}
@@ -98,6 +98,50 @@ def sort_dict_on_values(dct: dict) -> dict:
     {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}
     """
     return {k: v for k, v in sorted(dct.items(), key=lambda item: item[1])}
+
+
+def make_hashable(iterable):
+    """Make the iterable hashable.
+    Useful when using it as a key.
+    """
+    if isinstance(iterable, list):
+        return tuple(map(make_hashable, iterable))
+    if isinstance(iterable, dict):
+        iterable = set(iterable.items())
+    if isinstance(iterable, set):
+        return frozenset(map(make_hashable, iterable))
+    return iterable
+
+
+def invert_dict(dct: dict, single=True, verbose=True):
+    """Values become the keys and keys the values.
+    They will be made hashable if they are not yet so.
+
+    >>> invert_dict({1: 2, 9: 0})
+    {2: 1, 0: 9}
+    >>> invert_dict({1: 2, 9: 0, 3: 2})
+    [invert_dict] WARNING WARNING: duplicate key 2
+    {2: 3, 0: 9}
+    >>> invert_dict({1: 2, 9: 0, 3: 2}, verbose=False)
+    {2: 3, 0: 9}
+    >>> invert_dict({1: 2, 9: [0, 3, 4], 3: 2, 'a': {4: 2, 2: 4}}, single=False, verbose=False)
+    {2: [1, 3], (0, 3, 4): [9], frozenset({(2, 4), (4, 2)}): ['a']}
+    >>> invert_dict({1: 2, 9: [0, 3, 4], 3: 2, 'a': {4: 2, 2: 4}})
+    [invert_dict] WARNING WARNING: duplicate key 2
+    {2: 3, (0, 3, 4): 9, frozenset({(2, 4), (4, 2)}): 'a'}
+    """
+    out = {}
+    if single:
+        for k, v in dct.items():
+            v = make_hashable(v)
+            if v in out and verbose:
+                print("[invert_dict] WARNING WARNING: duplicate key", v)
+            out[v] = k
+    else:
+        for k, v in dct.items():
+            v = make_hashable(v)
+            out.setdefault(v, []).append(k)
+    return out
 
 
 def consecutive_element_pairing(data: list,
@@ -122,9 +166,35 @@ def consecutive_element_pairing(data: list,
             zip(*(data[i:len(data) - (consecutive_element - i) + 1] for i in range(consecutive_element)))))
 
 
-def plist(lst: list):
-    for x in lst:
-        print(x)
+def pretty(iterable, sort_keys=True, indent=2):
+    """Pretty print an iterable
+    >>> pretty([1,2,3])
+    [
+      1,
+      2,
+      3
+    ]
+    >>> pretty({3:'a', 1:'b'})
+    {
+      "1": "b",
+      "3": "a"
+    }
+    >>> pretty({3:'a', 1:'b'}, sort_keys=False)
+    {
+      "3": "a",
+      "1": "b"
+    }
+    >>> pretty({3:'a', 1: [1,2,]}, indent=4)
+    {
+        "1": [
+            1,
+            2
+        ],
+        "3": "a"
+    }
+    """
+    import json
+    print(json.dumps(iterable, sort_keys=sort_keys, indent=indent, default=str))
 
 
 if __name__ == '__main__':
