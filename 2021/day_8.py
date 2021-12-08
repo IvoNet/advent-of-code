@@ -9,7 +9,7 @@ __doc__ = """"""
 import unittest
 
 from ivonet import read_rows
-from ivonet.str import sort_str, str_minus_str, str_minus_len
+from ivonet import sort_str, str_minus_str, str_minus_len
 
 UNIQUE_NUMBERS = {
     1: 2,
