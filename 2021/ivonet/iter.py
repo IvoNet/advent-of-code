@@ -30,7 +30,7 @@ def consecutive_element_pairing(data: List,
             zip(*(data[i:len(data) - (consecutive_element - i) + 1] for i in range(consecutive_element)))))
 
 
-def plist(lst: list):
+def printlist(lst: list):
     for x in lst:
         print(x)
 

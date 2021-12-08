@@ -47,6 +47,18 @@ def str_minus_len(s1, s2):
     return len(str_minus_str(s1, s2))
 
 
+def read_european_number(european_number):
+    """Transform a European number into a float."""
+    try:
+        number = european_number.replace('.', '')
+        number = number.replace(',', '.')
+        number = float(number)
+        return number
+    except ValueError:
+        # If the string cannot be converted (e.g. an empty string), the original is returned
+        return european_number
+
+
 if __name__ == '__main__':
     import doctest
 

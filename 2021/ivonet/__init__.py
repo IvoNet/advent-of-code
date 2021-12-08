@@ -9,16 +9,15 @@ __doc__ = """
 """
 
 from ivonet.alphabet import *
+from ivonet.calc import *
 from ivonet.grid import *
+from ivonet.hexadecimal import *
 from ivonet.io import *
 from ivonet.iter import *
+from ivonet.roman_numerals import *
 from ivonet.str import *
 
 __all__ = [
-    "calc",
-    "iter",
-    "str",
-    "grid",
     "consecutive_element_pairing",
     "str_minus_len",
     "str_minus_str",
@@ -37,7 +36,18 @@ __all__ = [
     "base_26_decode_string",
     "base_26_encode_string",
     "print_alphabet",
-    "substring_after_character",
+    "fibonacci",
+    "normalize_overlap_matrix",
+    "int_2_roman",
+    "roman_to_int",
+    "roman",
+    "neighbors",
+    "base_10_to_base_x",
+    "number_as_word",
+    "",
+    "",
+    "",
+    "",
     "",
     "",
     "",
