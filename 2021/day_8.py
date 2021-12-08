@@ -39,11 +39,9 @@ ORIG_NUMBERS = {
 
 def part_1(data):
     output = [x.split(" | ")[1].split() for x in data]
-    print(output)
     counter = 0
     for x in output:
         for y in x:
-            print(y)
             if len(y) in [2, 4, 3, 7]:
                 counter += 1
     return counter
@@ -128,6 +126,7 @@ class Display(object):
         self.numbers[num] = s
         self.strs[s] = num
         self.pat_popper.remove(s)
+        # print(num, s, self.pat_popper)
 
     def number_it(self, s: str):
         num = UNIQUE_NUMBERS_LEN.get(len(s), None)
@@ -142,65 +141,34 @@ class Display(object):
     def str_minus_len(self, s1, s2):
         return len(self.str_minus_str(s1, s2))
 
+    def get_sizes(self, size: int):
+        return [x for x in self.pat_popper if len(x) == size]
+
     def analysis(self):
-        """
-        5:
-       - 2 - 1 = adeg
-         2 - 7 = deg
-         2 - 4 = adeg
-         8 - 4 = aeg
-       - 3 - 7 = dg (uniek)
-         3 - 1 = adg
-         3 - 4 = ag
-         8 - 3 = be
-       - 5 - 1 = abdg
-         5 - 7 = bdg
-         5 - 4 = ag  !! eerst drie identificeren dan 5 met 4
-         5 - 9 = --
-       6:
-       - 0 - 1 = abeg
-         0 - 7 =
-       - 6 - 1 = abdeg
-         6 - 7 = bdeg
-         6 - 4 = aeg
-         6 - 3 = be !! 3 again
-       - 9 - 3 = b !! 3 again
-        """
-        # original segment distribution
-        print(self.pat)
-        for x in self.pat_popper[:]:
-            if len(x) == 5:  # [2, 3 ,5]
-                if len(self.str_minus_str(x, self.numbers[7])) == 2:
-                    self.set_num(3, x)
-                    break
-        for x in self.pat_popper[:]:  # finding 6 and 9 or 0
-            if len(x) == 6:
-                if len(self.str_minus_str(x, self.numbers[3])) == 1:
-                    self.set_num(9, x)
-                    break
-        sixes = [x for x in self.pat_popper if len(x) == 6]
-        print("sixes:", sixes)
-        print(self.pat_popper)
-        if len(self.str_minus_str(sixes[0], self.numbers[3])) == 2:
-            self.set_num(0, sixes[0])
-            self.set_num(6, sixes[1])
-        else:
-            self.set_num(0, sixes[1])
-            self.set_num(6, sixes[0])
-        fives = [x for x in self.pat_popper if len(x) == 5]
-        check_5 = self.str_minus_str(self.numbers[8], self.numbers[9])
-        if check_5 in fives[0]:
-            self.set_num(5, fives[1])
-            self.set_num(2, fives[0])
-        else:
-            self.set_num(5, fives[0])
-            self.set_num(2, fives[1])
+        for x in self.get_sizes(5):
+            if len(self.str_minus_str(x, self.numbers[7])) == 2:
+                self.set_num(3, x)
+                break
+        for x in self.get_sizes(6):
+            if self.str_minus_len(x, self.numbers[3]) == 1:
+                self.set_num(9, x)
+                break
+        for x in self.get_sizes(5):
+            if self.str_minus_len(x, self.numbers[9]) == 0:
+                self.set_num(5, x)
+            else:
+                self.set_num(2, x)
+        for x in self.get_sizes(6):
+            if self.str_minus_len(x, self.numbers[5]) == 1:
+                self.set_num(6, x)
+            else:
+                self.set_num(0, x)
 
         self.check_output()
 
     def check_output(self):
-        print(self.numbers)
-        print(self.pat_popper)
+        # print(self.numbers)
+        # print(self.pat_popper)
         nr = ""
         for x in self.out:
             try:
@@ -208,7 +176,7 @@ class Display(object):
             except KeyError:
                 print("Not complete yet")
                 return None
-        print(nr)
+        # print(nr)
         return int(nr)
 
     def __str__(self) -> str:
@@ -254,7 +222,7 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         self.assertEqual(449, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(968175, part_2(self.source))
 
 
 if __name__ == '__main__':
