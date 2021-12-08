@@ -74,7 +74,7 @@ Go through the renovation crew's list and determine which tiles they need to fli
 
 from collections import defaultdict
 
-from ivonet import get_data
+from ivonet import read_rows
 
 WHITE = 0
 BLACK = 1
@@ -134,7 +134,7 @@ def get_neigbors(x, y, with_self=False):
 
 def main():
     tiles = defaultdict()
-    data = get_data("day_24.txt")
+    data = read_rows("day_24.txt")
     # data = example
     lines = data.split("\n")
     black_tiles = set()

@@ -12,7 +12,7 @@ import unittest
 from copy import deepcopy
 from itertools import product
 
-from ivonet import get_data
+from ivonet import read_rows
 
 EMPTY = 0
 FILLED = 1
@@ -136,7 +136,7 @@ def part_2(data, grid=(99, 90)):
     return sum(1 for x in matrix.values() if x == 1)
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day_11.txt")
+    source = read_rows("day_11.txt")
     test_source = """L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..

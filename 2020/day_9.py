@@ -11,7 +11,7 @@ __doc__ = """
 import unittest
 from itertools import permutations
 
-from ivonet import get_data, consecutive_element_pairing
+from ivonet import read_rows, consecutive_element_pairing
 
 MINIMAL_PAIRING_LEN: int = 2
 
@@ -47,7 +47,7 @@ def part_2(data, preamble=25):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day_9.txt")
+    source = read_rows("day_9.txt")
     test_source = """35
 20
 15

@@ -2,42 +2,8 @@
 #  -*- coding: utf-8 -*-
 from unittest import TestCase, main
 
-from ivonet.string import substring_after_character, alphabet
-from ivonet.string.alphabet import base_26_encode_string, sum_letter_values_of_word, product_letter_values_of_word, \
-    alphabet, base_26_decode_string
-from ivonet.string.string_functions import sort_alphabetical, is_sorted, letters
-
-
-class TestSubstringAfterCharacter(TestCase):
-    def test_gw_01(self):
-        line = 'before_20141017'
-        character = '_'
-        r = substring_after_character(line, character)
-        e = '20141017'
-        self.assertEqual(r, e, 'line')
-
-    def test_gw_02(self):
-        line = 'before_20141017'
-        character = '_'
-        r = substring_after_character(line, character,
-                                      include_character=True)
-        e = '_20141017'
-        self.assertEqual(r, e, 'line')
-
-    def test_gw_03(self):
-        line = 'before_20141017'
-        character = '_'
-        r = substring_after_character(line, character,
-                                      include_character=False)
-        e = '20141017'
-        self.assertEqual(r, e, 'line')
-
-    def test_gw_04(self):
-        line = 'before_20141017'
-        character = '.'
-        r = substring_after_character(line, character,
-                                      include_character=True)
-        self.assertIs(r, None, 'If character not in line, None shall be returned.')
+from ivonet import base_26_encode_string, base_26_decode_string, sum_letter_values_of_word, \
+    product_letter_values_of_word, sort_str, is_sorted, letters, alphabet
 
 
 class TestAlphabet(TestCase):
@@ -76,8 +42,8 @@ class TestAlphabet(TestCase):
 
 class StringFunctions(TestCase):
     def test_sort_alphanumerical(self):
-        self.assertEqual("abdij", sort_alphabetical("abdij"))
-        self.assertEqual("jidba", sort_alphabetical("abdij", True))
+        self.assertEqual("abdij", sort_str("abdij"))
+        self.assertEqual("jidba", sort_str("abdij", True))
 
     def test_is_sorted(self):
         self.assertFalse(is_sorted("za"))

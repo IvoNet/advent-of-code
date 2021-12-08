@@ -55,7 +55,7 @@ import sys
 from itertools import product
 from pprint import pprint
 
-from ivonet import get_data
+from ivonet import read_rows
 
 
 def initOn(init, dimensions):
@@ -103,6 +103,6 @@ def test():
 
 if __name__ == '__main__':
     test()
-    source = get_data("day_17.txt")
+    source = read_rows("day_17.txt")
     print("Part 1:", part_1(source))  #
     print("part 2:", part_2(source))  #

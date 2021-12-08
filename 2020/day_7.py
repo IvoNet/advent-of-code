@@ -19,7 +19,7 @@ from collections import defaultdict
 from queue import Queue
 from typing import List
 
-from ivonet import get_data
+from ivonet import read_rows
 
 SHINY_GOLD = "shiny gold"
 
@@ -80,6 +80,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = get_data("day_7.txt")
+    source = read_rows("day_7.txt")
     print(part_1(source))
     print(part_2(source))

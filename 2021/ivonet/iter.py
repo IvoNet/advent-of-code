@@ -30,6 +30,11 @@ def consecutive_element_pairing(data: List,
             zip(*(data[i:len(data) - (consecutive_element - i) + 1] for i in range(consecutive_element)))))
 
 
+def plist(lst: list):
+    for x in lst:
+        print(x)
+
+
 class UnitTests(unittest.TestCase):
     def test_consecutive_element_paring(self):
         self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=7, map_to_func=list), [])

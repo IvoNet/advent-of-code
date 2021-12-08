@@ -10,7 +10,7 @@ __doc__ = """
 import unittest
 from collections import defaultdict
 
-from ivonet import get_data
+from ivonet import read_rows
 
 
 def count_crossing_lines(grid: defaultdict) -> int:
@@ -64,7 +64,7 @@ def part_2(data: list[str], diagonal=True):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day_5.txt")
+    source = read_rows("day_5.txt")
 
     def test_example_data(self):
         source = """0,9 -> 5,9

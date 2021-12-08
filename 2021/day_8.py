@@ -8,7 +8,8 @@ __doc__ = """"""
 
 import unittest
 
-from ivonet import get_data, plist, sort_str
+from ivonet import read_rows
+from ivonet.str import sort_str, str_minus_str, str_minus_len
 
 UNIQUE_NUMBERS = {
     1: 2,
@@ -133,38 +134,43 @@ class Display(object):
         if num:
             self.set_num(num, s)
 
-    def str_minus_str(self, s1, s2):
-        a = s1
-        b = s2
-        return "".join([x for x in a if x not in b])
-
-    def str_minus_len(self, s1, s2):
-        return len(self.str_minus_str(s1, s2))
-
     def get_sizes(self, size: int):
         return [x for x in self.pat_popper if len(x) == size]
 
     def analysis(self):
+        """
+        - all found numbers ar removed from the list to parse
+        - when saying 5 - 1 it means the string representation of the two subracted e.g. dab(7) - ab(1) = d -> len 1
+        - [1, 4, 7, 8] are known by size so easy
+        - in five range:
+          - 3 -> if len 3 - 7 == 2 -> unique when subtracting 7 of the others in the range
+        - in six range:
+          - 9 -> if len 9 - 3(str) == 1 -> unique when subtracting 3 from others in the range
+        - in five range again:
+          - 5 -> if len str(5) - 9(str) == 0
+          - 2 -> if len str(5) - 9(str) == 1
+        - in six range:
+          - 6 -> if len str(6) - 5 == 1
+          - 0 -> if len str(6) - 5 == 2 (or the else of 6)
+        """
         for x in self.get_sizes(5):
-            if len(self.str_minus_str(x, self.numbers[7])) == 2:
+            if len(str_minus_str(x, self.numbers[7])) == 2:
                 self.set_num(3, x)
                 break
         for x in self.get_sizes(6):
-            if self.str_minus_len(x, self.numbers[3]) == 1:
+            if str_minus_len(x, self.numbers[3]) == 1:
                 self.set_num(9, x)
                 break
         for x in self.get_sizes(5):
-            if self.str_minus_len(x, self.numbers[9]) == 0:
+            if str_minus_len(x, self.numbers[9]) == 0:
                 self.set_num(5, x)
             else:
                 self.set_num(2, x)
         for x in self.get_sizes(6):
-            if self.str_minus_len(x, self.numbers[5]) == 1:
+            if str_minus_len(x, self.numbers[5]) == 1:
                 self.set_num(6, x)
             else:
-                self.set_num(0, x)
-
-        self.check_output()
+                self.set_num(0, x)  # ==2
 
     def check_output(self):
         # print(self.numbers)
@@ -187,16 +193,11 @@ class Display(object):
 
 
 def part_2(data):
-    for x in ORIG_NUMBERS:
-        print(f"{x} - len[{len(ORIG_NUMBERS[x])}] - {ORIG_NUMBERS[x]}")
-
-    source = [Display(x) for x in data]
-    plist(source)
-    return sum(x.check_output() for x in source)
+    return sum(x.check_output() for x in [Display(x) for x in data])
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day_8.txt")
+    source = read_rows("day_8.txt")
     test_source_small = ["acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"]
     test_source = """be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc

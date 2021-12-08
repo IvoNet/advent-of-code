@@ -83,11 +83,11 @@ Using this new interpretation of the commands, calculate the horizontal position
 
 """
 
-from ivonet import get_data
+from ivonet import read_rows
 
 
 def part_1():
-    rows = get_data("day_2.txt")
+    rows = read_rows("day_2.txt")
     x = 0
     y = 0
     for course in rows:
@@ -103,7 +103,7 @@ def part_1():
 
 
 def part_2():
-    rows = get_data("day_2.txt")
+    rows = read_rows("day_2.txt")
     x = 0
     y = 0
     aim = 0

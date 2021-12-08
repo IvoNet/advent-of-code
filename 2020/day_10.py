@@ -13,7 +13,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from ivonet import get_data
+from ivonet import read_rows
 
 
 def part_1(data):
@@ -67,7 +67,7 @@ def part_2(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = get_data("day_10.txt")
+    source = read_rows("day_10.txt")
     test_source = """28
 33
 18

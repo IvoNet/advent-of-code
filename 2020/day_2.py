@@ -15,7 +15,7 @@ __doc__ = """
 
 """
 
-from ivonet import get_data
+from ivonet import read_rows
 
 
 def part_1(data):
@@ -50,6 +50,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = get_data("day_2.txt")
+    source = read_rows("day_2.txt")
     print(part_1(source))  # 469
     print(part_2(source))  # 267
