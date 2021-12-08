@@ -18,3 +18,8 @@ def read_data(infile: str) -> str:
 def read_rows(infile: str) -> list:
     """Read the puzzle input without extra lines"""
     return read_data(infile).split("\n")
+
+
+def read_ints(infile, delimeter=","):
+    """Read the infile and parse it into a list of ints based on the delimeter"""
+    return list(map(int, read_data(infile).split(delimeter)))

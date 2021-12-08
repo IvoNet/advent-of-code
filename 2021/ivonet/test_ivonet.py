@@ -6,7 +6,7 @@ import numpy as np
 
 from ivonet import base_26_encode_string, base_26_decode_string, sum_letter_values_of_word, \
     product_letter_values_of_word, sort_str, is_sorted, letters, alphabet, base_10_to_base_x, base_3, roman, \
-    number_as_word, normalize_overlap_matrix
+    number_as_word, normalize_overlap_matrix, consecutive_element_pairing
 
 
 class TestBase(TestCase):
@@ -73,6 +73,20 @@ class TestNormalizeOverlapMatrix(TestCase):
         with self.assertRaisesRegex(AssertionError, 'square'):
             a = np.matrix(np.arange(1, 5))
             normalize_overlap_matrix(a)
+
+
+class UnitTests(TestCase):
+    def test_consecutive_element_paring(self):
+        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=7, map_to_func=list), [])
+        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3, map_to_func=list),
+                         [[1, 2, 3], [2, 3, 4], [3, 4, 5], [4, 5, 6]])
+        # first pair to the list ^^^ then sum the the separate sub lists and make that into a list
+        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3, map_to_func=sum),
+                         [6, 9, 12, 15])
+        self.assertEqual(
+            consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3,
+                                        map_to_func=lambda z: "".join([str(x) for x in z])),
+            ['123', '234', '345', '456'])
 
 
 class TestAlphabet(TestCase):
