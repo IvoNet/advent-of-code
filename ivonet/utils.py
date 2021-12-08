@@ -7,7 +7,6 @@ __doc__ = """
 # region Imports
 import itertools
 import math
-import re
 import sys
 import typing
 
@@ -19,8 +18,6 @@ sys.setrecursionlimit(100000)
 # Copy a function if you need to modify it.
 
 # region Strings, lists, dicts
-def lmap(func, *iterables):
-    return list(map(func, *iterables))
 
 
 def make_grid(*dimensions: list[int], fill=None):
@@ -30,45 +27,6 @@ def make_grid(*dimensions: list[int], fill=None):
     next_down = make_grid(*dimensions[1:], fill=fill)
     return [list(next_down) for _ in range(dimensions[0])]
 
-
-def min_max(lst: list):
-    return min(lst), max(lst)
-
-
-def max_minus_min(lst: list):
-    return max(lst) - min(lst)
-
-
-def list_diff(lst: list):
-    return [b - a for a, b in zip(lst, lst[1:])]
-
-
-def flatten(lst: list):
-    return [i for x in lst for i in x]
-
-
-def ints(s: str) -> list[int]:
-    return lmap(int, re.findall(r"-?\d+", s))
-
-
-def positive_ints(s: str) -> list[int]:
-    return lmap(int, re.findall(r"\d+", s))
-
-
-def floats(s: str) -> list[float]:
-    return lmap(float, re.findall(r"-?\d+(?:\.\d+)?", s))
-
-
-def positive_floats(s: str) -> list[float]:
-    return lmap(float, re.findall(r"\d+(?:\.\d+)?", s))
-
-
-def words(s: str) -> list[str]:
-    return re.findall(r"[a-zA-Z]+", s)
-
-
-def keyvalues(d: dict) -> list[tuple]:
-    return list(d.items())
 
 
 # endregion
