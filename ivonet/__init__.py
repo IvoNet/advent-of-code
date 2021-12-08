@@ -10,16 +10,16 @@ __doc__ = """
 
 from ivonet.alphabet import *
 from ivonet.calc import *
+from ivonet.files import *
 from ivonet.grid import *
 from ivonet.hexadecimal import *
-from ivonet.io import *
 from ivonet.iter import *
 from ivonet.primes import *
 from ivonet.roman_numerals import *
 from ivonet.str import *
 
 __all__ = [
-    # io
+    # files
     "read_rows",
     "read_data",
     "read_ints",

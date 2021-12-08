@@ -4,37 +4,167 @@ __author__ = "Ivo Woltring"
 __revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+You barely reach the safety of the cave when the whale smashes into the cave mouth, 
+collapsing it. Sensors indicate another exit to this cave at a much greater depth, 
+so you have no choice but to press on.
+
+As your submarine slowly makes its way through the cave system, you notice that the 
+four-digit seven-segment displays in your submarine are malfunctioning; they must 
+have been damaged during the escape. 
+You'll be in a lot of trouble without them, so you'd better figure out what's wrong.
+
+Each digit of a seven-segment display is rendered by turning on or off any of 
+seven segments named a through g:
+
+  0:      1:      2:      3:      4:
+ aaaa    ....    aaaa    aaaa    ....
+b    c  .    c  .    c  .    c  b    c
+b    c  .    c  .    c  .    c  b    c
+ ....    ....    dddd    dddd    dddd
+e    f  .    f  e    .  .    f  .    f
+e    f  .    f  e    .  .    f  .    f
+ gggg    ....    gggg    gggg    ....
+
+  5:      6:      7:      8:      9:
+ aaaa    aaaa    aaaa    aaaa    aaaa
+b    .  b    .  .    c  b    c  b    c
+b    .  b    .  .    c  b    c  b    c
+ dddd    dddd    ....    dddd    dddd
+.    f  e    f  .    f  e    f  .    f
+.    f  e    f  .    f  e    f  .    f
+ gggg    gggg    ....    gggg    gggg
+ 
+So, to render a 1, only segments c and f would be turned on; the rest would be off. 
+To render a 7, only segments a, c, and f would be turned on.
+
+The problem is that the signals which control the segments have been mixed up on each 
+display. The submarine is still trying to display numbers by producing output on signal 
+wires a through g, but those wires are connected to segments randomly. Worse, the 
+wire/segment connections are mixed up separately for each four-digit display! 
+(All of the digits within a display use the same connections, though.)
+
+So, you might know that only signal wires b and g are turned on, but that doesn't 
+mean segments b and g are turned on: the only digit that uses two segments is 1, so 
+it must mean segments c and f are meant to be on. With just that information, you still 
+can't tell which wire (b/g) goes to which segment (c/f). For that, you'll need to 
+collect more information.
+
+For each display, you watch the changing signals for a while, make a note of all ten 
+unique signal patterns you see, and then write down a single four digit output 
+value (your puzzle input). Using the signal patterns, you should be able to work 
+out which pattern corresponds to which digit.
+
+For example, here is what you might see in a single entry in your notes:
+
+acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
+cdfeb fcadb cdfeb cdbaf
+(The entry is wrapped here to two lines so it fits; in your notes, 
+it will all be on a single line.)
+
+Each entry consists of ten unique signal patterns, a | delimiter, and finally the 
+four digit output value. Within an entry, the same wire/segment connections are used 
+(but you don't know what the connections actually are). The unique signal patterns 
+correspond to the ten different ways the submarine tries to render a digit using the 
+current wire/segment connections. Because 7 is the only digit that uses three 
+segments, dab in the above example means that to render a 7, signal lines d, a, and b are on. 
+Because 4 is the only digit that uses four segments, eafb means that to render a 4, 
+signal lines e, a, f, and b are on.
+
+Using this information, you should be able to work out which combination of signal 
+wires corresponds to each of the ten digits. Then, you can decode the four digit output 
+value. Unfortunately, in the above example, all of the digits in the output 
+value (cdfeb fcadb cdfeb cdbaf) use five segments and are more difficult to deduce.
+
+For now, focus on the easy digits. Consider this larger example:
+
+be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
+fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
+fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
+aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
+fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
+dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
+bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
+egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
+gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
+
+Because the digits 1, 4, 7, and 8 each use a unique number of segments, you should be 
+able to tell which combinations of signals correspond to those digits. Counting only 
+digits in the output values (the part after | on each line), in the above example, 
+there are 26 instances of digits that use a unique number of segments (highlighted above).
+
+In the output values, how many times do digits 1, 4, 7, or 8 appear?
+
+Your puzzle answer was 449.
+
+--- Part Two ---
+Through a little deduction, you should now be able to determine the remaining digits. 
+Consider again the first example above:
+
+acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf
+After some careful analysis, the mapping between signal wires and segments only make sense in the following configuration:
+
+ dddd
+e    a
+e    a
+ ffff
+g    b
+g    b
+ cccc
+ 
+So, the unique signal patterns would correspond to the following digits:
+
+acedgfb: 8
+cdfbe: 5
+gcdfa: 2
+fbcad: 3
+dab: 7
+cefabd: 9
+cdfgeb: 6
+eafb: 4
+cagedb: 0
+ab: 1
+
+Then, the four digits of the output value can be decoded:
+
+cdfeb: 5
+fcadb: 3
+cdfeb: 5
+cdbaf: 3
+
+Therefore, the output value for this entry is 5353.
+
+Following this same process for each entry in the second, larger example above, 
+the output value of each entry can be determined:
+
+fdgacbe cefdb cefbgd gcbe: 8394
+fcgedb cgb dgebacf gc: 9781
+cg cg fdcagb cbg: 1197
+efabcd cedba gadfec cb: 9361
+gecf egdcabf bgf bfgea: 4873
+gebdcfa ecba ca fadegcb: 8418
+cefg dcbef fcge gbcadfe: 4548
+ed bcgafe cdgba cbgef: 1625
+gbdfcae bgc cg cgb: 8717
+fgae cfgab fg bagce: 4315
+
+Adding all of the output values in this larger example produces 61229.
+
+For each entry, determine all of the wire/segment connections and decode the four-digit 
+output values. What do you get if you add up all of the output values?
+"""
 
 import unittest
 
 from ivonet import read_rows
 from ivonet import sort_str, str_minus_str, str_minus_len
 
-UNIQUE_NUMBERS = {
-    1: 2,
-    4: 4,
-    7: 3,
-    8: 7,
-}
 UNIQUE_NUMBERS_LEN = {
     2: 1,
     4: 4,
     3: 7,
     7: 8,
-}
-
-ORIG_NUMBERS = {
-    0: "abcefg",
-    1: "cf",
-    2: "acdeg",
-    3: "acdfg",
-    4: "bcdf",
-    5: "abdfg",
-    6: "abdefg",
-    7: "acf",
-    8: "abcdefg",
-    9: "abcdfg",
 }
 
 
@@ -49,95 +179,32 @@ def part_1(data):
 
 
 class Display(object):
-    """
-           0: abcefg
-       - 6 long
-       - misses only d from 8
-       - only 0 and 9 have 6 digits
-
-       1: cf
-       - unique length 2
-       - right side
-
-       2: acdeg
-       - 2 is 5 long
-       - 2 does not have pattern of 1 (1=cf, 2=acdeg)
-       - 2 does have the top part of 1 (c)
-       - 2 has has a and c in common with 7 (top, right top)
-
-       3: acdfg
-       - 3 is 5 long
-       - 3 had full pattern of 1 and 7
-       - 3 has right line (df) in common with 4
-
-       4: bcdf
-       - unique length 4
-       - directly identifiable
-
-       5: abdfg
-       - len 5
-       - has only lower right half of 1 in its pattern (f)
-       - has top and right bottom of 7 in its pattern
-       - has bdf of 4 in its pattern
-
-       6: abdefg
-       - len 6
-       - f of 1 (lower right)
-       - af of 7 (top and lower right)
-       - bdf of 4
-
-       7: acf
-       - unique len 3
-       - directly identifiable
-
-       8: abcdefg
-       - unique len 7
-       - directly identifiable
-
-
-       - 1,4,7,8 directly identifiable
-       - 2 if len = 5 and...
-       - 3 if len = 4 and contains all of 1 and 7
-
-
-               a = top = [0, 2, 3, 5, 6, 7, 8, 9]
-        b = tle = [0, 4, 5, 6, 8, 9]
-        c = tri = [0, 1, 2, 3, 4, 7, 8, 9]
-        d = mdl = [2, 3, 4, 5, 6, 8, 9]
-        e = ble = [0, 2, 6, 8]
-        f = bri = [0, 1, 3, 4, 5, 6, 7, 8, 9]
-        g = btm = [0, 2, 3, 5, 6, 8, 9]
-        # 7 - 1 = top
-
-    """
-
     def __init__(self, data) -> None:
         self.numbers = {}
-        self.strs = {}
-        self.line = data
+        self.str_numbers = {}
         pat, out = data.split(" | ")
         self.pat = [sort_str(x) for x in pat.split()]
         self.out = [sort_str(x) for x in out.split()]
-        self.pat_popper = self.pat.copy()
+        self.slink_list = self.pat.copy()
         for x in self.pat:
-            self.number_it(x)
-        self.analysis()
+            self.__first_pass(x)
+        self.__analysis()
 
-    def set_num(self, num: int, s: str):
+    def __set_num(self, num: int, s: str):
         self.numbers[num] = s
-        self.strs[s] = num
-        self.pat_popper.remove(s)
+        self.str_numbers[s] = num
+        self.slink_list.remove(s)
         # print(num, s, self.pat_popper)
 
-    def number_it(self, s: str):
+    def __first_pass(self, s: str):
         num = UNIQUE_NUMBERS_LEN.get(len(s), None)
         if num:
-            self.set_num(num, s)
+            self.__set_num(num, s)
 
-    def get_sizes(self, size: int):
-        return [x for x in self.pat_popper if len(x) == size]
+    def __get_sizes(self, size: int):
+        return [x for x in self.slink_list if len(x) == size]
 
-    def analysis(self):
+    def __analysis(self):
         """
         - all found numbers ar removed from the list to parse
         - when saying 5 - 1 it means the string representation of the two subracted e.g. dab(7) - ab(1) = d -> len 1
@@ -153,47 +220,44 @@ class Display(object):
           - 6 -> if len str(6) - 5 == 1
           - 0 -> if len str(6) - 5 == 2 (or the else of 6)
         """
-        for x in self.get_sizes(5):
+        for x in self.__get_sizes(5):
             if len(str_minus_str(x, self.numbers[7])) == 2:
-                self.set_num(3, x)
+                self.__set_num(3, x)
                 break
-        for x in self.get_sizes(6):
+        for x in self.__get_sizes(6):
             if str_minus_len(x, self.numbers[3]) == 1:
-                self.set_num(9, x)
+                self.__set_num(9, x)
                 break
-        for x in self.get_sizes(5):
+        for x in self.__get_sizes(5):
             if str_minus_len(x, self.numbers[9]) == 0:
-                self.set_num(5, x)
+                self.__set_num(5, x)
             else:
-                self.set_num(2, x)
-        for x in self.get_sizes(6):
+                self.__set_num(2, x)
+        for x in self.__get_sizes(6):
             if str_minus_len(x, self.numbers[5]) == 1:
-                self.set_num(6, x)
+                self.__set_num(6, x)
             else:
-                self.set_num(0, x)  # ==2
+                self.__set_num(0, x)  # ==2
 
-    def check_output(self):
-        # print(self.numbers)
-        # print(self.pat_popper)
+    def result(self):
         nr = ""
         for x in self.out:
             try:
-                nr += str(self.strs[x])
+                nr += str(self.str_numbers[x])
             except KeyError:
                 print("Not complete yet")
                 return None
-        # print(nr)
         return int(nr)
 
     def __str__(self) -> str:
-        return f"{self.pat} | {self.out}"
+        return f"{self.pat} | {self.result}"
 
     def __repr__(self) -> str:
         return self.__str__()
 
 
 def part_2(data):
-    return sum(x.check_output() for x in [Display(x) for x in data])
+    return sum(x.result() for x in [Display(x) for x in data])
 
 
 class UnitTests(unittest.TestCase):
