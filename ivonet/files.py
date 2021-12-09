@@ -63,4 +63,24 @@ def read_ints(infile, delimeter=","):
 
 
 def read_int_matrix(infile):
+    """Read an infile of the following format into a matrix of ints (list of lists)
+    e.g.
+    219
+    398
+    985
+
+    It can handle file reference and string input
+
+    >>> read_int_matrix('''219
+    ... 398
+    ... 985
+    ... 876''')
+     [[2, 1, 9], [3, 9, 8], [9, 8, 5], [8, 7, 6]]
+    """
     return [lmap(int, list(x)) for x in read_rows(infile)]
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()

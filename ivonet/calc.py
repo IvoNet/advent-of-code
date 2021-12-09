@@ -128,13 +128,13 @@ def base_x_to_10(value, base=3):
 
 
 def binary_8_bits(value) -> list:
-    bin = []
+    bits = []
     if type(value) == int:
-        bin.append("{0:b}".format(value).zfill(8))
-        return bin
+        bits.append("{0:b}".format(value).zfill(8))
+        return bits
     for x in value:
-        bin.append("{0:b}".format(ord(x)).zfill(8))
-    return bin
+        bits.append("{0:b}".format(ord(x)).zfill(8))
+    return bits
 
 
 def tests():
