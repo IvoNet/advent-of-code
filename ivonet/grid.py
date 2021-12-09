@@ -11,7 +11,7 @@ __doc__ = """
 from itertools import product
 
 
-def neighbors(coord: tuple, grid=(10, 10)):
+def neighbors(coord: tuple, grid=(10, 10), diagonal=True):
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
 
     :param coord: Tuple with x, y coordinate
@@ -22,7 +22,10 @@ def neighbors(coord: tuple, grid=(10, 10)):
     height = grid[1] - 1
     retx, rety = coord
     adjacent = []
-    for x, y in [x for x in product([-1, 0, 1], repeat=2) if x != (0, 0)]:
+    nb = [x for x in product([-1, 0, 1], repeat=2) if x != (0, 0)]
+    if not diagonal:
+        nb = [x for x in nb if x not in product([-1, 1], repeat=2)]
+    for x, y in nb:
         xx = retx + x
         yy = rety + y
         if xx < 0 or xx > width or yy < 0 or yy > height:
