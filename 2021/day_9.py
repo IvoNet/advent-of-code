@@ -95,7 +95,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(500, part_1(self.source, grid=(100, 100))[0])
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(970200, part_2(self.source))
 
 
 if __name__ == '__main__':
