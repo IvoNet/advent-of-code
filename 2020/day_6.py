@@ -15,7 +15,7 @@ __doc__ = """
 
 """
 
-from ivonet import read_data
+from ivonet.files import read_data
 
 
 class Group(object):

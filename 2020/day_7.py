@@ -19,7 +19,7 @@ from collections import defaultdict
 from queue import Queue
 from typing import List
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 SHINY_GOLD = "shiny gold"
 

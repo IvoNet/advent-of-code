@@ -74,7 +74,7 @@ Go through the renovation crew's list and determine which tiles they need to fli
 
 from collections import defaultdict
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 WHITE = 0
 BLACK = 1

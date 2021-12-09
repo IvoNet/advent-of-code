@@ -10,7 +10,7 @@ __doc__ = """
 
 import unittest
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 
 def part_1(data):
@@ -23,7 +23,7 @@ def part_2(data):
 
 class UnitTests(unittest.TestCase):
     source = read_rows("day_X.txt")
-    test_source = """""".split("\n")
+    test_source = read_rows("""""")
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))

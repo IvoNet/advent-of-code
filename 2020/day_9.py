@@ -11,7 +11,8 @@ __doc__ = """
 import unittest
 from itertools import permutations
 
-from ivonet import read_rows, consecutive_element_pairing
+from ivonet.files import read_rows
+from ivonet.iter import consecutive_element_pairing
 
 MINIMAL_PAIRING_LEN: int = 2
 

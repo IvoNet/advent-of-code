@@ -17,7 +17,7 @@ __doc__ = """
 
 import re
 
-from ivonet import read_data
+from ivonet.files import read_data
 
 PASSPORT_CODES = [
     "byr",

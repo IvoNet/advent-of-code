@@ -55,7 +55,7 @@ import sys
 from itertools import product
 from pprint import pprint
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 
 def initOn(init, dimensions):

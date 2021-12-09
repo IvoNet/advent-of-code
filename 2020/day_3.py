@@ -15,7 +15,7 @@ __doc__ = """
 
 """
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 
 def part_1(data, right=3, down=1):

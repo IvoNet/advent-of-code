@@ -42,7 +42,7 @@ column. In this example, the seat has ID 44 * 8 + 5 = 357.
 
 """
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 ROWS = list(range(128))
 COLLUMS = list(range(8))

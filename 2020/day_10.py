@@ -13,7 +13,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 
 def part_1(data):
