@@ -26,42 +26,55 @@ def parse(data):
 def part_1(data, grid=(100, 100)):
     som = 0
     source = parse(data)
-    # pprint(source)
+    smallest_points = []
     for i, row in enumerate(source):
         for j, x in enumerate(row):
-            print(f"({j},{i}) - ", end="")
             nb = neighbors((j, i), grid=grid, diagonal=False)
-            print(nb, end=" - ")
             smallest = True
             for a, b in nb:
-                print(f"[{b},{a}] - /{source[b][a]}/ - {x}", end=" ")
                 if source[b][a] <= x:
                     smallest = False
             if smallest:
-                print("YES", end="")
                 som += 1 + x
-            print()
-    return som
+                smallest_points.append((j, i))
+    return som, smallest_points
 
 
 def part_2(data, grid=(100, 100)):
-    som = 0
+    """
+    21XXX43210
+    3X878X4X21
+    X85678X8X2
+    87678X678X
+    X8XXX65678
+    """
+    cache = []
     source = parse(data)
-    for i, row in enumerate(source):
-        for j, x in enumerate(row):
-            print(f"({j},{i}) - ", end="")
-            nb = neighbors((j, i), grid=grid, diagonal=False)
-            print(nb, end=" - ")
-            smallest = True
-            for a, b in nb:
-                print(f"[{b},{a}] - /{source[b][a]}/ - {x}", end=" ")
-                if source[b][a] <= x:
-                    smallest = False
-            if smallest:
-                print("YES", end="")
-                som += 1 + x
-            print()
-    return som
+    smallest_points = part_1(data, grid=grid)[1]
+    print(smallest_points)
+    for coord in smallest_points:
+        # print(f"{coord} - ", end="")
+        nb = neighbors(coord, grid, diagonal=False)
+        queue = nb.copy()
+        basin = [coord, ]
+        running = True
+        while running:
+            try:
+                x, y = queue.pop()
+                # print(f"({x}, {y}) - ", end="")
+                if source[y][x] != 9 and (x, y) not in basin:
+                    basin.append((x, y))
+                    nb2 = neighbors((x, y), grid, diagonal=False)
+                    [queue.append(n) for n in nb2 if n not in queue]
+            except IndexError:
+                running = False
+            if basin not in cache:
+                cache.append(basin)
+        # print(basin)
+    sc = sorted(cache, key=len, reverse=True)[0:3]
+    # for x in sc:
+    #     print(len(x), x)
+    return len(sc[0]) * len(sc[1]) * len(sc[2])
 
 
 class UnitTests(unittest.TestCase):
@@ -73,13 +86,13 @@ class UnitTests(unittest.TestCase):
 9899965678""".split("\n")
 
     def test_example_data_part_1(self):
-        self.assertEqual(15, part_1(self.test_source, grid=(10, 5)))
+        self.assertEqual(15, part_1(self.test_source, grid=(10, 5))[0])
 
     def test_example_data_part_2(self):
-        self.assertEqual(1134, part_2(self.test_source))
+        self.assertEqual(1134, part_2(self.test_source, grid=(10, 5)))
 
     def test_part_1(self):
-        self.assertEqual(500, part_1(self.source, grid=(100, 100)))
+        self.assertEqual(500, part_1(self.source, grid=(100, 100))[0])
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
