@@ -108,7 +108,7 @@ Figure out which board will win last. Once it wins, what would its final score b
 
 import unittest
 
-from ivonet import read_data
+from ivonet.files import read_data
 
 VALUE_IDX = 0
 MARK_IDX = 1

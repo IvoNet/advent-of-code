@@ -123,7 +123,7 @@ rating of the submarine? (Be sure to represent your answer in decimal, not binar
 
 """
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 
 def filter_binaries_on_idx_value(data, idx, value):

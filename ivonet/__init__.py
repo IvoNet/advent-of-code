@@ -5,28 +5,11 @@ __revised__ = "$revised: 01/12/2021 10:43$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
-
-"""
-
-import sys
-
-sys.setrecursionlimit(100000)
-
-from ivonet.alphabet import *
-from ivonet.calc import *
-from ivonet.files import *
-from ivonet.grid import *
-from ivonet.hexadecimal import *
-from ivonet.iter import *
-from ivonet.primes import *
-from ivonet.roman_numerals import *
-from ivonet.str import *
-
-__all__ = [
     # files
     "read_rows",
     "read_data",
     "read_ints",
+    "read_int_matrix",
     # iter
     "consecutive_element_pairing",
     "sort_dict_on_values",
@@ -44,6 +27,7 @@ __all__ = [
     "make_hashable",
     "invert_dict",
     # calc
+    "prod",
     "fibonacci",
     "step_sequence_calc",
     "normalize_overlap_matrix",
@@ -88,4 +72,24 @@ __all__ = [
     "print_alphabet",
     # hexadecimal
     "number_as_word",
+"""
+
+import sys
+
+sys.setrecursionlimit(100000)
+
+__all__ = [
+    "open",
 ]
+
+
+def open(source):
+    """URI, filename, or string --> stream
+    This open function lets you define parsers that take any input source
+    (URL, pathname to local or network file, or actual data as a string)
+    and deal with it in a uniform manner.  Returned object is guaranteed
+    to have all the basic stdio read methods (read, readline, readlines).
+    Just .close() the object when you're done with it.
+    """
+    from ivonet.files import open_anything
+    return open_anything(source)

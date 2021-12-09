@@ -10,10 +10,14 @@ __doc__ = """
 
 import sys
 
+from ivonet.calc import prod
+from ivonet.files import read_int_matrix
+from ivonet.grid import neighbors
+from ivonet.iter import lmap
+
 sys.dont_write_bytecode = True
 
 import unittest
-from ivonet import read_rows, neighbors, lmap
 
 
 def parse(data):
@@ -25,14 +29,13 @@ def parse(data):
 
 def part_1(data, grid=(100, 100)):
     som = 0
-    source = parse(data)
     smallest_points = []
-    for i, row in enumerate(source):
+    for i, row in enumerate(data):
         for j, x in enumerate(row):
             nb = neighbors((j, i), grid=grid, diagonal=False)
             smallest = True
             for a, b in nb:
-                if source[b][a] <= x:
+                if data[b][a] <= x:
                     smallest = False
             if smallest:
                 som += 1 + x
@@ -71,19 +74,16 @@ def part_2(data, grid=(100, 100)):
             if basin not in cache:
                 cache.append(basin)
         # print(basin)
-    sc = sorted(cache, key=len, reverse=True)[0:3]
-    # for x in sc:
-    #     print(len(x), x)
-    return len(sc[0]) * len(sc[1]) * len(sc[2])
+    return prod(len(x) for x in sorted(cache, key=len, reverse=True)[0:3])
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_9.txt")
-    test_source = """2199943210
+    source = read_int_matrix("day_9.txt")
+    test_source = read_int_matrix("""2199943210
 3987894921
 9856789892
 8767896789
-9899965678""".split("\n")
+9899965678""")
 
     def test_example_data_part_1(self):
         self.assertEqual(15, part_1(self.test_source, grid=(10, 5))[0])

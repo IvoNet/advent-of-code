@@ -90,8 +90,8 @@ import unittest
 import matplotlib.pyplot as plt
 from numpy import mean
 
-from ivonet import read_data
-from ivonet import step_sequence_calc
+from ivonet.calc import step_sequence_calc
+from ivonet.files import read_data
 
 
 def part_1(data):

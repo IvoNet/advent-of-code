@@ -94,7 +94,7 @@ How many lanternfish would there be after 256 days?
 import unittest
 from collections import defaultdict
 
-from ivonet import read_data
+from ivonet.files import read_data
 
 
 def growth_calculator(fishes: list[int], days: int = 80):

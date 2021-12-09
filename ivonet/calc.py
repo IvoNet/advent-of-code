@@ -8,9 +8,41 @@ __doc__ = """
 
 """
 
+import types
+from functools import reduce
 from math import sqrt
 
 import numpy as np
+
+
+def prod(*iterable):
+    """Like sum() but then for the product of an iterable
+    If a dict is provided the product of the values is calculated.
+
+    It can handle a generator, list, single parameters that can
+    be counted as iterable.
+    See the examples below:
+    >>> prod(1,2,3)
+    6
+    >>> prod('a',10)
+    'aaaaaaaaaa'
+    >>> prod([1, 2, 3, 4])
+    24
+    >>> prod({1, 2, 3, 4})
+    24
+    >>> prod({'a': 7, "b": 6})
+    42
+    >>> prod(len(x) for x in ['aaaaa', 'aa', 'asdf'])
+    40
+    """
+    it = iterable
+    if len(it) == 1:
+
+        if type(it[0]) == list or type(it[0]) == set or isinstance(it[0], types.GeneratorType):
+            it = it[0]
+        elif type(it[0]) == dict:
+            it = it[0].values()
+    return reduce(lambda a, b: a * b, it, 1)
 
 
 def fibonacci(n):

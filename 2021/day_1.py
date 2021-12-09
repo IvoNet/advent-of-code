@@ -96,10 +96,11 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 from typing import List
 
-from ivonet import read_rows, consecutive_element_pairing
-
-
 # First successful attempt
+from ivonet.files import read_ints
+from ivonet.iter import consecutive_element_pairing
+
+
 def sum_tripplewise(data: List[int]) -> List[int]:
     """group by next three per item in list"""
     if len(data) < 3:
@@ -128,7 +129,7 @@ def increase_counter(values: list[int]) -> int:
 
 
 def main():
-    values = list(map(int, read_rows("day_1.txt")))
+    values = read_ints("day_1.txt", delimeter="\n")
     print("Answer part 1: ", increase_counter(values))
     print("Answer part 2: ", increase_counter(consecutive_element_pairing(values, 3, sum)))
 

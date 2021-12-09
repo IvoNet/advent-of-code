@@ -157,8 +157,9 @@ output values. What do you get if you add up all of the output values?
 
 import unittest
 
-from ivonet import read_rows, sort_dict_on_values
-from ivonet import sort_str, str_minus_len
+from ivonet.files import read_rows
+from ivonet.iter import sort_dict_on_values
+from ivonet.str import sort_str, str_minus_len
 
 UNIQUE_NUMBERS_LEN = {
     2: 1,

@@ -99,7 +99,7 @@ overlap?
 import unittest
 from collections import defaultdict
 
-from ivonet import read_rows
+from ivonet.files import read_rows
 
 
 def count_crossing_lines(grid: defaultdict) -> int:
