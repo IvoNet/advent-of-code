@@ -152,11 +152,11 @@ L.LLLLL.LL""".split("\n")
     def test_example_data_part_1(self):
         self.assertEqual(37, part_1(self.test_source, grid=(10, 10)))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(26, part_2(self.test_source, grid=(10, 10)))
-
     def test_part_1(self):
         self.assertEqual(2324, part_1(self.source))
+
+    def test_example_data_part_2(self):
+        self.assertEqual(26, part_2(self.test_source, grid=(10, 10)))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
