@@ -89,6 +89,47 @@ def keyvalues(d: dict) -> list[tuple]:
     return list(d.items())
 
 
+def chunkify(iterable, length=2):
+    """Chunkify a string into a list of chunk length sizes
+
+    >>> chunkify("(){}[]<>")
+    ['()', '{}', '[]', '<>']
+    >>> chunkify(list("(){}[]<>"))
+    [['(', ')'], ['{', '}'], ['[', ']'], ['<', '>']]
+    """
+    return [iterable[i:i + length] for i in range(0, len(iterable), length)]
+
+
+def dictify(iterable):
+    """Create a dict form an iterable.
+
+    >>> dictify("(){}[]<>")
+    {'(': ')', '{': '}', '[': ']', '<': '>'}
+    >>> dictify("(){}[]<")
+    Traceback (most recent call last):
+    AssertionError: iterable should have a multiplication of len 2
+    """
+    assert iterable, "Iterable should have value."
+    assert len(iterable) % 2 == 0, "iterable should have a multiplication of len 2"
+    ret = {}
+    for k, v, in chunkify(iterable, length=2):
+        ret[k] = v
+    return ret
+
+
+def list_middle(inlist: list[int]) -> any:
+    """Return the middle int value of the sorted list
+
+    >>> list_middle([1, 3, 2])
+    2
+    >>> list_middle([1, 3, 2, 9])
+    Traceback (most recent call last):
+    AssertionError: The list should contain an uneven amount of items
+    """
+    assert len(inlist) % 2 == 1, "The list should contain an uneven amount of items"
+    return sorted(inlist)[len(inlist) // 2]
+
+
 def sort_dict_on_values(dct: dict) -> dict:
     """Sort a dict in its values but stay the same dict
 

@@ -4,9 +4,13 @@ from unittest import TestCase, main
 
 import numpy as np
 
-from ivonet import base_26_encode_string, base_26_decode_string, sum_letter_values_of_word, \
-    product_letter_values_of_word, sort_str, is_sorted, letters, alphabet, base_10_to_base_x, base_3, roman, \
-    number_as_word, normalize_overlap_matrix, consecutive_element_pairing
+from ivonet.alphabet import base_26_encode_string, sum_letter_values_of_word, alphabet, product_letter_values_of_word, \
+    base_26_decode_string
+from ivonet.calc import base_10_to_base_x, base_3, normalize_overlap_matrix
+from ivonet.hexadecimal import number_as_word
+from ivonet.iter import consecutive_element_pairing
+from ivonet.roman_numerals import roman
+from ivonet.str import sort_str, is_sorted, letters, OpenCloseTags, TagError
 
 
 class TestBase(TestCase):
@@ -136,6 +140,49 @@ class StringFunctions(TestCase):
     def test_letters(self):
         self.assertEqual("HW", letters("Hallo Wereld"))
         self.assertEqual("ae", letters("Hallo Wereld", 1))
+
+    def test_open_close_tags(self):
+        oc = OpenCloseTags("<<<((({{{[[[]]]}}})))>>>")
+        self.assertTrue(oc.is_valid())
+        self.assertEqual({'actual': None,
+                          'expected': None,
+                          'incomplete': '',
+                          'source': '<<<((({{{[[[]]]}}})))>>>',
+                          'valid': True}, oc.meta())
+        oc = OpenCloseTags("<]")
+        self.assertFalse(oc.is_valid())
+        self.assertEqual({'actual': ']',
+                          'expected': '>',
+                          'incomplete': '',
+                          'source': '<]',
+                          'valid': False}, oc.meta())
+        oc = OpenCloseTags("<>>")
+        self.assertFalse(oc.is_valid())
+        oc = OpenCloseTags("""=/;:?+""", tags="/?;:=+")
+        self.assertTrue(oc.is_valid())
+
+    def test_open_closet_tags_exception(self):
+        try:
+            OpenCloseTags("<>>", exception=True)
+            self.fail("Should have raised a TagError")
+        except TagError as e:
+            self.assertEqual("Expected to be finished, but found > instead.", str(e))
+            self.assertEqual(">", e.actual)
+
+        try:
+            OpenCloseTags("<]", exception=True)
+            self.fail("Should have raised a TagError")
+        except TagError as e:
+            self.assertEqual(">", e.expected)
+            self.assertEqual("]", e.actual)
+            self.assertEqual("Expected >, but found ] instead.", str(e))
+
+        try:
+            OpenCloseTags("<[{()()", exception=True)
+            self.fail("Should have raised a TagError")
+        except TagError as e:
+            self.assertEqual("}]>", e.incomplete)
+            self.assertEqual("Expected these closing tags '}]>'.", str(e))
 
 
 if __name__ == "__main__":
