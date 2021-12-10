@@ -12,7 +12,7 @@ import sys
 
 from ivonet.calc import prod
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors
+from ivonet.grid import neighbors, neighbor_values
 from ivonet.iter import lmap
 
 sys.dont_write_bytecode = True
@@ -27,53 +27,53 @@ def parse(data):
     return ret
 
 
-def part_1(data, grid=(100, 100)):
+def part_1(matrix):
     som = 0
     smallest_points = []
-    for i, row in enumerate(data):
-        for j, x in enumerate(row):
-            nb = neighbors((j, i), grid=grid, diagonal=False)
+    for h, row in enumerate(matrix):
+        for w, x in enumerate(row):
+            nb = neighbors(matrix, (h, w), diagonal=False)
             smallest = True
             for a, b in nb:
-                if data[b][a] <= x:
+                if matrix[a][b] <= x:
                     smallest = False
             if smallest:
                 som += 1 + x
-                smallest_points.append((j, i))
+                smallest_points.append((h, w))
     return som, smallest_points
 
 
-def part_2(data, grid=(100, 100)):
-    """
-    21XXX43210
-    3X878X4X21
-    X85678X8X2
-    87678X678X
-    X8XXX65678
-    """
+def part_1a(matrix):
+    points = 0
+    smallest_points = []
+    for h in range(len(matrix)):
+        for w in range(len(matrix[0])):
+            me = matrix[h][w]
+            nb = neighbor_values(matrix, (h, w), diagonal=False)
+            if me < min(nb):
+                points += 1 + me
+                smallest_points.append((h, w))
+    return points, smallest_points
+
+
+def part_2(matrix):
     cache = []
-    source = parse(data)
-    smallest_points = part_1(data, grid=grid)[1]
-    print(smallest_points)
+    smallest_points = part_1a(matrix)[1]
     for coord in smallest_points:
-        # print(f"{coord} - ", end="")
-        nb = neighbors(coord, grid, diagonal=False)
-        queue = nb.copy()
+        queue = neighbors(matrix, coord, diagonal=False)
         basin = [coord, ]
         running = True
         while running:
             try:
-                x, y = queue.pop()
-                # print(f"({x}, {y}) - ", end="")
-                if source[y][x] != 9 and (x, y) not in basin:
-                    basin.append((x, y))
-                    nb2 = neighbors((x, y), grid, diagonal=False)
-                    [queue.append(n) for n in nb2 if n not in queue]
+                h, w = queue.pop()
+                if matrix[h][w] != 9 and (h, w) not in basin:
+                    basin.append((h, w))
+                    nb2 = neighbors(matrix, (h, w), diagonal=False)
+                    [queue.append(n) for n in nb2 if n not in queue and n not in basin]
             except IndexError:
                 running = False
             if basin not in cache:
                 cache.append(basin)
-        # print(basin)
     return prod(len(x) for x in sorted(cache, key=len, reverse=True)[0:3])
 
 
@@ -86,13 +86,19 @@ class UnitTests(unittest.TestCase):
 9899965678""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(15, part_1(self.test_source, grid=(10, 5))[0])
+        self.assertEqual(15, part_1(self.test_source)[0])
 
     def test_example_data_part_2(self):
-        self.assertEqual(1134, part_2(self.test_source, grid=(10, 5)))
+        self.assertEqual(1134, part_2(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(500, part_1(self.source, grid=(100, 100))[0])
+        self.assertEqual(500, part_1(self.source)[0])
+
+    def test_part_1a(self):
+        self.assertEqual(500, part_1a(self.source)[0])
+
+    def test_part_1a2(self):
+        self.assertEqual(part_1(self.source)[1], part_1a(self.source)[1])
 
     def test_part_2(self):
         self.assertEqual(970200, part_2(self.source))
