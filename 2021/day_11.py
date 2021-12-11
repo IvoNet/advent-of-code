@@ -9,14 +9,23 @@ __doc__ = """
 """
 
 import sys
-from pprint import pprint
+import unittest
 
 from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
 
 sys.dont_write_bytecode = True
 
-import unittest
+
+def mp(matrix):
+    for h in matrix:
+        for w in h:
+            if w >= 10:
+                print("-", end="")
+            else:
+                print(w, end="")
+        print()
+    print()
 
 
 def step_matrix(source):
@@ -35,14 +44,15 @@ def step_matrix(source):
 def flash(grid, h, w):
     matrix = grid.copy()
     matrix[h][w] += 1
-    # pprint(matrix)
-    if matrix[h][w] >= 10:
-        nb = [x for x in neighbors(matrix, (h, w), diagonal=True) if matrix[x[0]][x[1]] < 10]
-        # print(nb)
-        for h, w in nb:
-            # print("~~", h, w)
-            matrix = flash(matrix, h, w)
-    # print("<<")
+    nb = [x for x in neighbors(matrix, (h, w), diagonal=True)]
+    # simultanious flash
+    for hh, ww in nb:
+        matrix[hh][ww] = matrix[hh][ww] + 1
+    for hh, ww in nb:
+        if matrix[hh][ww] == 10:
+            nb2 = [x for x in neighbors(matrix, (hh, ww), diagonal=True) if matrix[x[0]][x[1]] < 10]
+            for hhh, www in nb2:
+                flash(matrix, h, w)
     return matrix
 
 
@@ -62,15 +72,18 @@ def reset_matrix(grid):
 def part_1(source):
     flashes = 0
     matrix = source.copy()
-    for _ in range(10):
+    for step in range(10):
+        print("Step", step + 1)
         matrix, flash_q = step_matrix(matrix)
+        mp(matrix)
         # print("!!!", flash_q)
         for h, w in flash_q:
             matrix = flash(matrix, h, w)
 
         matrix, flashed = reset_matrix(matrix)
         flashes += flashed
-        pprint(matrix)
+        print("Stepped", step + 1)
+        mp(matrix)
     return flashes
 
 
