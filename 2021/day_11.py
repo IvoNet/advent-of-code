@@ -13,6 +13,7 @@ import unittest
 
 from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
+from ivonet.iter import max_2d
 
 sys.dont_write_bytecode = True
 
@@ -74,10 +75,8 @@ def part_2(source):
     step = 0
     while running:
         step += 1
-        # print("Step", step)
         flashed = []
         matrix, flash_q = step_matrix(matrix)
-        # print(len(flash_q))
         while len(flash_q) != 0:
             toflash = flash_q.pop()
             h, w = toflash
@@ -85,10 +84,8 @@ def part_2(source):
             flashes += 1
             flashed.append(toflash)
             step_neighbors(matrix, h, w, flash_q)
-            # print(toflash, matrix[h][w], flash_q)
-        if max(map(max, matrix)) == 0:
+        if max_2d(matrix) == 0:
             return step
-        # mp(matrix)
     return flashes
 
 

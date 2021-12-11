@@ -49,6 +49,15 @@ def list_diff(lst: list[int]):
     return [b - a for a, b in zip(lst, lst[1:])]
 
 
+def max_2d(matrix: list[list[int]]):
+    """Find the max in a 2D matrix of ints
+
+    >>> max_2d([[1,2],[1,3],[42,1,42,3,4,5]])
+    42
+    """
+    return max(map(max, matrix))
+
+
 def flatten(lst: list[list]):
     """Flatten a list of lists
 
