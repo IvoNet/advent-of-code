@@ -109,79 +109,109 @@ def direction(grid, coord, to=(-1, 1)):
         ww += horizontal
 
 
-def nw(grid, coord):
+def nw(grid, coord, value=False):
     """North-West direction based on coord in the grid
 
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
     []
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
     [(3, 1), (2, 2), (1, 3), (0, 4)]
+    >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0), value=True))
+    [((3, 1), 1), ((2, 2), 2), ((1, 3), 3), ((0, 4), 4)]
     """
     for x in direction(grid, coord, to=(-1, 1)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def sw(grid, coord):
+def sw(grid, coord, value=False):
     """South-West direction based on coord in the grid
 
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
     [(1, 1), (2, 2), (3, 3), (4, 4)]
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
     []
+    >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3), value=True))
+    [((4, 4), 4)]
     """
     for x in direction(grid, coord, to=(1, 1)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def se(grid, coord):
+def se(grid, coord, value=False):
     """South-East direction based on coord in the grid
 
     >>> list(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,4)))
     [(1, 3), (2, 2), (3, 1), (4, 0)]
     >>> next(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,1)))
     (3, 0)
+    >>> next(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,1), value=True))
+    ((3, 0), 0)
     """
     for x in direction(grid, coord, to=(1, -1)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def ne(grid, coord):
+def ne(grid, coord, value=False):
     """Nort-East direction based on coord in the grid
 
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,4)))
     [(3, 3), (2, 2), (1, 1), (0, 0)]
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (1,2)))
     [(0, 1)]
+    >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (1,2), value=True))
+    [((0, 1), 1)]
     """
     for x in direction(grid, coord, to=(-1, -1)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def north(grid, coord):
+def north(grid, coord, value=False):
     """Nort direction based on coord in the grid
 
     >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
     [(2, 3), (1, 3), (0, 3)]
     >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
     [(1, 4), (0, 4)]
+    >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4), value=True))
+    [((1, 4), 4), ((0, 4), 4)]
     """
     for x in direction(grid, coord, to=(-1, 0)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def east(grid, coord):
+def east(grid, coord, value=False):
     """East direction based on coord in the grid
 
     >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,2)))
     [(3, 3), (3, 4)]
     >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
     []
+    >>> next(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,3), value=True))
+    ((2, 4), 4)
     """
     for x in direction(grid, coord, to=(0, 1)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def south(grid, coord):
+def south(grid, coord, value=False):
     """
     Nort direction based on coord in the grid
 
@@ -189,21 +219,31 @@ def south(grid, coord):
     [(4, 3)]
     >>> list(south([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,0)))
     [(3, 0), (4, 0)]
+    >>> list(south([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3), value=True))
+    [((4, 3), 3)]
     """
     for x in direction(grid, coord, to=(1, 0)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
-def west(grid, coord):
+def west(grid, coord, value=False):
     """West direction based on coord in the grid
 
     >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
     [(3, 2), (3, 1), (3, 0)]
     >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
     [(2, 3), (2, 2), (2, 1), (2, 0)]
+    >>> list(west(["abcde", "abcde", "abcde", "abcde",], (2,2), value=True))
+    [((2, 1), 'b'), ((2, 0), 'a')]
     """
     for x in direction(grid, coord, to=(0, -1)):
-        yield x
+        if value:
+            yield x, grid[x[0]][x[1]]
+        else:
+            yield x
 
 
 if __name__ == '__main__':

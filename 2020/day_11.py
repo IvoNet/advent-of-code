@@ -103,42 +103,21 @@ def part_1(data, grid=(99, 90)):
     return sum(1 for x in matrix.values() if x == 1)
 
 
-def part_2(data, grid=(99, 90)):
+def part_2(data):
     matrix = parse(data)
     running = True
     idx = 0
     print(f"Iteration: {idx}")
     # print_matrix(matrix, grid)
     while running:
-        temp_matrix = deepcopy(matrix)
-        idx += 1
-        for coord in matrix:
-            if matrix[coord] == -1:
-                continue
-            occupied = 0
-            for nb in neighbors(coord, grid):
-                try:
-                    seat = matrix[nb]
-                    if seat == 1:
-                        occupied += 1
-                except KeyError:
-                    pass
-            if matrix[coord] == 0 and occupied == 0:
-                temp_matrix[coord] = 1
-            if matrix[coord] == 1 and occupied >= 5:
-                temp_matrix[coord] = 0
-        if temp_matrix == matrix:
-            running = False
-            # print(dict_compare(matrix, temp_matrix))
-        matrix = temp_matrix
-        print(f"Iteration: {idx}")
-        print_matrix(matrix, grid)
-    return sum(1 for x in matrix.values() if x == 1)
+        pass
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_11.txt")
-    test_source = """L.LL.LL.LL
+
+    def setUp(self) -> None:
+        self.source = read_rows("day_11.txt")
+        self.test_source = """L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..
 LLLL.LL.LL
