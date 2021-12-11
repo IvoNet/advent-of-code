@@ -25,8 +25,10 @@ def part_2(source):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_X.txt")
-    test_source = read_rows("""""")
+
+    def setUp(self) -> None:
+        self.source = read_rows("day_X.txt")
+        self.test_source = read_rows("""""")
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))

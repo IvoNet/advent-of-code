@@ -50,7 +50,8 @@ def part_1(source):
     flashes = 0
     matrix = source.copy()
     for step in range(100):
-        print("Step", step + 1)
+        # print("Step", step + 1)
+        flashed = []
         flashed = []
         matrix, flash_q = step_matrix(matrix)
         while len(flash_q) != 0:
@@ -60,24 +61,23 @@ def part_1(source):
             flashes += 1
             flashed.append(toflash)
             step_neighbors(matrix, h, w, flash_q)
-            print(toflash, matrix[h][w], flash_q)
-        mp(matrix)
+            # print(toflash, matrix[h][w], flash_q)
+        # mp(matrix)
     return flashes
 
 
 def part_2(source):
     flashes = 0
     matrix = source.copy()
-    height = len(matrix)
-    width = len(matrix[0])
+
     running = True
     step = 0
     while running:
         step += 1
-        print("Step", step)
+        # print("Step", step)
         flashed = []
         matrix, flash_q = step_matrix(matrix)
-        print(len(flash_q))
+        # print(len(flash_q))
         while len(flash_q) != 0:
             toflash = flash_q.pop()
             h, w = toflash
@@ -85,16 +85,18 @@ def part_2(source):
             flashes += 1
             flashed.append(toflash)
             step_neighbors(matrix, h, w, flash_q)
-            print(toflash, matrix[h][w], flash_q)
+            # print(toflash, matrix[h][w], flash_q)
         if max(map(max, matrix)) == 0:
             return step
-        mp(matrix)
+        # mp(matrix)
     return flashes
 
 
 class UnitTests(unittest.TestCase):
-    source = read_int_matrix("day_11.txt")
-    test_source = read_int_matrix("""5483143223
+
+    def setUp(self) -> None:
+        self.source = read_int_matrix("day_11.txt")
+        self.test_source = read_int_matrix("""5483143223
 2745854711
 5264556173
 6141336146
