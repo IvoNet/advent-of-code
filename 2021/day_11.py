@@ -15,7 +15,7 @@ from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
 from ivonet.iter import max_2d
 
-NOT_ENDLESS_LOOP = 10000
+PREVENT_ENDLESS_LOOP = 1000
 
 sys.dont_write_bytecode = True
 
@@ -86,14 +86,14 @@ def part_1(matrix):
 
 def part_2(matrix):
     step = 0
-    while step < NOT_ENDLESS_LOOP:  # Change this constant if you need more iterations
+    while step < PREVENT_ENDLESS_LOOP:  # Change this constant if you need more iterations
         step += 1
         flash_it(matrix)
         if max_2d(matrix) == 0:
             print("Step:", step)
             mp(matrix)
             return step
-    return -1  # error
+    raise ValueError("Too many iterations")
 
 
 class UnitTests(unittest.TestCase):
