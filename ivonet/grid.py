@@ -10,6 +10,8 @@ __doc__ = """
 
 from itertools import product
 
+from ivonet.iter import flatten
+
 
 def neighbors(grid: list[list[int]], coord: tuple, diagonal=True):
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
@@ -58,8 +60,35 @@ def neighbor_values(grid, coord, diagonal=True):
     return [grid[h][w] for h, w in nb]
 
 
-def diagonals(grid, coord):
+def diagonals(grid, coord, merged=False):
+    """Get all the diagonal 'lines' from a staring point to the boundary of the grid
+    normally you would get a list in list with the direction coordinates per
+    direction in a list. If flatten = True then it will be merged into a single list.
 
+    >>> diagonals([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0), merged=True)
+    [(1, 1), (2, 2), (3, 3), (4, 4)]
+    >>> diagonals([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3))
+    [[(2, 2), (1, 1), (0, 0)], [(2, 4)], [(4, 2)], [(4, 4)]]
+    """
+    height = len(grid) - 1
+    width = len(grid[0]) - 1
+    down, right = coord
+    diags = []
+    for h, w in product([-1, 1], repeat=2):
+        hh = down + h
+        ww = right + w
+        diagonal = []
+        if hh < 0 or hh > height or ww < 0 or ww > width:
+            # not within its boundaries
+            continue
+        while 0 <= hh <= height and 0 <= ww <= width:
+            diagonal.append((hh, ww))
+            hh += h
+            ww += w
+        diags.append(diagonal)
+    if merged:
+        return flatten(diags)
+    return diags
 
 
 if __name__ == '__main__':
