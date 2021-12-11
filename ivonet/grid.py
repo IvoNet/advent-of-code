@@ -91,6 +91,72 @@ def diagonals(grid, coord, merged=False):
     return diags
 
 
+def diagonal(grid, coord, direction=(-1, 1)):
+    """Diagonals in a grid based on its staring point and direction.
+    """
+    vertical, horizontal = direction
+    down, right = coord
+    height = len(grid) - 1
+    width = len(grid[0]) - 1
+    hh = down + vertical
+    ww = right + horizontal
+    if hh < 0 or hh > height or ww < 0 or ww > width:
+        # not within its boundaries
+        return
+    while 0 <= hh <= height and 0 <= ww <= width:
+        yield hh, ww
+        hh += vertical
+        ww += horizontal
+
+
+def nw(grid, coord):
+    """North-West diagonal based on coord in the grid
+
+    >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
+    []
+    >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
+    [(3, 1), (2, 2), (1, 3), (0, 4)]
+    """
+    for x in diagonal(grid, coord, direction=(-1, 1)):
+        yield x
+
+
+def sw(grid, coord):
+    """South-West diagonal based on coord in the grid
+
+    >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
+    [(1, 1), (2, 2), (3, 3), (4, 4)]
+    >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
+    []
+    """
+    for x in diagonal(grid, coord, direction=(1, 1)):
+        yield x
+
+
+def se(grid, coord):
+    """South-East diagonal based on coord in the grid
+
+    >>> list(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,4)))
+    [(1, 3), (2, 2), (3, 1), (4, 0)]
+    >>> next(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,1)))
+    (3, 0)
+    """
+    for x in diagonal(grid, coord, direction=(1, -1)):
+        yield x
+
+
+def ne(grid, coord):
+    """Nort-East diagonal based on coord in the grid
+
+    >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,4)))
+    [(3, 3), (2, 2), (1, 1), (0, 0)]
+    >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (1,2)))
+    [(0, 1)]
+    """
+    for x in diagonal(grid, coord, direction=(-1, -1)):
+        yield x
+
+
 if __name__ == '__main__':
     import doctest
 
