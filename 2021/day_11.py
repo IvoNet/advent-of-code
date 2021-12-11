@@ -38,18 +38,12 @@ def step_matrix(source):
     return matrix, flash_q
 
 
-def flash(grid, h, w):
-    matrix = grid.copy()
-    matrix[h][w] = 0
-    flashes = 1
-    nb = [x for x in neighbors(matrix, (h, w), diagonal=True)]
-    for hh, ww in nb:
-        if matrix[hh][ww] != 0:  # not already flashed
-            matrix[hh][ww] += 1
-            if matrix[hh][ww] > 9:
-                matrix, flashed = flash(matrix, ww, ww)
-                flashes += flashed
-    return matrix, flashes
+def step_neighbors(matrix, h, w, to_flash=[]):
+    nb = [x for x in neighbors(matrix, (h, w), diagonal=True) if matrix[x[0]][x[1]] != 0 and matrix[x[0]][x[1]] < 10]
+    for h, w in nb:
+        matrix[h][w] += 1
+        if matrix[h][w] > 9:
+            to_flash.append((h, w))
 
 
 def part_1(source):
@@ -57,24 +51,17 @@ def part_1(source):
     matrix = source.copy()
     for step in range(100):
         print("Step", step + 1)
+        flashed = []
         matrix, flash_q = step_matrix(matrix)
-        mp(matrix)
-        print(flash_q)
-        for h, w in flash_q:
+        while len(flash_q) != 0:
+            toflash = flash_q.pop()
+            h, w = toflash
             matrix[h][w] = 0
             flashes += 1
-        while flash_q:
-            h, w = flash_q.pop()
-            matrix[h][w] = 0  # flash!
-            flashes += 1
-            nb = [x for x in neighbors(matrix, (h, w), diagonal=True) if matrix[x[0]][x[1]] != 0]
-            print(nb)
-            for hh, ww in nb:
-                matrix[hh][ww] += 1
-                if matrix[hh][ww] > 9:
-                    flash_q.append((hh, ww))
+            flashed.append(toflash)
+            step_neighbors(matrix, h, w, flash_q)
+            print(toflash, matrix[h][w], flash_q)
 
-        print("Stepped", step + 1)
         mp(matrix)
     return flashes
 
