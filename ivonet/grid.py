@@ -58,9 +58,8 @@ def neighbor_values(grid, coord, diagonal=True):
     return [grid[h][w] for h, w in nb]
 
 
-def nbv(grid, h, w, diagonal=True):
-    """See neighbor_values."""
-    return neighbor_values(grid, (h, w), diagonal=diagonal)
+def diagonals(grid, coord):
+
 
 
 if __name__ == '__main__':

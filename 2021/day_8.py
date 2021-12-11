@@ -170,13 +170,7 @@ UNIQUE_NUMBERS_LEN = {
 
 
 def part_1(data):
-    output = [x.split(" | ")[1].split() for x in data]
-    counter = 0
-    for x in output:
-        for y in x:
-            if len(y) in [2, 4, 3, 7]:
-                counter += 1
-    return counter
+    return sum(sum(1 for y in x if len(y) in [2, 4, 3, 7]) for x in [x.split(" | ")[1].split() for x in data])
 
 
 class Display(object):
