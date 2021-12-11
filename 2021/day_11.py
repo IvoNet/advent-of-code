@@ -15,18 +15,21 @@ from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
 from ivonet.iter import max_2d
 
+NOT_ENDLESS_LOOP = 10000
+
 sys.dont_write_bytecode = True
 
 
-def mp(matrix):
+def mp(matrix, width=1):
     for h in matrix:
         for w in h:
-            print(f"{w:<2}", end="")
+            print(f"{w:<{width}}", end="")
         print()
     print()
 
 
 def step_matrix(matrix):
+    """Steps the complete matrix and creates a flash list"""
     height = len(matrix)
     width = len(matrix[0])
     flash_q = []
@@ -39,44 +42,58 @@ def step_matrix(matrix):
 
 
 def step_neighbors(matrix, h, w):
+    """Steps the neighbors of a flash and create a flash queue following these steps
+    - Neighbors can only step if they did not do it yet or have not jet passed the threshold of 9
+    - Neighbors that reach the threshold of >9 are added to the to_flash list and returned for later
+      processing
+    """
     to_flash = []
-    nb = [x for x in neighbors(matrix, (h, w), diagonal=True) if matrix[x[0]][x[1]] != 0 and matrix[x[0]][x[1]] < 10]
-    for h, w in nb:
+    for h, w in [x for x in neighbors(matrix, (h, w), diagonal=True) if
+                 matrix[x[0]][x[1]] != 0 and matrix[x[0]][x[1]] < 10]:
         matrix[h][w] += 1
         if matrix[h][w] > 9:
             to_flash.append((h, w))
     return to_flash
 
 
-def part_1(source):
-    flashes = 0
-    matrix = source.copy()
-    for _ in range(100):
-        flashes, matrix = flash_it(flashes, matrix)
-    return flashes
-
-
-def flash_it(flashes, matrix):
+def flash_it(matrix):
+    """Do one full iteration of a flash step.
+    - start with incrementing all positions
+    - while the flash list has items
+        - reset the octopus
+        - increment the flashes count
+        - step its neighbors and extend the flash list if those had flash-ables in there
+    - give back the totals
+    """
     flash_q = step_matrix(matrix)
+    flashes = 0
     while len(flash_q) != 0:
         h, w = flash_q.pop()
         matrix[h][w] = 0
         flashes += 1
         flash_q.extend(step_neighbors(matrix, h, w))
-    return flashes, matrix
-
-
-def part_2(source):
-    flashes = 0
-    matrix = source.copy()
-    running = True
-    step = 0
-    while running:
-        step += 1
-        flashes, matrix = flash_it(flashes, matrix)
-        if max_2d(matrix) == 0:
-            return step
     return flashes
+
+
+def part_1(matrix):
+    flashes = 0
+    for _ in range(100):
+        flashes += flash_it(matrix)
+    print("Flashes:", flashes)
+    mp(matrix)
+    return flashes
+
+
+def part_2(matrix):
+    step = 0
+    while step < NOT_ENDLESS_LOOP:  # Change this constant if you need more iterations
+        step += 1
+        flash_it(matrix)
+        if max_2d(matrix) == 0:
+            print("Step:", step)
+            mp(matrix)
+            return step
+    return -1  # error
 
 
 class UnitTests(unittest.TestCase):
