@@ -32,13 +32,13 @@ def step_matrix(matrix):
     """Steps the complete matrix and creates a flash list"""
     height = len(matrix)
     width = len(matrix[0])
-    flash_q = []
+    to_flash = []
     for h in range(height):
         for w in range(width):
             matrix[h][w] = matrix[h][w] + 1
             if matrix[h][w] > 9:
-                flash_q.append((h, w))
-    return flash_q
+                to_flash.append((h, w))
+    return to_flash
 
 
 def step_neighbors(matrix, h, w):
@@ -65,13 +65,13 @@ def flash_it(matrix):
         - step its neighbors and extend the flash list if those had flash-ables in there
     - give back the totals
     """
-    flash_q = step_matrix(matrix)
+    to_flash = step_matrix(matrix)
     flashes = 0
-    while len(flash_q) != 0:
-        h, w = flash_q.pop()
+    while len(to_flash) != 0:
+        h, w = to_flash.pop()
         matrix[h][w] = 0
         flashes += 1
-        flash_q.extend(step_neighbors(matrix, h, w))
+        to_flash.extend(step_neighbors(matrix, h, w))
     return flashes
 
 
