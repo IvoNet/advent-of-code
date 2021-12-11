@@ -26,8 +26,7 @@ def mp(matrix):
     print()
 
 
-def step_matrix(source):
-    matrix = source.copy()
+def step_matrix(matrix):
     height = len(matrix)
     width = len(matrix[0])
     flash_q = []
@@ -36,7 +35,7 @@ def step_matrix(source):
             matrix[h][w] = matrix[h][w] + 1
             if matrix[h][w] > 9:
                 flash_q.append((h, w))
-    return matrix, flash_q
+    return flash_q
 
 
 def step_neighbors(matrix, h, w):
@@ -53,29 +52,28 @@ def part_1(source):
     flashes = 0
     matrix = source.copy()
     for _ in range(100):
-        matrix, flash_q = step_matrix(matrix)
-        while len(flash_q) != 0:
-            h, w = flash_q.pop()
-            matrix[h][w] = 0
-            flashes += 1
-            flash_q.extend(step_neighbors(matrix, h, w))
+        flashes, matrix = flash_it(flashes, matrix)
     return flashes
+
+
+def flash_it(flashes, matrix):
+    flash_q = step_matrix(matrix)
+    while len(flash_q) != 0:
+        h, w = flash_q.pop()
+        matrix[h][w] = 0
+        flashes += 1
+        flash_q.extend(step_neighbors(matrix, h, w))
+    return flashes, matrix
 
 
 def part_2(source):
     flashes = 0
     matrix = source.copy()
-
     running = True
     step = 0
     while running:
         step += 1
-        matrix, flash_q = step_matrix(matrix)
-        while len(flash_q) != 0:
-            h, w = flash_q.pop()
-            matrix[h][w] = 0
-            flashes += 1
-            flash_q.extend(step_neighbors(matrix, h, w))
+        flashes, matrix = flash_it(flashes, matrix)
         if max_2d(matrix) == 0:
             return step
     return flashes
