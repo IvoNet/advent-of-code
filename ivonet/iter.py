@@ -247,6 +247,14 @@ def pretty(iterable, sort_keys=True, indent=2):
     print(json.dumps(iterable, sort_keys=sort_keys, indent=indent, default=str))
 
 
+def print_2d(matrix, width=1):
+    for h in matrix:
+        for w in h:
+            print(f"{w:<{width}}", end="")
+        print()
+    print()
+
+
 if __name__ == '__main__':
     import doctest
 

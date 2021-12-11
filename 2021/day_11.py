@@ -13,22 +13,14 @@ import unittest
 
 from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
-from ivonet.iter import max_2d
+from ivonet.iter import max_2d, print_2d
 
 PREVENT_ENDLESS_LOOP = 1000
 
 sys.dont_write_bytecode = True
 
 
-def mp(matrix, width=1):
-    for h in matrix:
-        for w in h:
-            print(f"{w:<{width}}", end="")
-        print()
-    print()
-
-
-def step_matrix(matrix):
+def step_full_matrix(matrix):
     """Steps the complete matrix and creates a flash list"""
     height = len(matrix)
     width = len(matrix[0])
@@ -65,9 +57,9 @@ def flash_it(matrix):
         - step its neighbors and extend the flash list if those had flash-ables in there
     - give back the totals
     """
-    to_flash = step_matrix(matrix)
+    to_flash = step_full_matrix(matrix)
     flashes = 0
-    while len(to_flash) != 0:
+    while to_flash:
         h, w = to_flash.pop()
         matrix[h][w] = 0
         flashes += 1
@@ -80,7 +72,7 @@ def part_1(matrix):
     for _ in range(100):
         flashes += flash_it(matrix)
     print("Flashes:", flashes)
-    mp(matrix)
+    print_2d(matrix)
     return flashes
 
 
@@ -90,8 +82,7 @@ def part_2(matrix):
         step += 1
         flash_it(matrix)
         if max_2d(matrix) == 0:
-            print("Step:", step)
-            mp(matrix)
+            print("Steps:", step)
             return step
     raise ValueError("Too many iterations")
 
