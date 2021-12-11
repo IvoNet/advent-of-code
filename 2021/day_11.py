@@ -39,31 +39,26 @@ def step_matrix(source):
     return matrix, flash_q
 
 
-def step_neighbors(matrix, h, w, to_flash=[]):
+def step_neighbors(matrix, h, w):
+    to_flash = []
     nb = [x for x in neighbors(matrix, (h, w), diagonal=True) if matrix[x[0]][x[1]] != 0 and matrix[x[0]][x[1]] < 10]
     for h, w in nb:
         matrix[h][w] += 1
         if matrix[h][w] > 9:
             to_flash.append((h, w))
+    return to_flash
 
 
 def part_1(source):
     flashes = 0
     matrix = source.copy()
-    for step in range(100):
-        # print("Step", step + 1)
-        flashed = []
-        flashed = []
+    for _ in range(100):
         matrix, flash_q = step_matrix(matrix)
         while len(flash_q) != 0:
-            toflash = flash_q.pop()
-            h, w = toflash
+            h, w = flash_q.pop()
             matrix[h][w] = 0
             flashes += 1
-            flashed.append(toflash)
-            step_neighbors(matrix, h, w, flash_q)
-            # print(toflash, matrix[h][w], flash_q)
-        # mp(matrix)
+            flash_q.extend(step_neighbors(matrix, h, w))
     return flashes
 
 
@@ -75,15 +70,12 @@ def part_2(source):
     step = 0
     while running:
         step += 1
-        flashed = []
         matrix, flash_q = step_matrix(matrix)
         while len(flash_q) != 0:
-            toflash = flash_q.pop()
-            h, w = toflash
+            h, w = flash_q.pop()
             matrix[h][w] = 0
             flashes += 1
-            flashed.append(toflash)
-            step_neighbors(matrix, h, w, flash_q)
+            flash_q.extend(step_neighbors(matrix, h, w))
         if max_2d(matrix) == 0:
             return step
     return flashes
