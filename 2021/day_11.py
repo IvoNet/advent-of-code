@@ -20,10 +20,7 @@ sys.dont_write_bytecode = True
 def mp(matrix):
     for h in matrix:
         for w in h:
-            if w >= 10:
-                print("-", end="")
-            else:
-                print(w, end="")
+            print(f"{w:<2}", end="")
         print()
     print()
 
@@ -43,45 +40,40 @@ def step_matrix(source):
 
 def flash(grid, h, w):
     matrix = grid.copy()
-    matrix[h][w] += 1
+    matrix[h][w] = 0
+    flashes = 1
     nb = [x for x in neighbors(matrix, (h, w), diagonal=True)]
-    # simultanious flash
     for hh, ww in nb:
-        matrix[hh][ww] = matrix[hh][ww] + 1
-    for hh, ww in nb:
-        if matrix[hh][ww] == 10:
-            nb2 = [x for x in neighbors(matrix, (hh, ww), diagonal=True) if matrix[x[0]][x[1]] < 10]
-            for hhh, www in nb2:
-                flash(matrix, h, w)
-    return matrix
-
-
-def reset_matrix(grid):
-    matrix = grid.copy()
-    height = len(matrix)
-    width = len(matrix[0])
-    flashes = 0
-    for h in range(height):
-        for w in range(width):
-            if matrix[h][w] >= 10:
-                flashes += 1
-                matrix[h][w] = 0
+        if matrix[hh][ww] != 0:  # not already flashed
+            matrix[hh][ww] += 1
+            if matrix[hh][ww] > 9:
+                matrix, flashed = flash(matrix, ww, ww)
+                flashes += flashed
     return matrix, flashes
 
 
 def part_1(source):
     flashes = 0
     matrix = source.copy()
-    for step in range(10):
+    for step in range(100):
         print("Step", step + 1)
         matrix, flash_q = step_matrix(matrix)
         mp(matrix)
-        # print("!!!", flash_q)
+        print(flash_q)
         for h, w in flash_q:
-            matrix = flash(matrix, h, w)
+            matrix[h][w] = 0
+            flashes += 1
+        while flash_q:
+            h, w = flash_q.pop()
+            matrix[h][w] = 0  # flash!
+            flashes += 1
+            nb = [x for x in neighbors(matrix, (h, w), diagonal=True) if matrix[x[0]][x[1]] != 0]
+            print(nb)
+            for hh, ww in nb:
+                matrix[hh][ww] += 1
+                if matrix[hh][ww] > 9:
+                    flash_q.append((hh, ww))
 
-        matrix, flashed = reset_matrix(matrix)
-        flashes += flashed
         print("Stepped", step + 1)
         mp(matrix)
     return flashes
