@@ -61,22 +61,39 @@ def part_1(source):
             flashed.append(toflash)
             step_neighbors(matrix, h, w, flash_q)
             print(toflash, matrix[h][w], flash_q)
-
         mp(matrix)
     return flashes
 
 
-def part_2(matrix):
-    pass
+def part_2(source):
+    flashes = 0
+    matrix = source.copy()
+    height = len(matrix)
+    width = len(matrix[0])
+    running = True
+    step = 0
+    while running:
+        step += 1
+        print("Step", step)
+        flashed = []
+        matrix, flash_q = step_matrix(matrix)
+        print(len(flash_q))
+        while len(flash_q) != 0:
+            toflash = flash_q.pop()
+            h, w = toflash
+            matrix[h][w] = 0
+            flashes += 1
+            flashed.append(toflash)
+            step_neighbors(matrix, h, w, flash_q)
+            print(toflash, matrix[h][w], flash_q)
+        if max(map(max, matrix)) == 0:
+            return step
+        mp(matrix)
+    return flashes
 
 
 class UnitTests(unittest.TestCase):
     source = read_int_matrix("day_11.txt")
-    test_source_1 = read_int_matrix("""11111
-19991
-19191
-19991
-11111""")
     test_source = read_int_matrix("""5483143223
 2745854711
 5264556173
@@ -91,17 +108,14 @@ class UnitTests(unittest.TestCase):
     def test_example_data_part_1(self):
         self.assertEqual(1656, part_1(self.test_source))
 
-    def test_example_data_part_1_small(self):
-        self.assertEqual(1656, part_1(self.test_source_1))
-
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1652, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(195, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(220, part_2(self.source))
 
 
 if __name__ == '__main__':
