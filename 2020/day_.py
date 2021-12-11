@@ -8,22 +8,27 @@ __doc__ = """
 
 """
 
+import sys
 import unittest
 
 from ivonet.files import read_rows
 
+sys.dont_write_bytecode = True
 
-def part_1(data):
+
+def part_1(source):
     pass
 
 
-def part_2(data):
+def part_2(source):
     pass
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_X.txt")
-    test_source = read_rows("""""")
+
+    def setUp(self) -> None:
+        self.source = read_rows("day_X.txt")
+        self.test_source = read_rows("""""")
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))
