@@ -16,7 +16,7 @@ from ivonet.iter import flatten
 def neighbors(grid: list[list[int]], coord: tuple, diagonal=True):
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
 
-    :param diagonal: True if you also want the diagonal neighbors, False if not
+    :param diagonal: True if you also want the direction neighbors, False if not
     :param coord: Tuple with x, y coordinate
     :param grid: the boundary of the grid in layman's terms
     :return: the adjacent coordinates
@@ -61,7 +61,7 @@ def neighbor_values(grid, coord, diagonal=True):
 
 
 def diagonals(grid, coord, merged=False):
-    """Get all the diagonal 'lines' from a staring point to the boundary of the grid
+    """Get all the direction 'lines' from a staring point to the boundary of the grid
     normally you would get a list in list with the direction coordinates per
     direction in a list. If flatten = True then it will be merged into a single list.
 
@@ -91,10 +91,10 @@ def diagonals(grid, coord, merged=False):
     return diags
 
 
-def diagonal(grid, coord, direction=(-1, 1)):
-    """Diagonals in a grid based on its staring point and direction.
+def direction(grid, coord, to=(-1, 1)):
+    """Direction in a grid based on its staring point and direction.
     """
-    vertical, horizontal = direction
+    vertical, horizontal = to
     down, right = coord
     height = len(grid) - 1
     width = len(grid[0]) - 1
@@ -110,50 +110,99 @@ def diagonal(grid, coord, direction=(-1, 1)):
 
 
 def nw(grid, coord):
-    """North-West diagonal based on coord in the grid
+    """North-West direction based on coord in the grid
 
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
     []
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
     [(3, 1), (2, 2), (1, 3), (0, 4)]
     """
-    for x in diagonal(grid, coord, direction=(-1, 1)):
+    for x in direction(grid, coord, to=(-1, 1)):
         yield x
 
 
 def sw(grid, coord):
-    """South-West diagonal based on coord in the grid
+    """South-West direction based on coord in the grid
 
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
     [(1, 1), (2, 2), (3, 3), (4, 4)]
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
     []
     """
-    for x in diagonal(grid, coord, direction=(1, 1)):
+    for x in direction(grid, coord, to=(1, 1)):
         yield x
 
 
 def se(grid, coord):
-    """South-East diagonal based on coord in the grid
+    """South-East direction based on coord in the grid
 
     >>> list(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,4)))
     [(1, 3), (2, 2), (3, 1), (4, 0)]
     >>> next(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,1)))
     (3, 0)
     """
-    for x in diagonal(grid, coord, direction=(1, -1)):
+    for x in direction(grid, coord, to=(1, -1)):
         yield x
 
 
 def ne(grid, coord):
-    """Nort-East diagonal based on coord in the grid
+    """Nort-East direction based on coord in the grid
 
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,4)))
     [(3, 3), (2, 2), (1, 1), (0, 0)]
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (1,2)))
     [(0, 1)]
     """
-    for x in diagonal(grid, coord, direction=(-1, -1)):
+    for x in direction(grid, coord, to=(-1, -1)):
+        yield x
+
+
+def north(grid, coord):
+    """Nort direction based on coord in the grid
+
+    >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
+    [(2, 3), (1, 3), (0, 3)]
+    >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
+    [(1, 4), (0, 4)]
+    """
+    for x in direction(grid, coord, to=(-1, 0)):
+        yield x
+
+
+def east(grid, coord):
+    """East direction based on coord in the grid
+
+    >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,2)))
+    [(3, 3), (3, 4)]
+    >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
+    []
+    """
+    for x in direction(grid, coord, to=(0, 1)):
+        yield x
+
+
+def south(grid, coord):
+    """
+    Nort direction based on coord in the grid
+
+    >>> list(south([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
+    [(4, 3)]
+    >>> list(south([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,0)))
+    [(3, 0), (4, 0)]
+    """
+    for x in direction(grid, coord, to=(1, 0)):
+        yield x
+
+
+def west(grid, coord):
+    """West direction based on coord in the grid
+
+    >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
+    [(3, 2), (3, 1), (3, 0)]
+    >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
+    [(2, 3), (2, 2), (2, 1), (2, 0)]
+    """
+    for x in direction(grid, coord, to=(0, -1)):
         yield x
 
 

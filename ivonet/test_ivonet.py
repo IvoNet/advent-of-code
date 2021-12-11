@@ -67,8 +67,8 @@ class TestNormalizeOverlapMatrix(TestCase):
         np.testing.assert_array_almost_equal(r, e)
 
     def test_bw_01(self):
-        """Verify that an error is raised if there is a zero on the diagonal"""
-        with self.assertRaisesRegex(AssertionError, 'diagonal'):
+        """Verify that an error is raised if there is a zero on the direction"""
+        with self.assertRaisesRegex(AssertionError, 'direction'):
             a = np.reshape(np.arange(16), [4, 4])
             normalize_overlap_matrix(a)
 

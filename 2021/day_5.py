@@ -65,10 +65,10 @@ least two lines overlap?
 
 --- Part Two ---
 Unfortunately, considering only horizontal and vertical lines doesn't 
-give you the full picture; you need to also consider diagonal lines.
+give you the full picture; you need to also consider direction lines.
 
 Because of the limits of the hydrothermal vent mapping system, the lines 
-in your list will only ever be horizontal, vertical, or a diagonal line
+in your list will only ever be horizontal, vertical, or a direction line
 at exactly 45 degrees. In other words:
 
 - An entry like 1,1 -> 3,3 covers points 1,1, 2,2, and 3,3.
@@ -116,7 +116,7 @@ def range_maker(starting_point: int, stopping_point: int) -> range:
 
 def grid_maker(grid: defaultdict, startx: int, starty: int, stopx: int, stopy: int, diagonal: bool = False):
     """Draws a line in the grid based on the given starting and stopping coordinates.
-    You can choose to allow diagonal lines or not.
+    You can choose to allow direction lines or not.
     """
     if startx == stopx:
         yrange = range_maker(starty, stopy)

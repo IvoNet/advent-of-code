@@ -84,7 +84,7 @@ def normalize_overlap_matrix(mtrx):
     assert isinstance(mtrx, np.ndarray), 'Input shall be a numpy array'
     assert np.isreal(mtrx).all(), 'Numpy array shall contain real numbers'
     assert mtrx.shape[0] == mtrx.shape[1], 'Overlap matrix shall be square'
-    assert (np.diag(mtrx) != 0).all(), 'Overlap matrix shall not have 0 on its diagonal'
+    assert (np.diag(mtrx) != 0).all(), 'Overlap matrix shall not have 0 on its direction'
 
     b = np.sqrt(np.diag(mtrx))
     result = ((mtrx / b).T / b).T
