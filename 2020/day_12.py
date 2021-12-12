@@ -86,7 +86,23 @@ def part_1(source):
 
 
 def part_2(source):
-    pass
+    total = defaultdict(int)
+    waypoint = defaultdict(int)
+    waypoint["E"] = 10
+    waypoint["N"] = 1
+    d = "E"
+    for cmd in source:
+        c = cmd[0]
+        value = int(cmd[1:])
+        if c in "NESW":
+            total[c] += value
+        elif c == "F":
+            total[d] += value
+        elif c in "RL":
+            d = DIR[d][c][value]
+        else:
+            raise ValueError(f"Wrong command: {c}")
+    return abs(total["N"] - total["S"]) + abs(total["E"] - total["W"])
 
 
 class UnitTests(unittest.TestCase):
