@@ -41,10 +41,11 @@ class Graph:
         self.add_small(a)
         self.add_small(b)
 
-    def find_all_paths(self, start="start", visited=[], path=[], small_twice=None):
+    # noinspection PyDefaultArgument
+    def find_all_paths(self, start="start", visited=[], path=[], small_node_twice=None):
         path = path + [start]
-        if small_twice == start:
-            small_twice = None
+        if small_node_twice == start:  # part 2 special case
+            small_node_twice = None
         else:
             if start == start.lower():
                 visited = visited + [start]
@@ -53,37 +54,29 @@ class Graph:
         paths = []
         for node in self.nodes[start]:
             if node not in visited:
-                new_paths = self.find_all_paths(node, visited, path, small_twice)
+                new_paths = self.find_all_paths(node, visited, path, small_node_twice)
                 for new_path in new_paths:
                     paths.append(new_path)
         return paths
 
     def find_all_paths_with_one_small_twice(self):
-        paths = set()
+        paths = set()  # performance boost by changing this from list to set!
         for node in self.small_nodes:
-            new_paths = self.find_all_paths(small_twice=node)
+            new_paths = self.find_all_paths(small_node_twice=node)
             for new_path in new_paths:
-                paths.add(",".join(new_path))  # set is much faster but list is not hashable
+                paths.add(",".join(new_path))  # set is much faster but list is not hashable so convert to string
 
         return paths
-
-    def __str__(self) -> str:
-        return repr(self.nodes)
-
-    def __repr__(self) -> str:
-        return repr(self.nodes)
 
 
 def part_1(source):
     graph = prepare(source)
-    paths = graph.find_all_paths()
-    return len(paths)
+    return len(graph.find_all_paths())
 
 
 def part_2(source):
     graph = prepare(source)
-    twice = graph.find_all_paths_with_one_small_twice()
-    return len(twice)
+    return len(graph.find_all_paths_with_one_small_twice())
 
 
 class UnitTests(unittest.TestCase):
