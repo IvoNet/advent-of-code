@@ -11,11 +11,17 @@ __doc__ = """
 import sys
 import unittest
 from collections import defaultdict
-from pprint import pprint
 
 from ivonet.files import read_rows
 
 sys.dont_write_bytecode = True
+
+
+def prepare(source):
+    routes = Route()
+    for x in source:
+        routes.add(x)
+    return routes
 
 
 class Node:
@@ -97,25 +103,13 @@ class Route:
     def find_all_paths_with_one_small_twice(self):
         paths = []
         for node in self.small_nodes:
-            # self.reset_nodes()
             self.all_nodes[node].visitable = 2
             newpaths = self.find_all_paths(small_twice=node)
-            for x in self.all_nodes:
-                print(
-                    f"Node [{x}] visited [{self.all_nodes[x].visited}] visitable [{self.all_nodes[x].is_visitable()}].")
-
-            pprint(newpaths)
-            print("-" * 80)
             for newpath in newpaths:
                 if newpath not in paths:
                     paths.append(newpath)
 
         return paths
-
-    def reset_nodes(self):
-        for x in self.small_nodes:
-            self.all_nodes[x].visitable = 1
-            self.all_nodes[x].visited = 0
 
     def __str__(self) -> str:
         return repr(self.nodes)
@@ -127,27 +121,12 @@ class Route:
 def part_1(source):
     routes = prepare(source)
     a = routes.find_all_paths()
-    pprint(set(a))
     return len(set(a))
-
-
-def prepare(source):
-    routes = Route()
-    for x in source:
-        routes.add(x)
-    return routes
 
 
 def part_2(source):
     routes = prepare(source)
-    a = routes.find_all_paths_with_one_small_twice()
-    print("Small nodes:", routes.small_nodes)
-    pprint(routes.nodes)
-    # for x in routes.all_nodes:
-    #     print(f"Node [{x}] visited [{routes.all_nodes[x].visited}] visitable [{routes.all_nodes[x].is_visitable()}].")
-    # pprint(sorted(a))
-    pprint(a)
-    return len(a)
+    return len(routes.find_all_paths_with_one_small_twice())
 
 
 class UnitTests(unittest.TestCase):
@@ -202,11 +181,14 @@ start-RW""")
     def test_part_1(self):
         self.assertEqual(3410, part_1(self.source))
 
-    def test_example_data_part_2(self):
+    def test_example_data_part_2_smallest(self):
         self.assertEqual(36, part_2(self.test_source_smallest))
 
     def test_example_data_part_2_bigger(self):
         self.assertEqual(103, part_2(self.test_source_bigger))
+
+    def test_example_data_part_2(self):
+        self.assertEqual(3509, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(98796, part_2(self.source))
