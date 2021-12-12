@@ -23,7 +23,7 @@ def parse(data):
     matrix = {}
     for y, row in enumerate(data):
         for x, col in enumerate(row):
-            matrix[(x, y)] = col
+            matrix[(y, x)] = col
     return matrix
 
 
@@ -149,7 +149,7 @@ L.LLLLL.LL""")
         self.assertEqual(26, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(2068, part_2(self.source))
 
 
 if __name__ == '__main__':
