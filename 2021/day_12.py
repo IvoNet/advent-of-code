@@ -80,7 +80,7 @@ class Node:
         self.visitable = 1
 
     def __str__(self) -> str:
-        return repr(self.name)
+        return f"{self.name} - {self.visitable} - {self.visited}"
 
     def __repr__(self) -> str:
         return repr(self.name)
@@ -92,29 +92,35 @@ class Node:
         return repr(self) == repr(o)
 
 
-
 class Route:
 
     def __init__(self) -> None:
         self.nodes = defaultdict(list)
-        self.small = []
+        self.small_nodes = set()
+        self.all_nodes = {}
+
+    def add_small(self, node):
+        if node.small and node.name not in ["start", "end"]:
+            self.small_nodes.add(node.name)
 
     def add(self, s: str):
         a, b = s.split("-")
         aa = Node(a)
         bb = Node(b)
-        self.nodes[aa].append(bb)
-        self.nodes[bb].append(aa)
-        if aa.small:
-            self.small.append(aa)
-        if bb.small:
-            self.small.append(bb)
+        self.all_nodes[a] = aa
+        self.all_nodes[b] = bb
+        if b != "start":
+            self.nodes[a].append(b)
+        if a != "start":
+            self.nodes[b].append(a)
+        self.add_small(aa)
+        self.add_small(bb)
 
-    def find_all_paths(self, start=Node("start"), end=Node("end"), visited=[], path=[]):
+    def find_all_paths(self, start="start", end="end", visited=[], path=[]):
         path = path + [start]
-        if start.small:
-            start.visited += 1
-            if start.visited >= start.visitable:
+        if self.all_nodes[start].small:
+            self.all_nodes[start].visited += 1
+            if self.all_nodes[start].visited >= self.all_nodes[start].visitable:
                 visited = visited + [start]
         if start == end:
             return [path]
@@ -125,22 +131,25 @@ class Route:
             if node not in visited:
                 newpaths = self.find_all_paths(node, end, visited, path)
                 for newpath in newpaths:
-                    print("!!", newpath)
-                    if newpath not in paths:
-                        paths.append(newpath)
+                    paths.append(str(newpath))
         return paths
 
-    def find_all_paths_with_one_small_twice(self, start=Node("start"), end=Node("end"), visited=[], path=[]):
+    def find_all_paths_with_one_small_twice(self):
         paths = []
-        for node in self.small:
-            node.visitable = 2
-            visited = visited + [start]
-            newpaths = self.find_all_paths(start=Node("start"), end=end, visited=visited, path=path)
+        for node in self.small_nodes:
+            self.reset_nodes()
+            self.all_nodes[node].visitable = 2
+            newpaths = self.find_all_paths()
             for newpath in newpaths:
-                paths.append(newpath)
-            node.visitable = 1
-            node.visited = 0
+                if newpath not in paths:
+                    paths.append(newpath)
+
         return paths
+
+    def reset_nodes(self):
+        for x in self.small_nodes:
+            self.all_nodes[x].visitable = 1
+            self.all_nodes[x].visited = 0
 
     def __str__(self) -> str:
         return repr(self.nodes)
@@ -154,7 +163,7 @@ def part_1(source):
     for x in source:
         routes.add(x)
     a = routes.find_all_paths()
-    print(a)
+    pprint(a)
     return len(a)
 
 
@@ -162,7 +171,10 @@ def part_2(source):
     routes = Route()
     for x in source:
         routes.add(x)
+    print("Small nodes:", routes.small_nodes)
+    pprint(routes.nodes)
     a = routes.find_all_paths_with_one_small_twice()
+    # pprint(sorted(a))
     pprint(a)
     return len(a)
 
@@ -221,6 +233,9 @@ start-RW""")
 
     def test_example_data_part_2(self):
         self.assertEqual(36, part_2(self.test_source_smallest))
+
+    def test_example_data_part_2_bigger(self):
+        self.assertEqual(103, part_2(self.test_source_bigger))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
