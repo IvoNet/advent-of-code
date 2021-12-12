@@ -28,13 +28,56 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.source = read_rows("day_12.txt")
-        self.test_source = read_rows("""""")
+        self.test_source_smallest = read_rows("""start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end""")
+        self.test_source_bigger = read_rows("""start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-enddc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc""")
+        self.test_source = read_rows("""fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW""")
+
+    def test_example_data_part_2_smallest(self):
+        self.assertEqual(16, part_2(self.test_source_smallest))
+
+    def test_example_data_part_1_small(self):
+        self.assertEqual(19, part_1(self.test_source_bigger))
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(226, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
