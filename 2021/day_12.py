@@ -18,92 +18,50 @@ sys.dont_write_bytecode = True
 
 
 def prepare(source):
-    routes = Route()
+    graph = Graph()
     for x in source:
-        routes.add(x)
-    return routes
+        graph.add(x)
+    return graph
 
 
-class Node:
-
-    def __init__(self, name: str) -> None:
-        self.small = True
-        if name != name.lower():
-            self.small = False
-        self.name = name
-        self.visited = 0
-        self.visitable = 1
-
-    def is_visitable(self):
-        if not self.small:
-            return True
-        if self.small and self.visited <= self.visitable:
-            return True
-        return False
-
-    def visit(self):
-        self.visited += 1
-
-    def reset(self):
-        self.visited = 0
-
-    def __str__(self) -> str:
-        return f"{self.name} - {self.visitable} - {self.visited}"
-
-    def __repr__(self) -> str:
-        return repr(self.name)
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
-
-    def __eq__(self, o: object) -> bool:
-        return repr(self) == repr(o)
-
-
-class Route:
+class Graph:
 
     def __init__(self) -> None:
         self.nodes = defaultdict(list)
         self.small_nodes = set()
-        self.all_nodes = {}
 
-    def add_small(self, node):
-        if node.small and node.name not in ["start", "end"]:
-            self.small_nodes.add(node.name)
+    def add_small(self, node: str):
+        if node == node.lower() and node not in ["start", "end"]:
+            self.small_nodes.add(node)
 
     def add(self, s: str):
         a, b = s.split("-")
-        aa = Node(a)
-        bb = Node(b)
-        self.all_nodes[a] = aa
-        self.all_nodes[b] = bb
         self.nodes[a].append(b)
         self.nodes[b].append(a)
-        self.add_small(aa)
-        self.add_small(bb)
+        self.add_small(a)
+        self.add_small(b)
 
     def find_all_paths(self, start="start", visited=[], path=[], small_twice=None):
         path = path + [start]
         if small_twice == start:
             small_twice = None
         else:
-            if self.all_nodes[start].small:
+            if start == start.lower():
                 visited = visited + [start]
         if start == "end":
             return [path]
         paths = []
         for node in self.nodes[start]:
             if node not in visited:
-                self.all_nodes[start].visit()
                 newpaths = self.find_all_paths(node, visited, path, small_twice)
                 for newpath in newpaths:
-                    paths.append(str(newpath))
+                    np = str(newpath)
+                    paths.append(np)
         return paths
 
     def find_all_paths_with_one_small_twice(self):
         paths = []
         for node in self.small_nodes:
-            self.all_nodes[node].visitable = 2
             newpaths = self.find_all_paths(small_twice=node)
             for newpath in newpaths:
                 if newpath not in paths:
@@ -119,14 +77,13 @@ class Route:
 
 
 def part_1(source):
-    routes = prepare(source)
-    a = routes.find_all_paths()
-    return len(set(a))
+    graph = prepare(source)
+    return len(graph.find_all_paths())
 
 
 def part_2(source):
-    routes = prepare(source)
-    return len(routes.find_all_paths_with_one_small_twice())
+    graph = prepare(source)
+    return len(graph.find_all_paths_with_one_small_twice())
 
 
 class UnitTests(unittest.TestCase):
