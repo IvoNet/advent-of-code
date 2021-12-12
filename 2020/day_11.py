@@ -55,8 +55,6 @@ def part_1(data):
     matrix = parse(data)
     running = True
     idx = 0
-    print(f"Iteration: {idx}")
-    # print_matrix(matrix, grid)
     while running:
         temp_matrix = deepcopy(matrix)
         idx += 1
@@ -87,7 +85,6 @@ def part_2(data):
     matrix = parse(data)
     running = True
     idx = 0
-    print(f"Iteration: {idx}")
     while running:
         idx += 1
         temp_matrix = deepcopy(matrix)
@@ -96,20 +93,16 @@ def part_2(data):
                 continue
             occupied = 0
             dirs = directions(data, coord)
-            try:
-                for compass in dirs:
-                    for crd in dirs[compass]:
-                        place = matrix[crd]
-                        if place == GROUND:
-                            continue
-                        if place == OCCUPIED_SEAT:
-                            occupied += 1
-                            break
-                        if place == EMPTY_SEAT:
-                            break
-            except KeyError as e:
-                print("KeyError", e)
-                pass
+            for compass in dirs:
+                for crd in dirs[compass]:
+                    place = matrix[crd]
+                    if place == GROUND:
+                        continue
+                    if place == OCCUPIED_SEAT:
+                        occupied += 1
+                        break
+                    if place == EMPTY_SEAT:
+                        break
             if matrix[coord] == EMPTY_SEAT and occupied == 0:
                 temp_matrix[coord] = OCCUPIED_SEAT
             if matrix[coord] == OCCUPIED_SEAT and occupied >= 5:
