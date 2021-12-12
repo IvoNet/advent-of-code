@@ -53,19 +53,17 @@ class Graph:
         paths = []
         for node in self.nodes[start]:
             if node not in visited:
-                newpaths = self.find_all_paths(node, visited, path, small_twice)
-                for newpath in newpaths:
-                    np = str(newpath)
-                    paths.append(np)
+                new_paths = self.find_all_paths(node, visited, path, small_twice)
+                for new_path in new_paths:
+                    paths.append(new_path)
         return paths
 
     def find_all_paths_with_one_small_twice(self):
-        paths = []
+        paths = set()
         for node in self.small_nodes:
-            newpaths = self.find_all_paths(small_twice=node)
-            for newpath in newpaths:
-                if newpath not in paths:
-                    paths.append(newpath)
+            new_paths = self.find_all_paths(small_twice=node)
+            for new_path in new_paths:
+                paths.add(",".join(new_path))  # set is much faster but list is not hashable
 
         return paths
 
@@ -78,12 +76,14 @@ class Graph:
 
 def part_1(source):
     graph = prepare(source)
-    return len(graph.find_all_paths())
+    paths = graph.find_all_paths()
+    return len(paths)
 
 
 def part_2(source):
     graph = prepare(source)
-    return len(graph.find_all_paths_with_one_small_twice())
+    twice = graph.find_all_paths_with_one_small_twice()
+    return len(twice)
 
 
 class UnitTests(unittest.TestCase):
