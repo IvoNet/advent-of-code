@@ -113,12 +113,8 @@ def direction(grid, coord, to=(-1, 1)):
     """
     vertical, horizontal = to
     down, right = coord
-    if type(grid) == tuple:
-        height = grid[0] - 1
-        width = grid[1] - 1
-    else:
-        height = len(grid) - 1
-        width = len(grid[0]) - 1
+    height = len(grid) - 1
+    width = len(grid[0]) - 1
     hh = down + vertical
     ww = right + horizontal
     if hh < 0 or hh > height or ww < 0 or ww > width:
@@ -269,14 +265,14 @@ def west(grid, coord, value=False):
 
 def directions(grid, coord, value=False) -> dict:
     ret = {
-        'n': north(grid, coord, value),
-        'ne': ne(grid, coord, value),
-        'e': east(grid, coord, value),
-        'se': se(grid, coord, value),
-        's': south(grid, coord, value),
-        'sw': sw(grid, coord, value),
-        'w': west(grid, coord, value),
-        'nw': nw(grid, coord, value)
+        'n': list(north(grid, coord, value)),
+        'ne': list(ne(grid, coord, value)),
+        'e': list(east(grid, coord, value)),
+        'se': list(se(grid, coord, value)),
+        's': list(south(grid, coord, value)),
+        'sw': list(sw(grid, coord, value)),
+        'w': list(west(grid, coord, value)),
+        'nw': list(nw(grid, coord, value))
     }
     return ret
 
