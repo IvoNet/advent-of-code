@@ -76,7 +76,6 @@ def part_1(data):
             running = False
             print(f"Iteration: {idx}")
             print_matrix(matrix, grid)
-            # print(dict_compare(matrix, temp_matrix))
         matrix = temp_matrix
     return sum(1 for x in matrix.values() if x == OCCUPIED_SEAT)
 
@@ -88,8 +87,8 @@ def part_2(data):
     matrix = parse(data)
     running = True
     idx = 0
+    print(f"Iteration: {idx}")
     while running:
-        print(f"Iteration: {idx}")
         idx += 1
         temp_matrix = deepcopy(matrix)
         for coord in matrix:

@@ -265,14 +265,14 @@ def west(grid, coord, value=False):
 
 def directions(grid, coord, value=False) -> dict:
     ret = {
-        'n': list(north(grid, coord, value)),
-        'ne': list(ne(grid, coord, value)),
-        'e': list(east(grid, coord, value)),
-        'se': list(se(grid, coord, value)),
-        's': list(south(grid, coord, value)),
-        'sw': list(sw(grid, coord, value)),
-        'w': list(west(grid, coord, value)),
-        'nw': list(nw(grid, coord, value))
+        'n': north(grid, coord, value),
+        'ne': ne(grid, coord, value),
+        'e': east(grid, coord, value),
+        'se': se(grid, coord, value),
+        's': south(grid, coord, value),
+        'sw': sw(grid, coord, value),
+        'w': west(grid, coord, value),
+        'nw': nw(grid, coord, value)
     }
     return ret
 
