@@ -11,6 +11,7 @@ __doc__ = """
 import sys
 import unittest
 from collections import defaultdict
+from pprint import pprint
 
 from ivonet.files import read_rows
 
@@ -91,6 +92,7 @@ class Node:
         return repr(self) == repr(o)
 
 
+
 class Route:
 
     def __init__(self) -> None:
@@ -111,7 +113,9 @@ class Route:
     def find_all_paths(self, start=Node("start"), end=Node("end"), visited=[], path=[]):
         path = path + [start]
         if start.small:
-            visited = visited + [start]
+            start.visited += 1
+            if start.visited >= start.visitable:
+                visited = visited + [start]
         if start == end:
             return [path]
         if start not in self.nodes:
@@ -121,14 +125,22 @@ class Route:
             if node not in visited:
                 newpaths = self.find_all_paths(node, end, visited, path)
                 for newpath in newpaths:
-                    paths.append(newpath)
+                    print("!!", newpath)
+                    if newpath not in paths:
+                        paths.append(newpath)
         return paths
 
     def find_all_paths_with_one_small_twice(self, start=Node("start"), end=Node("end"), visited=[], path=[]):
         paths = []
         for node in self.small:
             node.visitable = 2
-            new_paths = self.find_all_paths(node, end)
+            visited = visited + [start]
+            newpaths = self.find_all_paths(start=Node("start"), end=end, visited=visited, path=path)
+            for newpath in newpaths:
+                paths.append(newpath)
+            node.visitable = 1
+            node.visited = 0
+        return paths
 
     def __str__(self) -> str:
         return repr(self.nodes)
@@ -147,7 +159,12 @@ def part_1(source):
 
 
 def part_2(source):
-    pass
+    routes = Route()
+    for x in source:
+        routes.add(x)
+    a = routes.find_all_paths_with_one_small_twice()
+    pprint(a)
+    return len(a)
 
 
 class UnitTests(unittest.TestCase):
