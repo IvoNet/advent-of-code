@@ -18,57 +18,6 @@ from ivonet.files import read_rows
 sys.dont_write_bytecode = True
 
 
-class Graph:
-    def __init__(self, vertices):
-        # No. of vertices
-        self.V = vertices
-
-        # default dictionary to store graph
-        self.graph = defaultdict(list)
-
-    # function to add an edge to graph
-    def addEdge(self, u, v):
-        self.graph[u].append(v)
-
-    def printAllPathsUtil(self, u, d, visited, path):
-        """A recursive function to print all paths from 'u' to 'd'.
-         visited[] keeps track of vertices in current path.
-         path[] stores actual vertices and path_index is current
-         index in path[]"""
-
-        # Mark the current node as visited and store in path
-        visited[u] = True
-        path.append(u)
-
-        # If current vertex is same as destination, then print
-        # current path[]
-        if u == d:
-            print
-            path
-        else:
-            # If current vertex is not destination
-            # Recur for all the vertices adjacent to this vertex
-            for i in self.graph[u]:
-                if visited[i] == False:
-                    self.printAllPathsUtil(i, d, visited, path)
-
-        # Remove current vertex from path[] and mark it as unvisited
-        path.pop()
-        visited[u] = False
-
-    # Prints all paths from 's' to 'd'
-    def printAllPaths(self, s, d):
-
-        # Mark all the vertices as not visited
-        visited = [False] * (self.V)
-
-        # Create an array to store paths
-        path = []
-
-        # Call the recursive helper function to print all paths
-        self.printAllPathsUtil(s, d, visited, path)
-
-
 class Node:
 
     def __init__(self, name: str) -> None:
@@ -140,9 +89,9 @@ class Route:
             self.reset_nodes()
             self.all_nodes[node].visitable = 2
             newpaths = self.find_all_paths()
+            # pprint(newpaths)
             for newpath in newpaths:
-                if newpath not in paths:
-                    paths.append(newpath)
+                paths.append(newpath)
 
         return paths
 
@@ -159,18 +108,21 @@ class Route:
 
 
 def part_1(source):
+    routes = prepare(source)
+    a = routes.find_all_paths()
+    pprint(set(a))
+    return len(set(a))
+
+
+def prepare(source):
     routes = Route()
     for x in source:
         routes.add(x)
-    a = routes.find_all_paths()
-    pprint(a)
-    return len(a)
+    return routes
 
 
 def part_2(source):
-    routes = Route()
-    for x in source:
-        routes.add(x)
+    routes = prepare(source)
     print("Small nodes:", routes.small_nodes)
     pprint(routes.nodes)
     a = routes.find_all_paths_with_one_small_twice()
