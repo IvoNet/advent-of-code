@@ -4,7 +4,7 @@ cd 2021
 
 while true;
 do
-  python -m unittest discover -s . -p "*.py"
+  python -m unittest discover -s . -p "day_$1.py"
   echo -n "Press [ENTER] ro repeat test."
   read
 done

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd 2021
+cd 2020
 #ptw --runner "pytest --testmon" *.py
 
 while true;

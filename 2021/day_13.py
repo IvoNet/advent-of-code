@@ -86,7 +86,7 @@ def part_2(source):
     print("-" * 50)
     print_matrix(matrix, grid=(max_w, max_h), console=True)
     print("-" * 50)
-    return "FJAHJGAH!"
+    return "FJAHJGAH"
 
 
 class UnitTests(unittest.TestCase):
