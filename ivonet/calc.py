@@ -48,8 +48,29 @@ def fibonacci(n):
     """Calculated value of the fibonacci sequence
 
     Difficult to understand but very fast in execution
+
+    >>> fibonacci(5)
+    5
     """
     return int(((1 + sqrt(5)) ** n - (1 - sqrt(5)) ** n) / (2 ** n * sqrt(5)))
+
+
+def fib(n: int) -> int:
+    """Iterative approach to the fibonacci sequence
+
+    :param n: number of fib iterations
+    :return: fib int
+
+    >>> fib(5)
+    5
+    """
+    if n == 0:
+        return 0
+    last = 0
+    following = 1
+    for _ in range(1, n):
+        last, following = following, last + following
+    return following
 
 
 def step_sequence_calc(end, start=1):
@@ -73,40 +94,6 @@ def step_sequence_calc(end, start=1):
     """
 
     return int((end - start + 1) * (end + start) / 2)
-
-
-def normalize_overlap_matrix(mtrx):
-    """
-    Normalizes a numpy matrix used for overlap matrices,
-    by dividing every element A_ij by sqrt(A_ii)*sqrt(A_jj)
-    """
-    assert isinstance(mtrx, np.ndarray), 'Input shall be a numpy array'
-    assert np.isreal(mtrx).all(), 'Numpy array shall contain real numbers'
-    assert mtrx.shape[0] == mtrx.shape[1], 'Overlap matrix shall be square'
-    assert (np.diag(mtrx) != 0).all(), 'Overlap matrix shall not have 0 on its direction'
-
-    b = np.sqrt(np.diag(mtrx))
-    result = ((mtrx / b).T / b).T
-
-    return result
-
-
-def ternary(n):
-    """
-    Calculates ternary result from a decimal number.
-    https://en.wikipedia.org/wiki/Ternary_numeral_system
-    http://www.unitconversion.org/numbers/base-3-conversion.html
-    http://www.unitconversion.org//unit_converter/numbers-ex.html
-
-    deprecated use base_3
-    """
-    if n == 0:
-        return '0'
-    nums = []
-    while n:
-        n, r = divmod(n, 3)
-        nums.append(str(r))
-    return ''.join(reversed(nums))
 
 
 def base_10_to_base_x(value, base=3):
@@ -136,13 +123,20 @@ def binary_8_bits(value) -> list:
     return bits
 
 
-def tests():
-    print(binary_8_bits(2))
-    print(binary_8_bits("FDWJDIIH"))
-    for x in binary_8_bits("FDWJDIIH"):
-        for y in x:
-            print(y, end=" ")
-        print()
+def normalize_overlap_matrix(mtrx):
+    """
+    Normalizes a numpy matrix used for overlap matrices,
+    by dividing every element A_ij by sqrt(A_ii)*sqrt(A_jj)
+    """
+    assert isinstance(mtrx, np.ndarray), 'Input shall be a numpy array'
+    assert np.isreal(mtrx).all(), 'Numpy array shall contain real numbers'
+    assert mtrx.shape[0] == mtrx.shape[1], 'Overlap matrix shall be square'
+    assert (np.diag(mtrx) != 0).all(), 'Overlap matrix shall not have 0 on its direction'
+
+    b = np.sqrt(np.diag(mtrx))
+    result = ((mtrx / b).T / b).T
+
+    return result
 
 
 if __name__ == '__main__':

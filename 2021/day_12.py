@@ -4,7 +4,7 @@ __author__ = "Ivo Woltring"
 __revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """Day 12: Passage Pathing
+__doc__ = r"""Day 12: Passage Pathing
 
 With your submarine's subterranean subsystems subsisting suboptimally, 
 the only way you're getting out of this cave anytime soon is by finding 
@@ -182,8 +182,10 @@ Given these new rules, how many paths through this cave system are there?
 import sys
 import unittest
 from collections import defaultdict
+from pathlib import Path
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -253,7 +255,8 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_12.txt")
+        day = ints(Path(__file__).name)[0]
+        self.source = read_rows(f"day_{day}.txt")
         self.test_source_smallest = read_rows("""start-A
 start-b
 A-c

@@ -34,4 +34,7 @@ virtual environment.
 * [Ordina leader board](https://ordinaadventofcode.azurewebsites.net/Leaderboard/Ordina)
 
 
+## Good links / Articles / Tools
 
+* [Advent of Code: Solving Your Puzzles With Python](https://realpython.com/python-advent-of-code/)
+* [pip install advent-of-code-data](https://pypi.org/project/advent-of-code-data/)

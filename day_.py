@@ -10,8 +10,10 @@ __doc__ = """
 
 import sys
 import unittest
+from pathlib import Path
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -27,8 +29,29 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_X.txt")
-        self.test_source = read_rows("""""")
+        day = ints(Path(__file__).name)[0]
+        self.source = read_rows(f"day_{day}.txt")
+        self.test_source = read_rows("""6,10
+0,14
+9,10
+0,3
+10,4
+4,11
+6,0
+6,12
+4,1
+0,13
+10,12
+3,4
+3,0
+8,4
+1,10
+2,14
+8,10
+9,0
+
+fold along y=7
+fold along x=5""")
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))
