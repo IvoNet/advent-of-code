@@ -285,83 +285,34 @@ class Matrix(defaultdict):
 
     def __init__(self):
         super(Matrix, self).__init__(int)
+        self.max_w = 0
+        self.max_h = 0
+
+    def __setitem__(self, k: tuple[int, int], v: int) -> None:
+        w, h = k
+        self.max_w = w if w > self.max_w else self.max_w
+        self.max_h = h if h > self.max_h else self.max_h
+        super().__setitem__(k, v)
 
     def width(self) -> int:
         """Find the max width of the given matrix
         The matrix is represented as a dict looking like this:
            dict[(x,y)] = value
         """
-        return max_idx(list(self.keys()), 0) + 1
+        return self.max_w + 1
 
     def height(self) -> int:
         """Find the max height of the given matrix
         The matrix is represented as a dict looking like this:
            dict[(x,y)] = value
         """
-        return max_idx(list(self.keys()), 1) + 1
+        return self.max_h + 1
 
     def fold_vertical(self, fold_index):
-        """Fold a 2d matrix represented as a dictionary with coordinates as key
-        and int as value
-        1 = on
-        0 = off
-
-        01001           results in 011
-        10000                      100
-        10001                      101
-           ^
-           fold index
-        You loose the folding line in this setup.
-
-        Note that the right side of the fold should never exceed more
-        than half the width of the matrix. No checks on this at this time
-
-        :param matrix: dict of tuple, int as key, value
-        :param fold_index: the width on which to fold and the new max width
-        :return: new matrix
-        """
-        m = Matrix()
-        for x, y in self:
-            if self[(x, y)] == 1:
-                if x < fold_index:
-                    m[(x, y)] = 1
-                elif x > fold_index:
-                    xx = fold_index - (x - fold_index)
-                    m[(xx, y)] = 1
-        return m
+        return fold_vertical(self, fold_index)
 
     def fold_horizontal(self, fold_index):
-        """Fold a 2d matrix represented as a dictionary with coordinates as key
-        and int as value
-        1 = on
-        0 = off
-
-        01001
-        10000                         11111
-        10001                         10001
-        00000 <- fold line results in 11111
-        11110
-        10001
-        10111
-
-        You loose the folding line in this setup
-
-        Note that the under side of the fold should never exceed more
-        than half the height of the matrix. No checks on this at this time
-
-        :param matrix: list of lists
-        :param fold_index: the height on which to fold and the new max height
-        :return: new matrix
-        """
-        m = Matrix()
-        for x, y in self:
-            if self[(x, y)] == 1:
-                if y < fold_index:
-                    m[(x, y)] = 1
-                elif y > fold_index:
-                    yy = fold_index - (y - fold_index)
-                    m[(x, yy)] = 1
-        return m
+        return fold_horizontal(self, fold_index)
 
     def total(self):
         total = 0
@@ -372,8 +323,8 @@ class Matrix(defaultdict):
 
     def print(self, end="", sign_on="#", sign_off=" "):
         print("-" * 50)
-        for y in range(self.height()):
-            for x in range(self.width()):
+        for y in range(self.max_h):
+            for x in range(self.max_w):
                 try:
                     print(sign_on if self[(x, y)] == 1 else sign_off, end=end)
                 except KeyError:
@@ -405,14 +356,14 @@ def fold_horizontal(matrix: defaultdict, fold_index):
     :param fold_index: the height on which to fold and the new max height
     :return: new matrix
     """
-    m = defaultdict(int)
+    m = Matrix()
     for x, y in matrix:
-        if y < fold_index and matrix[(x, y)] == 1:
-            m[(x, y)] = 1
-            continue
-        if y > fold_index and matrix[(x, y)] == 1:
-            yy = fold_index - (y - fold_index)
-            m[(x, yy)] = 1
+        if matrix[(x, y)] == 1:
+            if y < fold_index:
+                m[(x, y)] = 1
+            elif y > fold_index:
+                yy = fold_index - (y - fold_index)
+                m[(x, yy)] = 1
     return m
 
 
@@ -436,14 +387,14 @@ def fold_vertical(matrix: defaultdict, fold_index):
     :param fold_index: the width on which to fold and the new max width
     :return: new matrix
     """
-    m = defaultdict(int)
+    m = Matrix()
     for x, y in matrix:
-        if x < fold_index and matrix[(x, y)] == 1:
-            m[(x, y)] = 1
-            continue
-        if x > fold_index and matrix[(x, y)] == 1:
-            xx = fold_index - (x - fold_index)
-            m[(xx, y)] = 1
+        if matrix[(x, y)] == 1:
+            if x < fold_index:
+                m[(x, y)] = 1
+            elif x > fold_index:
+                xx = fold_index - (x - fold_index)
+                m[(xx, y)] = 1
     return m
 
 
