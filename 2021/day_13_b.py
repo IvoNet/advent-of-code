@@ -14,8 +14,8 @@ from collections import defaultdict
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.grid import fold_horizontal, fold_vertical
-from ivonet.iter import lmap, ints
+from ivonet.grid import fold_horizontal, fold_vertical, max_width, max_height
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -23,22 +23,17 @@ sys.dont_write_bytecode = True
 def parse(source):
     matrix = defaultdict(int)
     instructions = []
-    max_h = 0
-    max_w = 0
     for line in source:
         if not line:
             continue
         if "," in line:
-            w, h = lmap(int, line.split(","))
-            max_w = w if w > max_w else max_w
-            max_h = h if h > max_h else max_h
-            matrix[(w, h)] = 1
+            matrix[tuple(ints(line))] = 1
             continue
         if "fold" in line:
             i = line.split("fold along ")[1]
             d, value = i.split("=")
             instructions.append((d, int(value)))
-    return matrix, instructions, max_w + 1, max_h + 1
+    return matrix, instructions, max_width(matrix), max_height(matrix)
 
 
 def print_matrix(matrix, grid=(99, 90), end="", console=False):
