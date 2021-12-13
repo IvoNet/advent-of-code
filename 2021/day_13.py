@@ -36,7 +36,7 @@ def print_matrix(matrix, grid=(99, 90), end="", console=False):
 
 
 def parse(source):
-    matrix = defaultdict(lambda: ".")
+    matrix = defaultdict(int)
     instructions = []
     max_h = 0
     max_w = 0
@@ -47,7 +47,7 @@ def parse(source):
             w, h = lmap(int, line.split(","))
             max_w = w if w > max_w else max_w
             max_h = h if h > max_h else max_h
-            matrix[(w, h)] = "#"
+            matrix[(w, h)] = 1
             continue
         if "fold" in line:
             i = line.split("fold along ")[1]
@@ -56,26 +56,66 @@ def parse(source):
     return matrix, instructions, max_w + 1, max_h + 1
 
 
+def fold_y(matrix, v):
+    m = defaultdict(int)
+    for x, y in matrix:
+        if y < v and matrix[(x, y)] == 1:
+            m[(x, y)] = matrix[(x, y)]
+            continue
+        if y > v and matrix[(x, y)] == 1:
+            yy = v - (y - v)
+            m[(x, yy)] = 1
+            continue
+    return m
+
+
+def fold_x(matrix, v):
+    m = defaultdict(int)
+    for x, y in matrix:
+        if x < v and matrix[(x, y)] == 1:
+            m[(x, y)] = 1
+            continue
+        if x > v and matrix[(x, y)] == 1:
+            xx = v - (x - v)
+            m[(xx, y)] = 1
+            continue
+    return m
+
+
 def part_1(source):
     matrix, instructions, max_w, max_h = parse(source)
-    text_matrix = print_matrix(matrix, grid=(max_w, max_h), console=True)
-    # print(text_matrix)
-    i, v = instructions[0]
-    if i == "y":
-        text_matrix = fold_y(matrix, v, max_w=max_w, max_h=max_h)
-    else:
-        text_matrix = fold_x(text_matrix, v, max_w=max_w, max_h=max_h)
-
-    print(text_matrix)
+    for i, v in instructions:
+        if i == "y":
+            matrix = fold_y(matrix, v)
+            max_h = v
+        else:
+            matrix = fold_x(matrix, v)
+            max_w = v
+        break
+    print_matrix(matrix, grid=(max_w, max_h), console=True)
     total = 0
     for x in range(max_w):
         for y in range(max_h):
-            total += 1 if matrix[x][y] == "#" else 0
+            total += matrix[(x, y)]
     return total
 
 
 def part_2(source):
-    pass
+    matrix, instructions, max_w, max_h = parse(source)
+    # print(max_w, max_h)
+    # print_matrix(matrix, grid=(max_w, max_h), console=True)
+    letters = ""
+    for i, v in instructions:
+        if i == "y":
+            matrix = fold_y(matrix, v)
+            max_h = v
+        else:
+            matrix = fold_x(matrix, v)
+            max_w = v
+        print("-" * 100)
+        print_matrix(matrix, grid=(max_w, max_h), console=True)
+        print("-" * 100)
+    return letters
 
 
 class UnitTests(unittest.TestCase):
