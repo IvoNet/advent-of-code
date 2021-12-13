@@ -181,7 +181,8 @@ def part_1(source):
 
 
 def part_2(source):
-    total = defaultdict(int)
+    d = "E"
+    ship = defaultdict(int)
     waypoint = defaultdict(int)
     waypoint["E"] = 10
     waypoint["N"] = 1
@@ -190,14 +191,15 @@ def part_2(source):
         c = cmd[0]
         value = int(cmd[1:])
         if c in "NESW":
-            total[c] += value
+            waypoint[c] += value
         elif c == "F":
-            total[d] += value
+            ns = abs(waypoint[d] - waypoint[DIR[d][c][180]])
+            ship[d] += value * ns
         elif c in "RL":
             d = DIR[d][c][value]
         else:
             raise ValueError(f"Wrong command: {c}")
-    return abs(total["N"] - total["S"]) + abs(total["E"] - total["W"])
+    return abs(ship["N"] - ship["S"]) + abs(ship["E"] - ship["W"])
 
 
 class UnitTests(unittest.TestCase):
@@ -217,7 +219,7 @@ F11""")
         self.assertEqual(1533, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(286, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
