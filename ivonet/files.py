@@ -8,7 +8,7 @@ __doc__ = """
 
 """
 
-from iter import lmap
+from ivonet.iter import lmap
 
 
 def open_anything(source):

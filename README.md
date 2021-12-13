@@ -23,7 +23,9 @@ To use the ivonet package please create e file called `ivonet.pth`
 in the virtual env `site-packages` folder e.g.
 in `PROJECT_DIR_HERE/venv/lib/python3.9/site-packages/ivonet.pth`
 in that file put one string with the exact (fully qualified) path to the ivonet
-package in the project. e.g. `/Users/iwo16283/dev/advent-of-code/ivonet`
+package in the project. e.g. `/Users/YOUR_USERNAME/dev/advent-of-code/`
+do not include the package name itself just the path to the folder where it
+lives
 
 now the ivonet package is accessible from all the years when running in the
 virtual environment.
