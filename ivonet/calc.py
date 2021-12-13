@@ -37,7 +37,6 @@ def prod(*iterable):
     """
     it = iterable
     if len(it) == 1:
-
         if type(it[0]) == list or type(it[0]) == set or isinstance(it[0], types.GeneratorType):
             it = it[0]
         elif type(it[0]) == dict:

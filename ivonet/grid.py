@@ -8,6 +8,7 @@ __doc__ = """
 
 """
 
+from collections import defaultdict
 from itertools import product
 
 from ivonet.iter import flatten
@@ -17,7 +18,7 @@ def neighbors(grid: list[list[any]], coord: tuple, diagonal=True):
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
 
     :param diagonal: True if you also want the direction neighbors, False if not
-    :param coord: Tuple with x, y coordinate
+    :param coord: Tuple with (height, width) coordinate (Y, X)!!
     :param grid: the boundary of the grid in layman's terms
     :return: the adjacent coordinates
     """
@@ -61,6 +62,7 @@ def neighbor_values(grid, coord, diagonal=True):
 
 
 def neighbors_defined_grid(coord: tuple, grid=(100, 100), diagonal=True):
+    """Same as neighbors (above) but now with a fictional grid"""
     width = grid[0] - 1
     height = grid[1] - 1
     retx, rety = coord
@@ -264,7 +266,10 @@ def west(grid, coord, value=False):
 
 
 def directions(grid, coord, value=False) -> dict:
-    ret = {
+    """Create a coordinate generator for all the wind directions.
+    The grid should be a 2d matrix (list of lists)
+    """
+    return {
         'n': north(grid, coord, value),
         'ne': ne(grid, coord, value),
         'e': east(grid, coord, value),
@@ -274,7 +279,71 @@ def directions(grid, coord, value=False) -> dict:
         'w': west(grid, coord, value),
         'nw': nw(grid, coord, value)
     }
-    return ret
+
+
+def fold_horizontal(matrix: defaultdict[tuple, int], fold_index):
+    """Fold a 2d matrix represented as a dictionary with coordinats as key
+    and int as value
+    1 = on
+    0 = off
+
+    01001
+    10000                         11111
+    10001                         10001
+    00000 <- fold line results in 11111
+    11110
+    10001
+    10111
+
+    You loose the folding line in this setup
+
+    Note that the under side of the fold should never exceed more
+    than half the height of the matrix. No checks on this at this time
+
+    :param matrix: list of lists
+    :param fold_index: the height on which to fold and the new max height
+    :return: new matrix
+    """
+    m = defaultdict(int)
+    for x, y in matrix:
+        if y < fold_index and matrix[(x, y)] == 1:
+            m[(x, y)] = 1
+            continue
+        if y > fold_index and matrix[(x, y)] == 1:
+            yy = fold_index - (y - fold_index)
+            m[(x, yy)] = 1
+    return m
+
+
+def fold_vertical(matrix: defaultdict[tuple, int], fold_index):
+    """Fold a 2d matrix represented as a dictionary with coordinats as key
+    and int as value
+    1 = on
+    0 = off
+
+    01001           results in 011
+    10000                      100
+    10001                      101
+       ^
+       fold index
+    You loose the folding line in this setup.
+
+    Note that the right side of the fold should never exceed more
+    than half the width of the matrix. No checks on this at this time
+
+    :param matrix: dict of tuple, int as key, value
+    :param fold_index: the width on which to fold and the new max width
+    :return: new matrix
+    """
+    m = defaultdict(int)
+    for x, y in matrix:
+        if x < fold_index and matrix[(x, y)] == 1:
+            m[(x, y)] = 1
+            continue
+        if x > fold_index and matrix[(x, y)] == 1:
+            xx = fold_index - (x - fold_index)
+            m[(xx, y)] = 1
+    return m
 
 
 if __name__ == '__main__':

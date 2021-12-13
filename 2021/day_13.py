@@ -13,26 +13,10 @@ import unittest
 from collections import defaultdict
 
 from ivonet.files import read_rows
+from ivonet.grid import fold_horizontal, fold_vertical
 from ivonet.iter import lmap
 
 sys.dont_write_bytecode = True
-
-
-def print_matrix(matrix, grid=(99, 90), end="", console=False):
-    ret = []
-    for y in range(grid[1]):
-        row = []
-        for x in range(grid[0]):
-            try:
-                row.append(matrix[(x, y)])
-                if console:
-                    print("#" if matrix[(x, y)] == 1 else " ", end=end)
-            except KeyError:
-                print(f"key error x={x}, y={y}")
-        if console:
-            print()
-        ret.append(row)
-    return ret
 
 
 def parse(source):
@@ -56,43 +40,33 @@ def parse(source):
     return matrix, instructions, max_w + 1, max_h + 1
 
 
-def fold_y(matrix, v):
-    m = defaultdict(int)
-    for x, y in matrix:
-        if y < v and matrix[(x, y)] == 1:
-            m[(x, y)] = 1
-            continue
-        if y > v and matrix[(x, y)] == 1:
-            yy = v - (y - v)
-            m[(x, yy)] = 1
-            continue
-    return m
-
-
-def fold_x(matrix, v):
-    m = defaultdict(int)
-    for x, y in matrix:
-        if x < v and matrix[(x, y)] == 1:
-            m[(x, y)] = 1
-            continue
-        if x > v and matrix[(x, y)] == 1:
-            xx = v - (x - v)
-            m[(xx, y)] = 1
-            continue
-    return m
+def print_matrix(matrix, grid=(99, 90), end="", console=False):
+    ret = []
+    for y in range(grid[1]):
+        row = []
+        for x in range(grid[0]):
+            try:
+                row.append(matrix[(x, y)])
+                if console:
+                    print("#" if matrix[(x, y)] == 1 else " ", end=end)
+            except KeyError:
+                print(f"key error x={x}, y={y}")
+        if console:
+            print()
+        ret.append(row)
+    return ret
 
 
 def part_1(source):
     matrix, instructions, max_w, max_h = parse(source)
     for i, v in instructions:
         if i == "y":
-            matrix = fold_y(matrix, v)
+            matrix = fold_horizontal(matrix, v)
             max_h = v
         else:  # x
-            matrix = fold_x(matrix, v)
+            matrix = fold_vertical(matrix, v)
             max_w = v
         break
-    print_matrix(matrix, grid=(max_w, max_h), console=True)
     total = 0
     for x in range(max_w):
         for y in range(max_h):
@@ -104,10 +78,10 @@ def part_2(source):
     matrix, instructions, max_w, max_h = parse(source)
     for i, v in instructions:
         if i == "y":
-            matrix = fold_y(matrix, v)
+            matrix = fold_horizontal(matrix, v)
             max_h = v
         else:
-            matrix = fold_x(matrix, v)
+            matrix = fold_vertical(matrix, v)
             max_w = v
     print("-" * 50)
     print_matrix(matrix, grid=(max_w, max_h), console=True)
