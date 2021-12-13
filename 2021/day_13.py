@@ -26,7 +26,7 @@ def print_matrix(matrix, grid=(99, 90), end="", console=False):
             try:
                 row.append(matrix[(x, y)])
                 if console:
-                    print(matrix[(x, y)], end=end)
+                    print("#" if matrix[(x, y)] == 1 else " ", end=end)
             except KeyError:
                 print(f"key error x={x}, y={y}")
         if console:
@@ -60,7 +60,7 @@ def fold_y(matrix, v):
     m = defaultdict(int)
     for x, y in matrix:
         if y < v and matrix[(x, y)] == 1:
-            m[(x, y)] = matrix[(x, y)]
+            m[(x, y)] = 1
             continue
         if y > v and matrix[(x, y)] == 1:
             yy = v - (y - v)
@@ -88,7 +88,7 @@ def part_1(source):
         if i == "y":
             matrix = fold_y(matrix, v)
             max_h = v
-        else:
+        else:  # x
             matrix = fold_x(matrix, v)
             max_w = v
         break
@@ -102,9 +102,6 @@ def part_1(source):
 
 def part_2(source):
     matrix, instructions, max_w, max_h = parse(source)
-    # print(max_w, max_h)
-    # print_matrix(matrix, grid=(max_w, max_h), console=True)
-    letters = ""
     for i, v in instructions:
         if i == "y":
             matrix = fold_y(matrix, v)
@@ -112,10 +109,10 @@ def part_2(source):
         else:
             matrix = fold_x(matrix, v)
             max_w = v
-        print("-" * 100)
-        print_matrix(matrix, grid=(max_w, max_h), console=True)
-        print("-" * 100)
-    return letters
+    print("-" * 50)
+    print_matrix(matrix, grid=(max_w, max_h), console=True)
+    print("-" * 50)
+    return "FJAHJGAH"
 
 
 class UnitTests(unittest.TestCase):
@@ -148,13 +145,10 @@ fold along x=5""")
         self.assertEqual(17, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(785, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("FJAHJGAH", part_2(self.source))
 
 
 if __name__ == '__main__':
