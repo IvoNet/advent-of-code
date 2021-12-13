@@ -59,14 +59,13 @@ def print_matrix(matrix, grid=(99, 90), end="", console=False):
 
 def part_1(source):
     matrix, instructions, max_w, max_h = parse(source)
-    for i, v in instructions:
-        if i == "y":
-            matrix = fold_horizontal(matrix, v)
-            max_h = v
-        else:  # x
-            matrix = fold_vertical(matrix, v)
-            max_w = v
-        break
+    i, v = instructions[0]
+    if i == "y":
+        matrix = fold_horizontal(matrix, v)
+        max_h = v
+    else:  # x
+        matrix = fold_vertical(matrix, v)
+        max_w = v
     total = 0
     for x in range(max_w):
         for y in range(max_h):
