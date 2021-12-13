@@ -11,14 +11,14 @@ __doc__ = """
 from collections import defaultdict
 from itertools import product
 
-from ivonet.iter import flatten
+from ivonet.iter import flatten, max_idx
 
 
 def neighbors(grid: list[list[any]], coord: tuple, diagonal=True):
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
 
     :param diagonal: True if you also want the direction neighbors, False if not
-    :param coord: Tuple with (height, width) coordinate (Y, X)!!
+    :param coord: Tuple with (max_height, max_width) coordinate (Y, X)!!
     :param grid: the boundary of the grid in layman's terms
     :return: the adjacent coordinates
     """
@@ -279,6 +279,107 @@ def directions(grid, coord, value=False) -> dict:
         'w': west(grid, coord, value),
         'nw': nw(grid, coord, value)
     }
+
+
+class Matrix(defaultdict):
+
+    def __init__(self):
+        super(Matrix, self).__init__(int)
+
+    def max_width(self) -> int:
+        """Find the max max_width of the given matrix
+        The matrix is represented as a dict looking like this:
+           dict[(x,y)] = value
+        """
+        return max_idx(list(self.keys()), 0) + 1
+
+    def max_height(self) -> int:
+        """Find the max max_height of the given matrix
+        The matrix is represented as a dict looking like this:
+           dict[(x,y)] = value
+        """
+        return max_idx(list(self.keys()), 1) + 1
+
+    def fold_vertical(self, fold_index):
+        """Fold a 2d matrix represented as a dictionary with coordinates as key
+        and int as value
+        1 = on
+        0 = off
+
+        01001           results in 011
+        10000                      100
+        10001                      101
+           ^
+           fold index
+        You loose the folding line in this setup.
+
+        Note that the right side of the fold should never exceed more
+        than half the max_width of the matrix. No checks on this at this time
+
+        :param matrix: dict of tuple, int as key, value
+        :param fold_index: the max_width on which to fold and the new max max_width
+        :return: new matrix
+        """
+        m = Matrix()
+        for x, y in self:
+            if x < fold_index and self[(x, y)] == 1:
+                m[(x, y)] = 1
+                continue
+            if x > fold_index and self[(x, y)] == 1:
+                xx = fold_index - (x - fold_index)
+                m[(xx, y)] = 1
+        return m
+
+    def fold_horizontal(self, fold_index):
+        """Fold a 2d matrix represented as a dictionary with coordinates as key
+        and int as value
+        1 = on
+        0 = off
+
+        01001
+        10000                         11111
+        10001                         10001
+        00000 <- fold line results in 11111
+        11110
+        10001
+        10111
+
+        You loose the folding line in this setup
+
+        Note that the under side of the fold should never exceed more
+        than half the max_height of the matrix. No checks on this at this time
+
+        :param matrix: list of lists
+        :param fold_index: the max_height on which to fold and the new max max_height
+        :return: new matrix
+        """
+        m = Matrix()
+        for x, y in self:
+            if self[(x, y)] == 1:
+                if y < fold_index:
+                    m[(x, y)] = 1
+                elif y > fold_index:
+                    yy = fold_index - (y - fold_index)
+                    m[(x, yy)] = 1
+        return m
+
+    def total(self):
+        total = 0
+        for x in range(self.max_width()):
+            for y in range(self.max_height()):
+                total += self[(x, y)]
+        return total
+
+    def print(self, end="", sign_on="#", sign_off=" "):
+        print("-" * 50)
+        for y in range(self.max_height()):
+            for x in range(self.max_width()):
+                try:
+                    print(sign_on if self[(x, y)] == 1 else sign_off, end=end)
+                except KeyError:
+                    print(f"key error x={x}, y={y}")
+            print()
+        print("-" * 50)
 
 
 def fold_horizontal(matrix: defaultdict[tuple, int], fold_index):

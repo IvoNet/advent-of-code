@@ -89,6 +89,10 @@ def words(s: str) -> list[str]:
     return re.findall(r"[a-zA-Z]+", s)
 
 
+def max_idx(inputlist: list[list[int]], idx=0):
+    return max([sublist[idx] for sublist in inputlist])
+
+
 def keyvalues(d: dict) -> list[tuple]:
     """Convert a dict into a list of [(key, value),...]
 
@@ -181,15 +185,13 @@ def invert_dict(dct: dict, single=True, verbose=True):
     {2: 3, (0, 3, 4): 9, frozenset({(2, 4), (4, 2)}): 'a'}
     """
     out = {}
-    if single:
-        for k, v in dct.items():
-            v = make_hashable(v)
-            if v in out and verbose:
-                print("[invert_dict] WARNING WARNING: duplicate key", v)
+    for k, v in dct.items():
+        v = make_hashable(v)
+        if v in out and verbose:
+            print("[invert_dict] WARNING WARNING: duplicate key", v)
+        if single:
             out[v] = k
-    else:
-        for k, v in dct.items():
-            v = make_hashable(v)
+        else:
             out.setdefault(v, []).append(k)
     return out
 

@@ -10,82 +10,46 @@ __doc__ = """
 
 import sys
 import unittest
-from collections import defaultdict
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.grid import fold_horizontal, fold_vertical
-from ivonet.iter import lmap, ints
+from ivonet.grid import Matrix
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
 
-def parse(source):
-    matrix = defaultdict(int)
+def parse(source) -> (Matrix, list):
+    matrix = Matrix()
     instructions = []
-    max_h = 0
-    max_w = 0
     for line in source:
-        if not line:
-            continue
         if "," in line:
-            w, h = lmap(int, line.split(","))
-            max_w = w if w > max_w else max_w
-            max_h = h if h > max_h else max_h
-            matrix[(w, h)] = 1
+            matrix[tuple(ints(line))] = 1
             continue
-        if "fold" in line:
-            i = line.split("fold along ")[1]
-            d, value = i.split("=")
+        if "=" in line:
+            d, value = line.replace("fold along ", "").split("=")
             instructions.append((d, int(value)))
-    return matrix, instructions, max_w + 1, max_h + 1
-
-
-def print_matrix(matrix, grid=(99, 90), end="", console=False):
-    ret = []
-    for y in range(grid[1]):
-        row = []
-        for x in range(grid[0]):
-            try:
-                row.append(matrix[(x, y)])
-                if console:
-                    print("#" if matrix[(x, y)] == 1 else " ", end=end)
-            except KeyError:
-                print(f"key error x={x}, y={y}")
-        if console:
-            print()
-        ret.append(row)
-    return ret
+    return matrix, instructions
 
 
 def part_1(source):
-    matrix, instructions, max_w, max_h = parse(source)
+    matrix, instructions = parse(source)
     i, v = instructions[0]
     if i == "y":
-        matrix = fold_horizontal(matrix, v)
-        max_h = v
+        matrix = matrix.fold_horizontal(v)
     else:  # x
-        matrix = fold_vertical(matrix, v)
-        max_w = v
-    total = 0
-    for x in range(max_w):
-        for y in range(max_h):
-            total += matrix[(x, y)]
-    return total
+        matrix = matrix.fold_vertical(v)
+    return matrix.total()
 
 
 def part_2(source):
-    matrix, instructions, max_w, max_h = parse(source)
+    matrix, instructions = parse(source)
     for i, v in instructions:
         if i == "y":
-            matrix = fold_horizontal(matrix, v)
-            max_h = v
+            matrix = matrix.fold_horizontal(v)
         else:
-            matrix = fold_vertical(matrix, v)
-            max_w = v
-    print("-" * 50)
-    print_matrix(matrix, grid=(max_w, max_h), console=True)
-    print("-" * 50)
+            matrix = matrix.fold_vertical(v)
+    matrix.print()
     return "FJAHJGAH"
 
 
