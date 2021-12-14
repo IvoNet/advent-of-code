@@ -323,8 +323,8 @@ class Matrix(defaultdict):
 
     def print(self, end="", sign_on="#", sign_off=" "):
         print("-" * 50)
-        for y in range(self.max_h):
-            for x in range(self.max_w):
+        for y in range(self.height()):
+            for x in range(self.width()):
                 try:
                     print(sign_on if self[(x, y)] == 1 else sign_off, end=end)
                 except KeyError:
