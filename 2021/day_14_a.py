@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, words
+from ivonet.iter import ints, words, consecutive_element_pairing
 
 sys.dont_write_bytecode = True
 
@@ -24,32 +24,35 @@ class Polymer:
     def __init__(self, source) -> None:
         self.template = source[0]
         self.inserts = dict([words(x) for x in source[2:] if x])
+        self.pairs = consecutive_element_pairing(self.template,
+                                                 consecutive_element=2,
+                                                 map_to_func=lambda x: "".join(x))
         self.cache = {}
         self.occurrences = Counter()
 
-    def insert(self, pair, step, stop):
-        try:
+    def insert(self, pair: str, step: int, stop: int) -> Counter:
+        """Insertion recursive descend method."""
+        if (pair, step) in self.cache:
             return self.cache[(pair, step)]
-        except KeyError:
-            if step < stop:
-                left, right = self.leaves(pair)
-                left_letter = self.insert(left, step + 1, stop)
-                right_letter = self.insert(right, step + 1, stop)
-                self.cache[(pair, step)] = left_letter + right_letter
-                return left_letter + right_letter
-            else:
-                self.cache[(pair, step)] = Counter(pair[0])
-                return Counter(pair[0])
+        if step < stop:
+            left, right = self.leaves(pair)
+            left_letter = self.insert(left, step + 1, stop)
+            right_letter = self.insert(right, step + 1, stop)
+            self.cache[(pair, step)] = left_letter + right_letter
+            return left_letter + right_letter
+        else:
+            self.cache[(pair, step)] = Counter(pair[0])
+            return Counter(pair[0])
 
-    def leaves(self, pair):
+    def leaves(self, pair) -> tuple[str, str]:
         left = pair[0] + self.inserts[pair]
         right = self.inserts[pair] + pair[1]
         return left, right
 
-    def go(self, stop):
+    def go(self, stop) -> int:
         self.occurrences = Counter(self.template[-1])
-        for i in range(len(self.template) - 1):
-            self.occurrences = self.occurrences + self.insert(self.template[i:i + 2], 0, stop)
+        for pair in self.pairs:
+            self.occurrences += self.insert(pair, 0, stop)
         return max(self.occurrences.values()) - min(self.occurrences.values())
 
 

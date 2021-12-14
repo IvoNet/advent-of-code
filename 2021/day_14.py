@@ -112,16 +112,16 @@ class Polymer(object):
 
     def __init__(self, source) -> None:
         self.source = source
-        self.start_polymer = source[0]
-        self.first_last = self.start_polymer[0] + self.start_polymer[-1:]
-        self.couples = defaultdict(str)
-        self.rules = defaultdict(str)
+        self.template = source[0]
+        self.first_last = self.template[0] + self.template[-1:]
+        self.pair = defaultdict(str)
+        self.insertion = defaultdict(str)
         self.result = defaultdict(int)
         self.__initialize()
 
     def elements_from(self, key: str) -> tuple[str, str]:
         """Create the two new keys based on the given key"""
-        letter = self.rules[key]
+        letter = self.insertion[key]
         return key[0] + letter, letter + key[1]
 
     def go(self, steps: int = 40) -> int:
@@ -132,7 +132,7 @@ class Polymer(object):
         - divide all the occurrences by two ignoring any fraction by int division
         - now we have the actual value except for the first and last letter they need to get 1 extra
         """
-        for key in self.couples:
+        for key in self.pair:
             self.result[key] += 1
 
         for _ in range(steps):
@@ -183,14 +183,11 @@ class Polymer(object):
         return [x for x in self.result.items() if x[1] > 0]
 
     def __initialize(self) -> None:
-        self.couples = consecutive_element_pairing(self.start_polymer, consecutive_element=2,
-                                                   map_to_func=lambda x: "".join(x))
+        self.pair = consecutive_element_pairing(self.template, consecutive_element=2,
+                                                map_to_func=lambda x: "".join(x))
         for line in self.source[2:]:
             key, value = words(line)
-            self.rules[key] = value
-
-    def pp(self, *args):
-        print(*args)
+            self.insertion[key] = value
 
 
 def part_1(source):
