@@ -127,7 +127,7 @@ class Polymer(object):
     def go(self, steps: int = 40) -> int:
         """Iterate the number of steps over the polymer:
         - initialize the result dict by giving the original couples from the start polymer a value of 1
-        - __step the given amount of time extending the polymer (see doc of __step)
+        - step the given amount of time extending the polymer (see doc of __step)
         - count all occurrences of a letter by summing the values for a pair if the letter exists in a pair
         - divide all the occurrences by two ignoring any fraction by int division
         - now we have the actual value except for the first and last letter they need to get 1 extra
@@ -233,30 +233,3 @@ CN -> C""")
 
 if __name__ == '__main__':
     unittest.main()
-
-    #
-    # NNCB                 NN NC CB
-    #
-    #   #                  S i= 0             1
-    #
-    # CH -> B   # CH -> 0      *1*            0 CB BH
-    # HH -> N   # HH -> 0
-    # CB -> H   # CB -> 0  1   *0* CH* HB*    2
-    # NH -> C   # NH -> 0
-    # HB -> C   # HB -> 0      *1*            0 HC CB
-    # HC -> B   # HC -> 0                     1
-    # HN -> C   # HN -> 0
-    # NN -> C   # NN -> 0  1   *0* NC* CN*    0
-    # BH -> H   # BH -> 0                     1
-    # NC -> B   # NC -> 0  1   *1* NB* BC*    0 NB BC
-    # NB -> B   # NB -> 0      *1*            3 NB BB
-    # BN -> B   # BN -> 0
-    # BB -> N   # BB -> 0                     2
-    # BC -> B   # BC -> 0      *1*            3 BB BC
-    # CC -> N   # CC -> 0                     1
-    # CN -> C   # CN -> 0      *1*            2 CC CN
-    # if start key not in subset then key -> -1
-    # after 1 steps it should be: B=2, C=2, H=1, N=2
-    # after 1 steps             : B=3, C=4, H=2, N=3,
-    # after 2 steps it should be: B=6, C=4, H=1, N=2
-    # after 2 steps             : B=13, C=10, H=2, N=5
