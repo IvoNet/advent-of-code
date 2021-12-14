@@ -25,17 +25,17 @@ def pairs(s: str):
 
 def parse(source):
     p = pairs(source[0])
-    instructions = defaultdict(str)
+    instructions = {}
     for line in source[2:]:
         key, value = words(line)
         instructions[key] = value
     return p, instructions
 
 
-def part_1(source):
+def part_1(source, steps=10):
     formula = ""
     couples, instructions = parse(source)
-    for i in range(10):
+    for i in range(steps):
         first = True
         formula = ""
         for key in couples:
@@ -45,8 +45,8 @@ def part_1(source):
             else:
                 ns = instructions[key] + key[1:]
             formula += ns
-        print(formula, formula.count("B"), formula.count("N"), formula.count("C"), formula.count("H"))
         couples = pairs(formula)
+        # print(formula)
     counter = defaultdict(int)
     for i in formula:
         counter[i] += 1
@@ -54,58 +54,8 @@ def part_1(source):
     return max(counter.values()) - min(counter.values())
 
 
-class Polymer(object):
-
-    def __init__(self, source) -> None:
-        self.source = source
-        self.start = source[0]
-        self.couples, self.rules = parse(source)
-        self.result = defaultdict(int)
-        self.total = defaultdict(int)
-        self.first = self.start[0]
-        self.last = self.start[-1:]
-
-    def go(self, steps=40):
-        for key in self.couples:
-            self.result[key] += 1
-        for _ in range(steps):
-            temp = defaultdict(int)
-            for key, value in [x for x in self.result.items() if x[1] > 0]:
-                children = self.get_pair(key)
-                temp[key] -= value
-                for child in children:
-                    temp[child] += value
-
-            for key, value in temp.items():
-                self.result[key] += value
-            print(temp)
-            print(self.result)
-
-        for key, value in [x for x in self.result.items() if x[1] > 0]:
-            print(key, end="")
-            self.total[key[0]] += value
-            self.total[key[1]] += value
-        print()
-        for key, value in self.total.items():
-            val = value
-            val /= 2
-            self.total[key] = int(val)
-            if key in [self.first, self.last]:
-                self.total[key] += 1
-        print("Total:")
-        print(self.total)
-        return max(self.total.values()) - min(self.total.values())
-
-    def get_pair(self, key):
-        letter = self.rules[key]
-        return key[0] + letter, letter + key[1]
-
-
 def part_2(source):
-    pol = Polymer(source)
-    return pol.go(40)
-    # print(pol.cache)
-    # print(pol.ccache)
+    return part_1(source, 40)
 
 
 class UnitTests(unittest.TestCase):
@@ -142,7 +92,7 @@ CN -> C""")
         self.assertEqual(2188189693529, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(3459822539451, part_2(self.source))
+        self.assertEqual(None, part_2(self.source))
 
 
 if __name__ == '__main__':
