@@ -5,7 +5,7 @@ __revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
-
+See other solution
 """
 
 import sys
@@ -25,15 +25,14 @@ class Polymer:
         self.template = source[0]
         self.inserts = dict([words(x) for x in source[2:] if x])
         self.cache = {}
-        self.letters = Counter()
+        self.occurrences = Counter()
 
     def insert(self, pair, step, stop):
         try:
             return self.cache[(pair, step)]
         except KeyError:
             if step < stop:
-                left = pair[0] + self.inserts[pair]
-                right = self.inserts[pair] + pair[1]
+                left, right = self.leaves(pair)
                 left_letter = self.insert(left, step + 1, stop)
                 right_letter = self.insert(right, step + 1, stop)
                 self.cache[(pair, step)] = left_letter + right_letter
@@ -42,11 +41,16 @@ class Polymer:
                 self.cache[(pair, step)] = Counter(pair[0])
                 return Counter(pair[0])
 
+    def leaves(self, pair):
+        left = pair[0] + self.inserts[pair]
+        right = self.inserts[pair] + pair[1]
+        return left, right
+
     def go(self, stop):
-        self.letters = Counter(self.template[-1])
+        self.occurrences = Counter(self.template[-1])
         for i in range(len(self.template) - 1):
-            self.letters = self.letters + self.insert(self.template[i:i + 2], 0, stop)
-        return max(self.letters.values()) - min(self.letters.values())
+            self.occurrences = self.occurrences + self.insert(self.template[i:i + 2], 0, stop)
+        return max(self.occurrences.values()) - min(self.occurrences.values())
 
 
 def part_1(source):
