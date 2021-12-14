@@ -119,7 +119,7 @@ class Polymer(object):
         self.result = defaultdict(int)
         self.__initialize()
 
-    def get_pair(self, key: str) -> tuple[str, str]:
+    def elements_from(self, key: str) -> tuple[str, str]:
         """Create the two new keys based on the given key"""
         letter = self.rules[key]
         return key[0] + letter, letter + key[1]
@@ -150,16 +150,16 @@ class Polymer(object):
 
     def __step(self) -> None:
         """A __step consists of:
-        - a new state
+        - a new temp state
         - all the pairs in the result dict with a positive value actually exist in the polymer. The others can be
           ignored.
         - iterate over the keys with a positive value and follow the following rules:
-            - retrieve the keys the current key will become
+            - retrieve the keys (elements) the current key will become
             - in the temp state do
                 - decrease the current key as it will become two other keys by value as all the occurrences of
                   this key will change to other keys.
-                - Increase the children found in new state by the value as all occurrences of the original
-                  key will fall apart into these new ones
+                - Increase the elements found by the value as all occurrences of the original key will fall
+                  apart into these new ones
         - Update the result dict with the temp state by key and value
 
         NOTE 1: that all letters of the keys will be counted twice as the keys consist of 2 letter pairs.
@@ -170,9 +170,11 @@ class Polymer(object):
         temp = defaultdict(int)
         all_keys_with_a_positive_value = [x for x in self.result.items() if x[1] > 0]
         for key, value in all_keys_with_a_positive_value:
-            children = self.get_pair(key)
+            elements = self.elements_from(key)
+
             temp[key] -= value
-            for child in children:
+
+            for child in elements:
                 temp[child] += value
 
         for key, value in temp.items():
