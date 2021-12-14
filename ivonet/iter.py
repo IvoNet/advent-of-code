@@ -198,7 +198,7 @@ def invert_dict(dct: dict, single=True, verbose=True):
 
 def consecutive_element_pairing(data: list,
                                 consecutive_element: int = 3,
-                                map_to_func: callable = sum) -> list[int]:
+                                map_to_func: callable = sum) -> list[any]:
     """
     Return a list with consecutively paired items given to a function that can handle an iterable
     See also: https://stackoverflow.com/questions/70186132/generic-function-for-consequtive-element-paring-by-n-given-to-a-function-with-zi
