@@ -189,6 +189,9 @@ class Polymer(object):
             key, value = words(line)
             self.rules[key] = value
 
+    def pp(self, *args):
+        print(*args)
+
 
 def part_1(source):
     return Polymer(source).go(10)

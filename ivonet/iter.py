@@ -123,9 +123,9 @@ def dictify(iterable):
     AssertionError: iterable should have a multiplication of len 2
     """
     assert iterable, "Iterable should have value."
-    assert len(iterable) % 2 == 0, "iterable should have a multiplication of len 2"
+    assert len(iterable) % 2 == 0, f"iterable should have a multiplication of len 2 but has len {len(iterable)}."
     ret = {}
-    for k, v, in chunkify(iterable, length=2):
+    for k, v in chunkify(iterable, length=2):
         ret[k] = v
     return ret
 

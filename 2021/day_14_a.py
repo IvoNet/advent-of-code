@@ -10,52 +10,51 @@ __doc__ = """
 
 import sys
 import unittest
-from collections import defaultdict
+from collections import Counter
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, consecutive_element_pairing, words
+from ivonet.iter import ints, words
 
 sys.dont_write_bytecode = True
 
 
-def pairs(s: str):
-    return consecutive_element_pairing(s, consecutive_element=2, map_to_func=lambda x: "".join(x))
+class Polymer:
 
+    def __init__(self, source) -> None:
+        self.template = source[0]
+        self.inserts = dict([words(x) for x in source[2:] if x])
+        self.cache = {}
+        self.letters = Counter()
 
-def parse(source):
-    p = pairs(source[0])
-    instructions = {}
-    for line in source[2:]:
-        key, value = words(line)
-        instructions[key] = value
-    return p, instructions
-
-
-def part_1(source, steps=10):
-    formula = ""
-    couples, instructions = parse(source)
-    for i in range(steps):
-        first = True
-        formula = ""
-        for key in couples:
-            if first:
-                ns = key[:1] + instructions[key] + key[1:]
-                first = False
+    def insert(self, pair, step, stop):
+        try:
+            return self.cache[(pair, step)]
+        except KeyError:
+            if step < stop:
+                left = pair[0] + self.inserts[pair]
+                right = self.inserts[pair] + pair[1]
+                left_letter = self.insert(left, step + 1, stop)
+                right_letter = self.insert(right, step + 1, stop)
+                self.cache[(pair, step)] = left_letter + right_letter
+                return left_letter + right_letter
             else:
-                ns = instructions[key] + key[1:]
-            formula += ns
-        couples = pairs(formula)
-        # print(formula)
-    counter = defaultdict(int)
-    for i in formula:
-        counter[i] += 1
+                self.cache[(pair, step)] = Counter(pair[0])
+                return Counter(pair[0])
 
-    return max(counter.values()) - min(counter.values())
+    def go(self, stop):
+        self.letters = Counter(self.template[-1])
+        for i in range(len(self.template) - 1):
+            self.letters = self.letters + self.insert(self.template[i:i + 2], 0, stop)
+        return max(self.letters.values()) - min(self.letters.values())
+
+
+def part_1(source):
+    return Polymer(source).go(10)
 
 
 def part_2(source):
-    return part_1(source, 40)
+    return Polymer(source).go(40)
 
 
 class UnitTests(unittest.TestCase):
@@ -92,7 +91,7 @@ CN -> C""")
         self.assertEqual(2188189693529, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(3459822539451, part_2(self.source))
 
 
 if __name__ == '__main__':
