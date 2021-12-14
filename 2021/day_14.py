@@ -19,51 +19,18 @@ from ivonet.iter import ints, consecutive_element_pairing, words
 sys.dont_write_bytecode = True
 
 
-def pairs(s: str):
-    return consecutive_element_pairing(s, consecutive_element=2, map_to_func=lambda x: "".join(x))
-
-
-def parse(source):
-    p = pairs(source[0])
-    instructions = defaultdict(str)
-    for line in source[2:]:
-        key, value = words(line)
-        instructions[key] = value
-    return p, instructions
-
-
-def part_1(source):
-    formula = ""
-    couples, instructions = parse(source)
-    for i in range(10):
-        first = True
-        formula = ""
-        for key in couples:
-            if first:
-                ns = key[:1] + instructions[key] + key[1:]
-                first = False
-            else:
-                ns = instructions[key] + key[1:]
-            formula += ns
-        print(formula, formula.count("B"), formula.count("N"), formula.count("C"), formula.count("H"))
-        couples = pairs(formula)
-    counter = defaultdict(int)
-    for i in formula:
-        counter[i] += 1
-
-    return max(counter.values()) - min(counter.values())
-
-
 class Polymer(object):
 
     def __init__(self, source) -> None:
         self.source = source
-        self.start = source[0]
-        self.couples, self.rules = parse(source)
+        self.start_polymer = source[0]
+        self.first = self.start_polymer[0]
+        self.last = self.start_polymer[-1:]
+        self.couples = defaultdict(str)
+        self.rules = defaultdict(str)
         self.result = defaultdict(int)
         self.total = defaultdict(int)
-        self.first = self.start[0]
-        self.last = self.start[-1:]
+        self.parse()
 
     def go(self, steps=40):
         for key in self.couples:
@@ -100,12 +67,20 @@ class Polymer(object):
         letter = self.rules[key]
         return key[0] + letter, letter + key[1]
 
+    def parse(self):
+        self.couples = consecutive_element_pairing(self.start_polymer, consecutive_element=2,
+                                                   map_to_func=lambda x: "".join(x))
+        for line in self.source[2:]:
+            key, value = words(line)
+            self.rules[key] = value
+
+
+def part_1(source):
+    return Polymer(source).go(10)
+
 
 def part_2(source):
-    pol = Polymer(source)
-    return pol.go(40)
-    # print(pol.cache)
-    # print(pol.ccache)
+    return Polymer(source).go(40)
 
 
 class UnitTests(unittest.TestCase):
