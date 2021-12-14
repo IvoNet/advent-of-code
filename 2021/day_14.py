@@ -30,11 +30,12 @@ class Polymer(object):
         self.result = defaultdict(int)
         self.__initialize()
 
-    def get_pair(self, key):
+    def get_pair(self, key: str) -> tuple[str, str]:
+        """Create the two new keys based on the given key"""
         letter = self.rules[key]
         return key[0] + letter, letter + key[1]
 
-    def go(self, steps=40):
+    def go(self, steps: int = 40) -> int:
         """Iterate the number of steps over the polymer:
         - initialize the result dict by giving the original couples from the start polymer a value of 1
         - __step the given amount of time extending the polymer (see doc of __step)
@@ -58,7 +59,7 @@ class Polymer(object):
 
         return max(occurrences.values()) - min(occurrences.values())
 
-    def __step(self):
+    def __step(self) -> None:
         """A __step consists of:
         - a new state
         - all the pairs in the result dict with a positive value actually exist in the polymer. The others can be
@@ -88,7 +89,7 @@ class Polymer(object):
         for key, value in temp.items():
             self.result[key] += value
 
-    def __initialize(self):
+    def __initialize(self) -> None:
         self.couples = consecutive_element_pairing(self.start_polymer, consecutive_element=2,
                                                    map_to_func=lambda x: "".join(x))
         for line in self.source[2:]:
