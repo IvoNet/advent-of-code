@@ -139,7 +139,7 @@ class Polymer(object):
             self.__step()
 
         occurrences = defaultdict(int)
-        for key, value in [x for x in self.result.items() if x[1] > 0]:
+        for key, value in self.__all_result_keys_with_a_positive_value():
             occurrences[key[0]] += value
             occurrences[key[1]] += value
 
@@ -160,7 +160,7 @@ class Polymer(object):
                   this key will change to other keys.
                 - Increase the elements found by the value as all occurrences of the original key will fall
                   apart into these new ones
-        - Update the result dict with the temp state by key and value
+        - update the result dict with the temp state by key and value
 
         NOTE 1: that all letters of the keys will be counted twice as the keys consist of 2 letter pairs.
                 This will be fixed at the end.
@@ -168,8 +168,7 @@ class Polymer(object):
                 Also fixed at the end.
         """
         temp = defaultdict(int)
-        all_keys_with_a_positive_value = [x for x in self.result.items() if x[1] > 0]
-        for key, value in all_keys_with_a_positive_value:
+        for key, value in self.__all_result_keys_with_a_positive_value():
             elements = self.elements_from(key)
 
             temp[key] -= value
@@ -179,6 +178,9 @@ class Polymer(object):
 
         for key, value in temp.items():
             self.result[key] += value
+
+    def __all_result_keys_with_a_positive_value(self):
+        return [x for x in self.result.items() if x[1] > 0]
 
     def __initialize(self) -> None:
         self.couples = consecutive_element_pairing(self.start_polymer, consecutive_element=2,
