@@ -15,9 +15,9 @@
 # limitations under the License.
 from __future__ import annotations
 
+from collections import deque
 from heapq import heappush, heappop
-from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Set, Deque, Dict, Any, Optional
-from typing_extensions import Protocol
+from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Set, Deque, Dict, Any, Optional, Protocol
 
 T = TypeVar('T')
 
@@ -91,6 +91,11 @@ class Node(Generic[T]):
     def __lt__(self, other: Node) -> bool:
         return (self.cost + self.heuristic) < (other.cost + other.heuristic)
 
+    def __repr__(self) -> str:
+        if self.parent:
+            return f"state[{self.state}] - cost[{self.cost}] - parent[{self.parent.state}]"
+        return f"state[{self.state}] - cost[{self.cost}] - parent[None]"
+
 
 def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
     # frontier is where we've yet to go
@@ -127,7 +132,7 @@ def node_to_path(node: Node[T]) -> List[T]:
 
 class Queue(Generic[T]):
     def __init__(self) -> None:
-        self._container: Deque[T] = Deque()
+        self._container: Deque[T] = deque()
 
     @property
     def empty(self) -> bool:
@@ -184,8 +189,15 @@ class PriorityQueue(Generic[T]):
         return repr(self._container)
 
 
-def astar(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]],
-          heuristic: Callable[[T], float]) -> Optional[Node[T]]:
+def astar(initial: T, goal_test: Callable[[T], bool],
+          successors: Callable[[T], List[T]],
+          heuristic: Callable[[T], float],
+          cost: Callable[[T], int]) -> Optional[Node[T]]:
+    """The A* (astar)
+
+    is a dfs but you can provide a cost callback function that can direct your search
+    (see 2021/Day15 of the Advent of Code for an implementation example)
+    """
     # frontier is where we've yet to go
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
     frontier.push(Node(initial, None, 0.0, heuristic(initial)))
@@ -200,12 +212,12 @@ def astar(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], 
         if goal_test(current_state):
             return current_node
         # check where we can go next and haven't explored
-        for child in successors(current_state):
-            new_cost: float = current_node.cost + 1  # 1 assumes a grid, need a cost function for more sophisticated apps
+        for nb in successors(current_state):
+            new_cost: float = current_node.cost + cost(nb)
 
-            if child not in explored or explored[child] > new_cost:
-                explored[child] = new_cost
-                frontier.push(Node(child, current_node, new_cost, heuristic(child)))
+            if nb not in explored or explored[nb] > new_cost:
+                explored[nb] = new_cost
+                frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
     return None  # went through everything and never found goal
 
 
