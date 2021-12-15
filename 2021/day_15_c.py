@@ -19,7 +19,7 @@ from typing import Generic, List, Dict, Optional, NamedTuple
 from typing import TypeVar
 
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors
+from ivonet.grid import neighbors_defined_grid
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -85,19 +85,35 @@ def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
     return distance
 
 
-def goal_test(goal: MazeLocation) -> Callable[[MazeLocation], bool]:
+def is_goal(goal: MazeLocation) -> Callable[[MazeLocation], bool]:
     def reached(current: MazeLocation) -> bool:
         return current == goal
 
     return reached
 
 
-def adjoining(grid: list[list[int]]) -> Callable[[MazeLocation], list[MazeLocation]]:
+def adjoining(height, width) -> Callable[[MazeLocation], list[MazeLocation]]:
     def adjacent(ml: MazeLocation) -> list[MazeLocation]:
-        nb = [MazeLocation(r, c) for r, c in neighbors(grid, (ml.row, ml.col), diagonal=False)]
+        nb = [MazeLocation(r, c) for r, c in
+              neighbors_defined_grid((ml.row, ml.col), grid=(width, height), diagonal=False)]
         return nb
 
     return adjacent
+
+
+def cost(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
+    def get_cost(ml: MazeLocation) -> int:
+        return risks[ml]
+
+    return get_cost
+
+
+def make_risk_map(grid: list[list[int]]) -> Dict[MazeLocation, int]:
+    risks: Dict[MazeLocation, int] = {}
+    for r, row in enumerate(grid):
+        for c, risk in enumerate(row):
+            risks[MazeLocation(r, c)] = risk
+    return risks
 
 
 def astar(initial: T, goal_test: Callable[[T], bool],
@@ -119,8 +135,7 @@ def astar(initial: T, goal_test: Callable[[T], bool],
             return current_node
         # check where we can go next and haven't explored
         for nb in successors(current_state):
-            new_cost: float = current_node.cost + cost(
-                nb)  # 1 assumes a grid, need a cost function for more sophisticated apps
+            new_cost: float = current_node.cost + cost(nb)
 
             if nb not in explored or explored[nb] > new_cost:
                 explored[nb] = new_cost
@@ -128,19 +143,18 @@ def astar(initial: T, goal_test: Callable[[T], bool],
     return None  # went through everything and never found goal
 
 
-def cost(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
-    def get_cost(ml: MazeLocation) -> int:
-        return risks[ml]
-
-    return get_cost
-
-
-def make_risk_map(grid: list[list[int]]) -> Dict[MazeLocation, int]:
-    risks: Dict[MazeLocation, int] = {}
-    for r, row in enumerate(grid):
-        for c, risk in enumerate(row):
-            risks[MazeLocation(r, c)] = risk
-    return risks
+def part_1(source):
+    rows = len(source)
+    cols = len(source[0])
+    start = MazeLocation(0, 0)
+    goal = MazeLocation(rows - 1, cols - 1)
+    risks = make_risk_map(source)
+    solution = astar(start, is_goal(goal), adjoining(rows, cols), manhattan_distance(goal), cost(risks))
+    if solution:
+        print(solution)
+        print(node_to_path(solution))
+        return solution.cost
+    raise ValueError("Part 1: No solution found.")
 
 
 def make_extended_risk_map(risks: Dict[MazeLocation, int], width, height) -> Dict[MazeLocation, int]:
@@ -154,27 +168,15 @@ def make_extended_risk_map(risks: Dict[MazeLocation, int], width, height) -> Dic
     return expanded_risks
 
 
-def part_1(source):
-    rows = len(source)
-    cols = len(source[0])
-    start = MazeLocation(0, 0)
-    goal = MazeLocation(rows - 1, cols - 1)
-    risks = make_risk_map(source)
-    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(risks))
-    if solution:
-        print(solution)
-        print(node_to_path(solution))
-        return solution.cost
-    raise ValueError("Part 1: No solution found.")
-
-
 def part_2(source):
     rows = len(source)
     cols = len(source[0])
     start = MazeLocation(0, 0)
-    goal = MazeLocation(rows - 1, cols - 1)
+    new_height = rows * 5
+    new_width = cols * 5
+    goal = MazeLocation(new_height - 1, new_width - 1)
     risks = make_extended_risk_map(make_risk_map(source), rows, cols)
-    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(risks))
+    solution = astar(start, is_goal(goal), adjoining(new_height, new_width), manhattan_distance(goal), cost(risks))
     if solution:
         print(solution)
         print(node_to_path(solution))

@@ -61,7 +61,7 @@ def neighbor_values(grid, coord, diagonal=True):
     return [grid[h][w] for h, w in nb]
 
 
-def neighbors_defined_grid(coord: tuple, grid=(100, 100), diagonal=True):
+def neighbors_defined_grid(coord: tuple[int, int], grid=(100, 100), diagonal=True):
     """Same as neighbors (above) but now with a fictional grid"""
     width = grid[0] - 1
     height = grid[1] - 1
