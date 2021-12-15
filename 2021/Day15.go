@@ -2,20 +2,14 @@ package main
 
 import (
 	"container/heap"
-	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"strings"
-
-	"github.com/lizthegrey/adventofcode/2021/trace"
-	"go.opentelemetry.io/otel"
 	// "go.opentelemetry.io/otel/attribute"
 )
 
-var inputFile = flag.String("inputFile", "inputs/day15.input", "Relative file path to use as input.")
-
-var tr = otel.Tracer("day15")
+var inputFile = flag.String("inputFile", "/Users/iwo16283/dev/advent-of-code/2021/day_15.txt", "Relative file path to use as input.")
 
 type RiskMap map[Coord]int
 type Coord struct {
@@ -58,13 +52,14 @@ func (h HeapQueue) Position(x Coord) int {
 func main() {
 	flag.Parse()
 
-	ctx := context.Background()
-	hny, tp := trace.InitializeTracing(ctx)
-	defer hny.Shutdown(ctx)
-	defer tp.Shutdown(ctx)
+	//ctx := context.Background()
+	//hny, tp := trace.InitializeTracing(ctx)
+	//defer hny.Shutdown(ctx)
+	//defer tp.Shutdown(ctx)
 
 	bytes, err := ioutil.ReadFile(*inputFile)
 	if err != nil {
+		fmt.Println("Error")
 		return
 	}
 	contents := string(bytes)
@@ -81,7 +76,7 @@ func main() {
 	width := len(split[0])
 	start := Coord{0, 0}
 	dst := Coord{height - 1, width - 1}
-	fmt.Println(AStar(risks, &start, &dst))
+	fmt.Println("!!!", AStar(risks, &start, &dst))
 
 	dst = Coord{height*5 - 1, width*5 - 1}
 	expandedRisks := make(RiskMap)
@@ -127,7 +122,8 @@ func AStar(r RiskMap, src, dst *Coord) int {
 				history[n] = current
 				gScore[n] = proposedScore
 				fScore[n] = proposedScore + n.Heuristic(dst)
-				if pos := workList.Position(n); pos == -1 {
+				if pos := workList.
+					Position(n); pos == -1 {
 					heap.Push(&workList, n)
 				} else {
 					heap.Fix(&workList, pos)
