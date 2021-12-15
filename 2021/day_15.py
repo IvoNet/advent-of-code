@@ -57,7 +57,7 @@ def adjoining(height, width) -> Callable[[MazeLocation], list[MazeLocation]]:
     return adjacent
 
 
-def cost(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
+def cost_calculator(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
     def get_cost(ml: MazeLocation) -> int:
         return risks[ml]
 
@@ -89,7 +89,11 @@ def part_1(source):
     start = MazeLocation(0, 0)
     goal = MazeLocation(rows - 1, cols - 1)
     risks = make_risk_map(source)
-    solution = astar(start, is_goal(goal), adjoining(rows, cols), manhattan_distance(goal), cost(risks))
+    solution = astar(start,  # start at the start
+                     is_goal(goal),  # callback function to see if the end goal has been reached
+                     adjoining(rows, cols),  # callback to get all the relevant neighbors of a MazeLocation
+                     manhattan_distance(goal),  # No diagonals allowed so the Manhattan distance calculator callback
+                     cost_calculator(risks))  # the cost of going a direction based on the Chiton risk per MazeLocation
     if solution:
         # print(solution)
         # print(node_to_path(solution))
@@ -105,7 +109,11 @@ def part_2(source):
     new_width = cols * 5
     goal = MazeLocation(new_height - 1, new_width - 1)
     risks = make_extended_risk_map(make_risk_map(source), rows, cols)
-    solution = astar(start, is_goal(goal), adjoining(new_height, new_width), manhattan_distance(goal), cost(risks))
+    solution = astar(start,
+                     is_goal(goal),
+                     adjoining(new_height, new_width),
+                     manhattan_distance(goal),
+                     cost_calculator(risks))
     if solution:
         # print(solution)
         # print(node_to_path(solution))

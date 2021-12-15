@@ -93,8 +93,8 @@ class Node(Generic[T]):
 
     def __repr__(self) -> str:
         if self.parent:
-            return f"state[{self.state}] - cost[{self.cost}] - parent[{self.parent.state}]"
-        return f"state[{self.state}] - cost[{self.cost}] - parent[None]"
+            return f"state[{self.state}] - cost_calculator[{self.cost}] - parent[{self.parent.state}]"
+        return f"state[{self.state}] - cost_calculator[{self.cost}] - parent[None]"
 
 
 def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
