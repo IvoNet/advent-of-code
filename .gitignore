@@ -9,3 +9,5 @@ venv
 .testmondata
 .session
 .tmp
+lib
+out
