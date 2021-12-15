@@ -105,16 +105,14 @@ class Cavern(Generic[T]):
         self.grid = grid
         self.rows = len(grid)
         self.columns = len(grid[0])
-        self.goal = MazeLocation(self.rows, self.columns)
+        self.goal = MazeLocation(self.rows - 1, self.columns - 1)
+        self.start = MazeLocation(0, 0)
+        self.risks: dict[MazeLocation] = {}
+        self.make_risk_map()
 
     def successors(self, current: MazeLocation) -> list[MazeLocation]:
-        nb = neighbors(self.grid, (current.row, current.col), diagonal=False)
-        suc = []
-        for h, w in nb:
-            value = self.grid[h][w]
-            suc.append(MazeLocation(h, w, value))
-        ret = sorted(suc, key=lambda x: x.cost)
-        return ret
+        nb = [MazeLocation(r, c) for r, c in neighbors(self.grid, (current.row, current.col), diagonal=False)]
+        return nb
 
     def cost(self, location: MazeLocation) -> float:
         if location.row == 0 and location.col == 0:
@@ -123,6 +121,11 @@ class Cavern(Generic[T]):
 
     def goal_test(self, location: MazeLocation) -> bool:
         return location == self.goal
+
+    def make_risk_map(self):
+        for r, row in enumerate(self.grid):
+            for c, col in enumerate(row):
+                self.risks[MazeLocation(r, c)] = col
 
 
 def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:

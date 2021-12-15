@@ -52,11 +52,6 @@ func (h HeapQueue) Position(x Coord) int {
 func main() {
 	flag.Parse()
 
-	//ctx := context.Background()
-	//hny, tp := trace.InitializeTracing(ctx)
-	//defer hny.Shutdown(ctx)
-	//defer tp.Shutdown(ctx)
-
 	bytes, err := ioutil.ReadFile(*inputFile)
 	if err != nil {
 		fmt.Println("Error")
@@ -76,7 +71,7 @@ func main() {
 	width := len(split[0])
 	start := Coord{0, 0}
 	dst := Coord{height - 1, width - 1}
-	fmt.Println("!!!", AStar(risks, &start, &dst))
+	fmt.Println("Part 1:", AStar(risks, &start, &dst))
 
 	dst = Coord{height*5 - 1, width*5 - 1}
 	expandedRisks := make(RiskMap)
@@ -89,7 +84,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Println(AStar(expandedRisks, &start, &dst))
+	fmt.Println("Part 2:", AStar(expandedRisks, &start, &dst))
 }
 
 func AStar(r RiskMap, src, dst *Coord) int {
