@@ -181,7 +181,7 @@ def part_2(source):
         # print(solution)
         # print(node_to_path(solution))
         return solution.cost
-    raise ValueError("Part 1: No solution found.")
+    raise ValueError("Part 2: No solution found.")
 
 
 class UnitTests(unittest.TestCase):
