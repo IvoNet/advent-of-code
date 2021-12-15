@@ -147,7 +147,14 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    rows = len(source)
+    cols = len(source[0])
+    start = MazeLocation(0, 0)
+    goal = MazeLocation(rows - 1, cols - 1)
+    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(source))
+    print(solution)
+    print(node_to_path(solution))
+    return solution.cost
 
 
 class UnitTests(unittest.TestCase):
@@ -179,10 +186,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(458, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(315, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(2800, part_2(self.source))
 
 
 if __name__ == '__main__':
