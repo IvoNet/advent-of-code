@@ -128,11 +128,30 @@ def astar(initial: T, goal_test: Callable[[T], bool],
     return None  # went through everything and never found goal
 
 
-def cost(grid: list[list[int]]) -> Callable[[MazeLocation], int]:
+def cost(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
     def get_cost(ml: MazeLocation) -> int:
-        return grid[ml.row][ml.col]
+        return risks[ml]
 
     return get_cost
+
+
+def make_risk_map(grid: list[list[int]]) -> Dict[MazeLocation, int]:
+    risks: Dict[MazeLocation, int] = {}
+    for r, row in enumerate(grid):
+        for c, risk in enumerate(row):
+            risks[MazeLocation(r, c)] = risk
+    return risks
+
+
+def make_extended_risk_map(risks: Dict[MazeLocation, int], width, height) -> Dict[MazeLocation, int]:
+    expanded_risks: Dict[MazeLocation, int] = {}
+    for k, v in risks.items():
+        for r in range(5):
+            for c in range(5):
+                increase = r + c
+                value = 1 + (v + increase - 1) % 9
+                expanded_risks[MazeLocation(k.row + r * height, k.col + c * width)] = value
+    return expanded_risks
 
 
 def part_1(source):
@@ -140,10 +159,13 @@ def part_1(source):
     cols = len(source[0])
     start = MazeLocation(0, 0)
     goal = MazeLocation(rows - 1, cols - 1)
-    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(source))
-    print(solution)
-    print(node_to_path(solution))
-    return solution.cost
+    risks = make_risk_map(source)
+    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(risks))
+    if solution:
+        print(solution)
+        print(node_to_path(solution))
+        return solution.cost
+    raise ValueError("Part 1: No solution found.")
 
 
 def part_2(source):
@@ -151,10 +173,13 @@ def part_2(source):
     cols = len(source[0])
     start = MazeLocation(0, 0)
     goal = MazeLocation(rows - 1, cols - 1)
-    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(source))
-    print(solution)
-    print(node_to_path(solution))
-    return solution.cost
+    risks = make_extended_risk_map(make_risk_map(source), rows, cols)
+    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(risks))
+    if solution:
+        print(solution)
+        print(node_to_path(solution))
+        return solution.cost
+    raise ValueError("Part 1: No solution found.")
 
 
 class UnitTests(unittest.TestCase):
