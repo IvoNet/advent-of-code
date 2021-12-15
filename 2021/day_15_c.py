@@ -50,6 +50,16 @@ class MazeLocation(NamedTuple):
     col: int
 
 
+def node_to_path(node: Node[T]) -> List[T]:
+    path: List[T] = [node.state]
+    # work backwards from end to front
+    while node.parent is not None:
+        node = node.parent
+        path.append(node.state)
+    path.reverse()
+    return path
+
+
 class Node(Generic[T]):
     def __init__(self, state: T, parent: Optional[Node], cost: float = 0.0, heuristic: float = 0.0) -> None:
         self.state: T = state
@@ -59,6 +69,11 @@ class Node(Generic[T]):
 
     def __lt__(self, other: Node) -> bool:
         return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+
+    def __repr__(self) -> str:
+        if self.parent:
+            return f"state[{self.state}] - cost[{self.cost}] - parent[{self.parent.state}]"
+        return f"state[{self.state}] - cost[{self.cost}] - parent[None]"
 
 
 def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
@@ -115,8 +130,9 @@ def part_1(source):
     cols = len(source[0])
     start = MazeLocation(0, 0)
     goal = MazeLocation(rows - 1, cols - 1)
-    solution = astar(MazeLocation(0, 0), goal_test(goal), adjoining(source), manhattan_distance(goal))
-
+    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal))
+    print(solution)
+    print(node_to_path(solution))
     return solution
 
 
