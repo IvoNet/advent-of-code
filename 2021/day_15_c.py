@@ -100,8 +100,10 @@ def adjoining(grid: list[list[int]]) -> Callable[[MazeLocation], list[MazeLocati
     return adjacent
 
 
-def astar(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]],
-          heuristic: Callable[[T], float]) -> Optional[Node[T]]:
+def astar(initial: T, goal_test: Callable[[T], bool],
+          successors: Callable[[T], List[T]],
+          heuristic: Callable[[T], float],
+          cost: Callable[[T], int]) -> Optional[Node[T]]:
     # frontier is where we've yet to go
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
     frontier.push(Node(initial, None, 0.0, heuristic(initial)))
@@ -116,13 +118,21 @@ def astar(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], 
         if goal_test(current_state):
             return current_node
         # check where we can go next and haven't explored
-        for child in successors(current_state):
-            new_cost: float = current_node.cost + 1  # 1 assumes a grid, need a cost function for more sophisticated apps
+        for nb in successors(current_state):
+            new_cost: float = current_node.cost + cost(
+                nb)  # 1 assumes a grid, need a cost function for more sophisticated apps
 
-            if child not in explored or explored[child] > new_cost:
-                explored[child] = new_cost
-                frontier.push(Node(child, current_node, new_cost, heuristic(child)))
+            if nb not in explored or explored[nb] > new_cost:
+                explored[nb] = new_cost
+                frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
     return None  # went through everything and never found goal
+
+
+def cost(grid: list[list[int]]) -> Callable[[MazeLocation], int]:
+    def get_cost(ml: MazeLocation) -> int:
+        return grid[ml.row][ml.col]
+
+    return get_cost
 
 
 def part_1(source):
@@ -130,10 +140,10 @@ def part_1(source):
     cols = len(source[0])
     start = MazeLocation(0, 0)
     goal = MazeLocation(rows - 1, cols - 1)
-    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal))
+    solution = astar(start, goal_test(goal), adjoining(source), manhattan_distance(goal), cost(source))
     print(solution)
     print(node_to_path(solution))
-    return solution
+    return solution.cost
 
 
 def part_2(source):
@@ -166,7 +176,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(40, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(458, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
