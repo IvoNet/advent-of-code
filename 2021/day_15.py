@@ -12,22 +12,19 @@ __doc__ = """
 
 import sys
 import unittest
+from collections import Callable
 from heapq import heappush, heappop
 from pathlib import Path
-from typing import Generic, TypeVar, Callable, List, Optional, NamedTuple, Dict
+from typing import Generic, List, Dict, Optional, NamedTuple
+from typing import TypeVar
 
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors
+from ivonet.grid import neighbors_defined_grid
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
 T = TypeVar('T')
-
-
-class MazeLocation(NamedTuple):
-    row: int
-    col: int
 
 
 class PriorityQueue(Generic[T]):
@@ -48,6 +45,21 @@ class PriorityQueue(Generic[T]):
         return repr(self._container)
 
 
+class MazeLocation(NamedTuple):
+    row: int
+    col: int
+
+
+def node_to_path(node: Node[T]) -> List[T]:
+    path: List[T] = [node.state]
+    # work backwards from end to front
+    while node.parent is not None:
+        node = node.parent
+        path.append(node.state)
+    path.reverse()
+    return path
+
+
 class Node(Generic[T]):
     def __init__(self, state: T, parent: Optional[Node], cost: float = 0.0, heuristic: float = 0.0) -> None:
         self.state: T = state
@@ -64,18 +76,10 @@ class Node(Generic[T]):
         return f"state[{self.state}] - cost[{self.cost}] - parent[None]"
 
 
-def node_to_path(node: Node[T]) -> List[T]:
-    path: List[T] = [node.state]
-    # work backwards from end to front
-    while node.parent is not None:
-        node = node.parent
-        path.append(node.state)
-    path.reverse()
-    return path
-
-
-def astar(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]],
-          cost_calc: Callable[[T], float], heuristic: Callable[[T], float]) -> Optional[Node[T]]:
+def astar(initial: T, goal_test: Callable[[T], bool],
+          successors: Callable[[T], List[T]],
+          heuristic: Callable[[T], float],
+          cost: Callable[[T], int]) -> Optional[Node[T]]:
     # frontier is where we've yet to go
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
     frontier.push(Node(initial, None, 0.0, heuristic(initial)))
@@ -90,42 +94,13 @@ def astar(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], 
         if goal_test(current_state):
             return current_node
         # check where we can go next and haven't explored
-        for child in successors(current_state):
-            new_cost: float = current_node.cost + cost_calc(current_node.state)
+        for nb in successors(current_state):
+            new_cost: float = current_node.cost + cost(nb)
 
-            if child not in explored or explored[child] > new_cost:
-                explored[child] = new_cost
-                frontier.push(Node(child, current_node, new_cost, heuristic(child)))
-    return Node(MazeLocation(-1, -1), None, -1)  # went through everything and never found goal
-
-
-class Cavern(Generic[T]):
-
-    def __init__(self, grid) -> None:
-        self.grid = grid
-        self.rows = len(grid)
-        self.columns = len(grid[0])
-        self.goal = MazeLocation(self.rows - 1, self.columns - 1)
-        self.start = MazeLocation(0, 0)
-        self.risks: dict[MazeLocation] = {}
-        self.make_risk_map()
-
-    def successors(self, current: MazeLocation) -> list[MazeLocation]:
-        nb = [MazeLocation(r, c) for r, c in neighbors(self.grid, (current.row, current.col), diagonal=False)]
-        return nb
-
-    def cost(self, location: MazeLocation) -> float:
-        if location.row == 0 and location.col == 0:
-            return 0
-        return self.grid[location.row][location.col]
-
-    def goal_test(self, location: MazeLocation) -> bool:
-        return location == self.goal
-
-    def make_risk_map(self):
-        for r, row in enumerate(self.grid):
-            for c, col in enumerate(row):
-                self.risks[MazeLocation(r, c)] = col
+            if nb not in explored or explored[nb] > new_cost:
+                explored[nb] = new_cost
+                frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
+    return None  # went through everything and never found goal
 
 
 def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
@@ -137,16 +112,76 @@ def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
     return distance
 
 
-def part_1(grid):
-    cavern = Cavern(grid)
-    distance = manhattan_distance(MazeLocation(cavern.rows, cavern.columns))
-    solution = astar(MazeLocation(0, 0), cavern.goal_test, cavern.successors, cavern.cost, distance)
-    print(solution)
-    return solution.cost
+def is_goal(goal: MazeLocation) -> Callable[[MazeLocation], bool]:
+    def reached(current: MazeLocation) -> bool:
+        return current == goal
+
+    return reached
+
+
+def adjoining(height, width) -> Callable[[MazeLocation], list[MazeLocation]]:
+    def adjacent(ml: MazeLocation) -> list[MazeLocation]:
+        nb = [MazeLocation(r, c) for r, c in
+              neighbors_defined_grid((ml.row, ml.col), grid=(width, height), diagonal=False)]
+        return nb
+
+    return adjacent
+
+
+def cost(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
+    def get_cost(ml: MazeLocation) -> int:
+        return risks[ml]
+
+    return get_cost
+
+
+def make_risk_map(grid: list[list[int]]) -> Dict[MazeLocation, int]:
+    risks: Dict[MazeLocation, int] = {}
+    for r, row in enumerate(grid):
+        for c, risk in enumerate(row):
+            risks[MazeLocation(r, c)] = risk
+    return risks
+
+
+def make_extended_risk_map(risks: Dict[MazeLocation, int], width, height) -> Dict[MazeLocation, int]:
+    expanded_risks: Dict[MazeLocation, int] = {}
+    for k, v in risks.items():
+        for r in range(5):
+            for c in range(5):
+                increase = r + c
+                value = 1 + (v + increase - 1) % 9
+                expanded_risks[MazeLocation(k.row + r * height, k.col + c * width)] = value
+    return expanded_risks
+
+
+def part_1(source):
+    rows = len(source)
+    cols = len(source[0])
+    start = MazeLocation(0, 0)
+    goal = MazeLocation(rows - 1, cols - 1)
+    risks = make_risk_map(source)
+    solution = astar(start, is_goal(goal), adjoining(rows, cols), manhattan_distance(goal), cost(risks))
+    if solution:
+        # print(solution)
+        # print(node_to_path(solution))
+        return solution.cost
+    raise ValueError("Part 1: No solution found.")
 
 
 def part_2(source):
-    return 0
+    rows = len(source)
+    cols = len(source[0])
+    start = MazeLocation(0, 0)
+    new_height = rows * 5
+    new_width = cols * 5
+    goal = MazeLocation(new_height - 1, new_width - 1)
+    risks = make_extended_risk_map(make_risk_map(source), rows, cols)
+    solution = astar(start, is_goal(goal), adjoining(new_height, new_width), manhattan_distance(goal), cost(risks))
+    if solution:
+        # print(solution)
+        # print(node_to_path(solution))
+        return solution.cost
+    raise ValueError("Part 1: No solution found.")
 
 
 class UnitTests(unittest.TestCase):
@@ -172,7 +207,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(458, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(315, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(2800, part_2(self.source))
