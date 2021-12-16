@@ -204,7 +204,7 @@ import unittest
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ivonet.calc import base_x_to_10
+from ivonet.calc import base_x_to_10, prod
 from ivonet.files import read_data
 from ivonet.iter import ints
 from ivonet.str import chunk_string
@@ -229,6 +229,44 @@ TRANSLATE = {
     "E": "1110",
     "F": "1111",
 }
+
+FUNC = {
+    0: "sum({}), ",
+    1: "prod({}), ",
+    2: "min({}), ",
+    3: "max({}), ",
+    4: "{},",
+    5: "(1 if ({} > {}) else 0), ",
+    6: "(1 if ({} < {}) else 0), ",
+    7: "(1 if ({} = {}) else 0), ",
+}
+
+
+def visualize(pl: list[Packet]) -> str:
+    ret = ""
+    for packet in pl:
+        if packet.type_id == 0:
+            ret += FUNC[packet.type_id].format(visualize(packet.children))
+        elif packet.type_id == 1:
+            ret += FUNC[packet.type_id].format(visualize(packet.children))
+        elif packet.type_id == 2:
+            ret += FUNC[packet.type_id].format(visualize(packet.children))
+        elif packet.type_id == 3:
+            ret += FUNC[packet.type_id].format(visualize(packet.children))
+        elif packet.type_id == 4:
+            ret += FUNC[packet.type_id].format(packet.value)
+        elif packet.type_id == 5:
+            ret += FUNC[packet.type_id].format(visualize([packet.children[0]]), visualize([packet.children[1]]))
+        elif packet.type_id == 6:
+            ret += FUNC[packet.type_id].format(visualize([packet.children[0]]), visualize([packet.children[1]]))
+        elif packet.type_id == 7:
+            ret += FUNC[packet.type_id].format(visualize([packet.children[0]]), visualize([packet.children[1]]))
+        else:
+            raise ValueError(f"Unknown type_id: {packet.type_id}")
+
+    if ret.endswith(", "):
+        return ret[:-2]
+    return ret
 
 
 def hex_2_bin(s: str) -> str:
@@ -276,10 +314,6 @@ class BITS(object):
     def __init__(self, hex: str) -> None:
         self.hex = hex
         self.binary = hex_2_bin(self.hex)
-        self.len = len(self.binary)
-        self.pointer = 0
-        self.version_total = 0
-        self.packets = []
 
     @staticmethod
     def take(data: str, size: int) -> tuple[str, str]:
@@ -287,9 +321,7 @@ class BITS(object):
 
     def consume_version(self, data) -> tuple[int, str]:
         version, data = self.take(data, 3)
-        version = b2d(version)
-        self.version_total += version
-        return version, data
+        return b2d(version), data
 
     def consume_type_id(self, data) -> tuple[int, str]:
         v, d = self.take(data, 3)
@@ -336,19 +368,61 @@ class BITS(object):
                     packet.children.append(sub_package)
         return packet, data
 
-    def run(self):
+    def go(self):
         return self.parse(self.binary)
+
+
+def print_operators():
+    print("sum:", BITS("C200B40A82").go()[0].type_id)
+    print("prod:", BITS("04005AC33890").go()[0].type_id)
+    print("min:", BITS("880086C3E88112").go()[0].type_id)
+    print("max:", BITS("CE00C43D881120").go()[0].type_id)
+    print("lt:", BITS("D8005AC2A8F0").go()[0].type_id)  # 1 of true else 0?
+    print("gt:", BITS("F600BC2D8F").go()[0].type_id)
+    print("ne:", BITS("9C005AC2F8F0").go()[0].type_id)  # equal test false
+    print("eq:", BITS("9C0141080250320F1802104A08").go()[0].type_id)  # equal test true
+
+
+def calculate(packet: Packet) -> int:
+    if packet.type_id == 0:
+        return sum([calculate(c) for c in packet.children])
+    elif packet.type_id == 1:
+        return prod([calculate(c) for c in packet.children])
+    elif packet.type_id == 2:
+        return min([calculate(c) for c in packet.children])
+    elif packet.type_id == 3:
+        return max([calculate(c) for c in packet.children])
+    elif packet.type_id == 4:
+        return packet.value
+    elif packet.type_id == 5:
+        return 1 if calculate(packet.children[0]) > calculate(packet.children[1]) else 0
+    elif packet.type_id == 6:
+        return 1 if calculate(packet.children[0]) < calculate(packet.children[1]) else 0
+    elif packet.type_id == 7:
+        return 1 if calculate(packet.children[0]) == calculate(packet.children[1]) else 0
+    else:
+        raise ValueError(f"Unknown type_id: {packet.type_id}")
+
+
+def sum_versions(ps: list[Packet]) -> int:
+    return sum([sum_versions(p.children) + p.version for p in ps])
 
 
 def part_1(source):
     bits = BITS(source)
-    packet, data = bits.run()
+    packet, data = bits.go()
     assert all(c == "0" for c in data)
-    return bits.version_total
+    return sum_versions([packet])
 
 
 def part_2(source):
-    return 0
+    bits = BITS(source)
+    packet, data = bits.go()
+    assert all(c == "0" for c in data)
+    result = calculate(packet)
+    print("\n\n")
+    print(visualize([packet]), " = ", result)
+    return result
 
 
 class UnitTests(unittest.TestCase):
@@ -381,7 +455,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(969, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(2021, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(124921618408, part_2(self.source))
