@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
+from __future__ import annotations
+
 __author__ = "Ivo Woltring"
 __revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
@@ -151,22 +153,198 @@ Here are a few more examples of hexadecimal-encoded transmissions:
   it has a version sum of 31.
   
 Decode the structure of your hexadecimal-encoded BITS transmission; what do you
- get if you add up the version numbers in all packets?
+get if you add up the version numbers in all packets?
 
+--- Part Two ---
+Now that you have the structure of your transmission decoded, you can calculate 
+the value of the expression it represents.
+
+Literal values (type ID 4) represent a single number as described above. 
+The remaining type IDs are more interesting:
+
+- Packets with type ID 0 are sum packets - their value is the sum of the values 
+  of their sub-packets. If they only have a single sub-packet, their value is 
+  the value of the sub-packet.
+- Packets with type ID 1 are product packets - their value is the result of 
+  multiplying together the values of their sub-packets. If they only have a 
+  single sub-packet, their value is the value of the sub-packet.
+- Packets with type ID 2 are minimum packets - their value is the minimum of 
+  the values of their sub-packets.
+- Packets with type ID 3 are maximum packets - their value is the maximum of 
+  the values of their sub-packets.
+- Packets with type ID 5 are greater than packets - their value is 1 if the 
+  value of the first sub-packet is greater than the value of the second sub-packet; 
+  otherwise, their value is 0. These packets always have exactly two sub-packets.
+- Packets with type ID 6 are less than packets - their value is 1 if the value of 
+  the first sub-packet is less than the value of the second sub-packet; otherwise, 
+  their value is 0. These packets always have exactly two sub-packets.
+- Packets with type ID 7 are equal to packets - their value is 1 if the value of 
+  the first sub-packet is equal to the value of the second sub-packet; otherwise, 
+  their value is 0. These packets always have exactly two sub-packets.
+
+Using these rules, you can now work out the value of the outermost packet 
+in your BITS transmission.
+
+For example:
+
+- C200B40A82 finds the sum of 1 and 2, resulting in the value 3.
+- 04005AC33890 finds the product of 6 and 9, resulting in the value 54.
+- 880086C3E88112 finds the minimum of 7, 8, and 9, resulting in the value 7.
+- CE00C43D881120 finds the maximum of 7, 8, and 9, resulting in the value 9.
+- D8005AC2A8F0 produces 1, because 5 is less than 15.
+- F600BC2D8F produces 0, because 5 is not greater than 15.
+- 9C005AC2F8F0 produces 0, because 5 is not equal to 15.
+- 9C0141080250320F1802104A08 produces 1, because 1 + 3 = 2 * 2.
+
+What do you get if you evaluate the expression represented by your hexadecimal-encoded BITS transmission?
 """
 
 import sys
 import unittest
+from dataclasses import dataclass, field
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.calc import base_x_to_10
+from ivonet.files import read_data
 from ivonet.iter import ints
+from ivonet.str import chunk_string
 
 sys.dont_write_bytecode = True
 
+TRANSLATE = {
+    "0": "0000",
+    "1": "0001",
+    "2": "0010",
+    "3": "0011",
+    "4": "0100",
+    "5": "0101",
+    "6": "0110",
+    "7": "0111",
+    "8": "1000",
+    "9": "1001",
+    "A": "1010",
+    "B": "1011",
+    "C": "1100",
+    "D": "1101",
+    "E": "1110",
+    "F": "1111",
+}
+
+
+def hex_2_bin(s: str) -> str:
+    return "".join(TRANSLATE[x] for x in s)
+
+
+def b2d(s):
+    return base_x_to_10(s, base=2)
+
+
+def literal_value(s: str):
+    values = [x for x in chunk_string(s, 5) if len(x) == 5]
+    b = "".join([x[1:] for x in values])
+    return b2d(b)
+
+
+@dataclass
+class Packet:
+    version: int
+    type_id: int
+    value: int = 0
+    children: list[Packet] = field(default_factory=list)
+
+
+class BITS(object):
+    """
+        packet := packet + packet |
+                  header(6) + literal_value |
+                  header + operator_packet
+        header(6) := version(3) + type_id(3)
+        version := number
+        type_id := literal_value(=4) | operator_value(!=4)
+        operator_packet := length_type_id(1) + sub_packets_amount(11) + sub_packets |
+                           length_type_id(1) + total_length_sub_packets(15) + sub_packets
+        length_type_id(1) := 0 -> 15 bits -> b2d representing the total length of the sub_packets (NOT LITERAL just binary)
+                             1 -> 11 bits -> b2d value representing the total nr of sub_package
+        sub_package := header + literal_value |
+                       header +
+
+        so in the end:
+        - Packet := version + type_id + [ value | Packet]
+
+    """
+
+    def __init__(self, hex: str) -> None:
+        self.hex = hex
+        self.binary = hex_2_bin(self.hex)
+        self.len = len(self.binary)
+        self.pointer = 0
+        self.version_total = 0
+        self.packets = []
+
+    @staticmethod
+    def take(data: str, size: int) -> tuple[str, str]:
+        return data[:size], data[size:]
+
+    def consume_version(self, data) -> tuple[int, str]:
+        version, data = self.take(data, 3)
+        version = b2d(version)
+        self.version_total += version
+        return version, data
+
+    def consume_type_id(self, data) -> tuple[int, str]:
+        v, d = self.take(data, 3)
+        return b2d(v), d
+
+    def consume_literal(self, data) -> tuple[int, str]:
+        val = ""
+        more = "1"
+        while more == "1":
+            more, data = self.take(data, 1)
+            b4, data = self.take(data, 4)
+            val += b4
+        return b2d(val), data
+
+    def consume_lti(self, data) -> tuple[str, str]:
+        return self.take(data, 1)
+
+    def consume_sub_package_count(self, data: str) -> tuple[int, str]:
+        v, d = self.take(data, 11)
+        return b2d(v), d
+
+    def consume_total_length_in_bits(self, data) -> tuple[int, str]:
+        v, d = self.take(data, 15)
+        return b2d(v), d
+
+    def parse(self, data: str) -> tuple[Packet, str]:
+        version, data = self.consume_version(data)
+        type_id, data = self.consume_type_id(data)
+        packet = Packet(version, type_id)
+        if type_id == 4:  # Literal value
+            packet.value, data = self.consume_literal(data)
+        else:  # Operator packet
+            lti, data = self.consume_lti(data)
+            if lti == "0":
+                sub_bits, data = self.consume_total_length_in_bits(data)
+                sub_data, data = self.take(data, sub_bits)
+                while sub_data:
+                    sub_package, sub_data = self.parse(sub_data)
+                    packet.children.append(sub_package)
+            else:
+                sub_package_count, data = self.consume_sub_package_count(data)
+                for _ in range(sub_package_count):
+                    sub_package, data = self.parse(data)
+                    packet.children.append(sub_package)
+        return packet, data
+
+    def run(self):
+        return self.parse(self.binary)
+
 
 def part_1(source):
-    return 0
+    bits = BITS(source)
+    packet, data = bits.run()
+    assert all(c == "0" for c in data)
+    return bits.version_total
 
 
 def part_2(source):
@@ -177,20 +355,36 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day}.txt")
-        self.test_source = read_rows("""D2FE28""")
+        self.source = read_data(f"day_{day}.txt")
+        self.test_source = read_data("""D2FE28""")
+        self.test_source_a = read_data("""8A004A801A8002F478""")  # 16
+        self.test_source_b = read_data("""620080001611562C8802118E34""")  # 12
+        self.test_source_c = read_data("""C0015000016115A2E0802F182340""")  # 23
+        self.test_source_d = read_data("""A0016C880162017C3686B18A3D4780""")  # 31
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(6, part_1(self.test_source))
+
+    def test_example_data_part_1_a(self):
+        self.assertEqual(16, part_1(self.test_source_a))
+
+    def test_example_data_part_1_b(self):
+        self.assertEqual(12, part_1(self.test_source_b))
+
+    def test_example_data_part_1_c(self):
+        self.assertEqual(23, part_1(self.test_source_c))
+
+    def test_example_data_part_1_d(self):
+        self.assertEqual(31, part_1(self.test_source_d))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(969, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(124921618408, part_2(self.source))
 
 
 if __name__ == '__main__':

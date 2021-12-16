@@ -149,6 +149,15 @@ def read_european_number(european_number):
         return european_number
 
 
+def chunk_string(string, length):
+    """Chops up strings in to fixed length chunks with possible leftover smaller than length at the end
+
+    >>> list(chunk_string("abcdefghijklmnopqrstuvwxyz", 5))
+    ['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy', 'z']
+    """
+    return (string[0 + i:length + i] for i in range(0, len(string), length))
+
+
 if __name__ == '__main__':
     import doctest
 
