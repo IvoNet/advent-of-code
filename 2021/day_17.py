@@ -149,13 +149,49 @@ import sys
 import unittest
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
 
-def part_1(source):
+def step(position: tuple[int, int], trajectory: tuple[int, int]) -> tuple[tuple[int, int], tuple[int, int]]:
+    px, py = position
+    tx, ty = trajectory
+    px += tx
+    py += ty
+    tx += -1 if tx > 0 else 1
+    ty -= 1
+    return (px, py), (tx, ty)
+
+
+def target_area(s: str) -> tuple[tuple[int, int], tuple[int, int]]:
+    sx, ex, sy, ey = ints(s)
+    return (sx, ey), (ex, sy)
+
+
+def area_contains(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[int, int]) -> bool:
+    top_left, bottom_right = area
+    tx, ty = top_left
+    bx, by = bottom_right
+    px, py = point
+    return tx <= px <= bx and by <= py <= ty  # <= because boundary is inclusive
+
+
+def beyond_area(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[int, int]) -> bool:
+    top_left, bottom_right = area
+    tx, ty = top_left
+    bx, by = bottom_right
+    px, py = point
+    return px > bx or py < by
+
+
+def part_1(source):  # 6,9
+    start = (0, 0)
+    target = target_area(source)
+    print(target)
+    print(area_contains(target, (20, -5)))
+    print(beyond_area(target, (30, -11)))
     return 0
 
 
@@ -167,11 +203,11 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day}.txt")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"day_{day}.txt")
+        self.test_source = read_data("""target area: x=20..30, y=-10..-5""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(45, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
