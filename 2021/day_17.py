@@ -206,17 +206,20 @@ def part_1(source):  # 6,9
                 steps += 1
                 # print(steps, position)
                 if area_contains(target, position):
+                    print(f"start[{current}], position[{position}], steps[{steps}], highest[{hpoint}]")
                     if hpoint[1] > highest[1]:
                         highest = hpoint
                         best = (x, y)
                         total_steps = steps
+                        # print(hpoint, end=' ')
                         break
 
+    print()
     print(total_steps, highest, best, current)
     # print(target)
     # print(area_contains(target, (20, -5)))
     # print(beyond_area(target, (30, -11)))
-    return total_steps
+    return highest[1]
 
 
 def part_2(source):
@@ -234,7 +237,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(45, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(4186, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
