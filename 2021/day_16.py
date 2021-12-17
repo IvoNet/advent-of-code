@@ -307,7 +307,7 @@ class BITS(object):
                        header +
 
         so in the end:
-        - Packet := version + type_id + [ value | Packet]
+        - Packet := version + type_id + [ value* | Packet]
 
     """
 

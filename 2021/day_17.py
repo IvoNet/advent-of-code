@@ -154,13 +154,21 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
+DEBUG = False
+
+
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 def step(position: tuple[int, int], trajectory: tuple[int, int]) -> tuple[tuple[int, int], tuple[int, int]]:
     px, py = position
     tx, ty = trajectory
     px += tx
     py += ty
-    tx += -1 if tx > 0 else 1
+    if tx != 0:
+        tx += -1 if tx > 0 else 1
     ty -= 1
     return (px, py), (tx, ty)
 
@@ -206,7 +214,7 @@ def part_1(source):  # 6,9
     highest = (0, 0)
     total_steps = 0
     for x in range(0, bottom_right[0] + 1):
-        for y in range(1000, -1000, -1):
+        for y in range(bottom_right[1] - 1, 100):
             current = (x, y)
             steps = 0
             hpoint = (0, 0)
@@ -217,29 +225,27 @@ def part_1(source):  # 6,9
                 if position[1] > hpoint[1]:
                     hpoint = position
                 steps += 1
-                # print(steps, position)
+                _(steps, position)
                 if area_contains(target, position):
-                    print(f"start[{current}], position[{position}], steps[{steps}], highest[{hpoint}]")
+                    _(f"start[{current}], position[{position}], steps[{steps}], highest[{hpoint}]")
                     if hpoint[1] > highest[1]:
                         highest = hpoint
                         best = (x, y)
                         total_steps = steps
-                        # print(hpoint, end=' ')
+                        _(hpoint, end=' ')
                         break
 
-    print()
-    print(total_steps, highest, best, current)
+    _()
+    _(total_steps, highest, best, current)
     return highest[1]
 
 
 def part_2(source):
     target = target_area(source)
     top_left, bottom_right = target
-    # trace(target, (0, 0), (7, 2))
-    good_list = []
     good_start_velocities = set()
     for x in range(0, bottom_right[0] + 1):
-        for y in range(bottom_right[1] - 1, 1000):
+        for y in range(bottom_right[1] - 1, 100):
             current = (x, y)
             position = (0, 0)
             trajectory = (x, y)
@@ -247,11 +253,9 @@ def part_2(source):
                 position, trajectory = step(position, trajectory)
                 if area_contains(target, position):
                     good_start_velocities.add(current)
-                    good_list.append(current)
+                    break
 
-    print(good_start_velocities, good_list)
-    print(len(good_start_velocities), len(good_list))
-    return good_start_velocities
+    return len(good_start_velocities), good_start_velocities
 
 
 class UnitTests(unittest.TestCase):
@@ -260,7 +264,7 @@ class UnitTests(unittest.TestCase):
         day = ints(Path(__file__).name)[0]
         self.source = read_data(f"day_{day}.txt")
         self.test_source = read_data("""target area: x=20..30, y=-10..-5""")
-        self.test_coordinates = (
+        self.test_velocities = (
             (23, -10), (25, -9), (27, -5), (29, -6), (22, -6), (21, -7), (9, 0), (27, -7), (24, -5),
             (25, -7), (26, -6), (25, -5), (6, 8), (11, -2), (20, -5), (29, -10), (6, 3), (28, -7),
             (8, 0), (30, -6), (29, -8), (20, -10), (6, 7), (6, 4), (6, 1), (14, -4), (21, -6),
@@ -283,10 +287,12 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(4186, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(sorted(self.test_coordinates), sorted(part_2(self.test_source)))
+        count, initial_velocities = part_2(self.test_source)
+        self.assertEqual(112, count)
+        self.assertEqual(sorted(self.test_velocities), sorted(initial_velocities))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(2709, part_2(self.source)[0])
 
 
 if __name__ == '__main__':
