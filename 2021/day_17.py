@@ -158,10 +158,10 @@ sys.dont_write_bytecode = True
 def step(position: tuple[int, int], trajectory: tuple[int, int]) -> tuple[tuple[int, int], tuple[int, int]]:
     px, py = position
     tx, ty = trajectory
-    px += tx
-    py += ty
     tx += -1 if tx > 0 else 1
     ty -= 1
+    px += tx
+    py += ty
     return (px, py), (tx, ty)
 
 
@@ -180,19 +180,43 @@ def area_contains(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[in
 
 def beyond_area(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[int, int]) -> bool:
     top_left, bottom_right = area
-    tx, ty = top_left
+    # tx, ty = top_left
     bx, by = bottom_right
     px, py = point
     return px > bx or py < by
 
 
 def part_1(source):  # 6,9
-    start = (0, 0)
     target = target_area(source)
-    print(target)
-    print(area_contains(target, (20, -5)))
-    print(beyond_area(target, (30, -11)))
-    return 0
+    current = (0, 0)
+    best = (0, 0)
+    highest = (0, 0)
+    total_steps = 0
+    for x in range(0, 1000):
+        for y in range(0, 1000):
+            current = (x, y)
+            steps = 0
+            hpoint = (0, 0)
+            position = (0, 0)
+            trajectory = (x, y)
+            while not beyond_area(target, position):
+                position, trajectory = step(position, trajectory)
+                if position[1] > hpoint[1]:
+                    hpoint = position
+                steps += 1
+                # print(steps, position)
+                if area_contains(target, position):
+                    if hpoint[1] > highest[1]:
+                        highest = hpoint
+                        best = (x, y)
+                        total_steps = steps
+                        break
+
+    print(total_steps, highest, best, current)
+    # print(target)
+    # print(area_contains(target, (20, -5)))
+    # print(beyond_area(target, (30, -11)))
+    return total_steps
 
 
 def part_2(source):
