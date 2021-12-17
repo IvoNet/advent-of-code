@@ -188,7 +188,6 @@ def area_contains(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[in
 
 def beyond_area(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[int, int]) -> bool:
     top_left, bottom_right = area
-    # tx, ty = top_left
     bx, by = bottom_right
     px, py = point
     return px > bx or py < by

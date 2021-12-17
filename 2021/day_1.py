@@ -94,11 +94,13 @@ Consider sums of a three-measurement sliding window. How many sums are larger th
 
 """
 
+import unittest
+from pathlib import Path
 from typing import List
 
 # First successful attempt
 from ivonet.files import read_ints
-from ivonet.iter import consecutive_element_pairing
+from ivonet.iter import consecutive_element_pairing, ints
 
 
 def sum_tripplewise(data: List[int]) -> List[int]:
@@ -128,11 +130,42 @@ def increase_counter(values: list[int]) -> int:
     return count
 
 
-def main():
-    values = read_ints("day_1.txt", delimeter="\n")
-    print("Answer part 1: ", increase_counter(values))
-    print("Answer part 2: ", increase_counter(consecutive_element_pairing(values, 3, sum)))
+def part_1(source):
+    return increase_counter(source)
+
+
+def part_2(source):
+    return increase_counter(consecutive_element_pairing(source, 3, sum))
+
+
+class UnitTests(unittest.TestCase):
+
+    def setUp(self) -> None:
+        day = ints(Path(__file__).name)[0]
+        self.source = read_ints(f"day_{day}.txt", delimeter="\n")
+        self.test_source = read_ints("""199
+200
+208
+210
+200
+207
+240
+269
+260
+263""", delimeter="\n")
+
+    def test_example_data_part_1(self):
+        self.assertEqual(7, part_1(self.test_source))
+
+    def test_part_1(self):
+        self.assertEqual(1226, part_1(self.source))
+
+    def test_example_data_part_2(self):
+        self.assertEqual(5, part_2(self.test_source))
+
+    def test_part_2(self):
+        self.assertEqual(1252, part_2(self.source))
 
 
 if __name__ == '__main__':
-    main()
+    unittest.main()
