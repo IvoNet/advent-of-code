@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 #  -*- coding: utf-8 -*-
-# from ivonet.woorden import _
 
 
-def prime_factors(n):
+def prime_factors(n: int) -> list[int]:
     """Returns all the prime factors of a positive integer
 
     used in "opgave 22" of 2017
@@ -22,7 +21,7 @@ def prime_factors(n):
     return factors
 
 
-def prime_factors_unique(n):
+def prime_factors_unique(n: int) -> list[int]:
     """Returns all the prime factors of a positive integer
 
     used in "opgave 22" of 2017
@@ -42,14 +41,15 @@ def prime_factors_unique(n):
     return factors
 
 
-# The prime factors of 13195 are 5, 7, 13 and 29.
-# What is the largest prime factor of the number 600851475143 ?
+def is_prime(n: int) -> bool:
+    """returns True if parameter n is a prime number,
+    False if composite and "Neither prime, nor composite" if neither
 
-def is_prime(n):
+    >>> is_prime(5)
+    True
     """
-    returns True if parameter n is a prime number, False if composite and "Neither prime, nor composite" if neither
-    """
-    if n < 2: return False
+    if n < 2:
+        return False
     for i in range(2, int(n ** 0.5) + 1):
         if n % i == 0:
             return False
@@ -57,7 +57,7 @@ def is_prime(n):
 
 
 # returns smallest factor of parameter n
-def find_smallest_factor(n):
+def find_smallest_factor(n: int) -> int:
     factor = 2  # start at the lowest possible factor
     while n % factor != 0:  # go until factor is a factor
         if factor >= n ** 0.5:  # there is no factor if past square root point
@@ -66,20 +66,24 @@ def find_smallest_factor(n):
     return factor
 
 
-# reduces the parameter n into a product of only prime numbers
-# and returns a list of those prime number factors
-def prime_factorization(n):
+def prime_factorization(n: int) -> list[int]:
+    """Reduces the parameter n into a product of only prime numbers
+    and returns a list of those prime number factors
+
+    >>> prime_factorization(600851475143)
+    [71, 839, 1471, 6857]
+    """
     primes = []  # list of prime factors in the prime factorization
-    largestFactor = n / find_smallest_factor(n)
+    largest_factor = n / find_smallest_factor(n)
 
     i = 2
-    while i <= largestFactor:  # for all possible prime factors (2 - largest factor of the number being reduced)
+    while i <= largest_factor:  # for all possible prime factors (2 - largest factor of the number being reduced)
 
         if is_prime(i) and n % i == 0:  # if this value is prime and the number is divisible by it
 
             primes.append(i)  # add that prime factor to the list
             n /= i  # divide out that prime factor from the number to start reducing the new number
-            largestFactor /= i  # divide out that prime factor from the largest factor to get the largest factor of the new number
+            largest_factor /= i  # divide out that prime factor from the largest factor to get the largest factor of the new number
             i = 2  # reset the prime factor test
         else:
             i += 1  # increment the factor test
@@ -90,4 +94,6 @@ def prime_factorization(n):
 
 
 if __name__ == '__main__':
-    print(prime_factorization(600851475143))
+    import doctest
+
+    doctest.testmod()

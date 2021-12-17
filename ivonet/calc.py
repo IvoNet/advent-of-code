@@ -15,7 +15,7 @@ from math import sqrt
 import numpy as np
 
 
-def prod(*iterable):
+def prod(*iterable) -> float:
     """Like sum() but then for the product of an iterable
     If a dict is provided the product of the values is calculated.
 
@@ -44,7 +44,7 @@ def prod(*iterable):
     return reduce(lambda a, b: a * b, it, 1)
 
 
-def fibonacci(n):
+def fibonacci(n: int) -> int:
     """Calculated value of the fibonacci sequence
 
     Difficult to understand but very fast in execution
@@ -73,7 +73,7 @@ def fib(n: int) -> int:
     return following
 
 
-def step_sequence_calc(end, start=1):
+def step_sequence_calc(end: int, start: int = 1) -> int:
     """Optimized formula for 1+2+3+4+5...
 
    S= 10 + 9 +  8 +  7 +  6 +  5 +  4 +  3 +  2 +  1
@@ -100,12 +100,12 @@ def base_10_to_base_x(value, base=3):
     return str(int(str(value), base=base))
 
 
-def base_3(value):
+def base_3(value: int):
     """"Calculates base-3 / ternary from a decimal number"""
     return base_10_to_base_x(value, 3)
 
 
-def base_x_to_10(value, base=3):
+def base_x_to_10(value: str, base: int = 3) -> int:
     string = str(value)[::-1]
     ret = 0
     for idx, x in enumerate(string):

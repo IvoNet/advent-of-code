@@ -105,6 +105,8 @@ def keyvalues(d: dict) -> list[tuple]:
 def chunkify(iterable, length=2):
     """Chunkify a string into a list of chunk length sizes
 
+    >>> chunkify("abcdefghijklmnopqrstuvwxyz", 5)
+    ['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy', 'z']
     >>> chunkify("(){}[]<>")
     ['()', '{}', '[]', '<>']
     >>> chunkify(list("(){}[]<>"))
@@ -120,7 +122,7 @@ def dictify(iterable):
     {'(': ')', '{': '}', '[': ']', '<': '>'}
     >>> dictify("(){}[]<")
     Traceback (most recent call last):
-    AssertionError: iterable should have a multiplication of len 2
+    AssertionError: iterable should have a multiplication of len 2 but has len 7.
     """
     assert iterable, "Iterable should have value."
     assert len(iterable) % 2 == 0, f"iterable should have a multiplication of len 2 but has len {len(iterable)}."

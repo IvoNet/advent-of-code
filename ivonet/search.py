@@ -20,6 +20,7 @@ from heapq import heappush, heappop
 from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Set, Deque, Dict, Any, Optional, Protocol
 
 T = TypeVar('T')
+C = TypeVar("C", bound="Comparable")
 
 
 def linear_contains(iterable: Iterable[T], key: T) -> bool:
@@ -27,9 +28,6 @@ def linear_contains(iterable: Iterable[T], key: T) -> bool:
         if item == key:
             return True
     return False
-
-
-C = TypeVar("C", bound="Comparable")
 
 
 class Comparable(Protocol):

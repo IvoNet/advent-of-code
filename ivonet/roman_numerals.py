@@ -2,41 +2,6 @@
 #  -*- coding: utf-8 -*-
 
 
-from collections import OrderedDict
-
-
-def write_roman(num):
-    """A implementation for converting to roman
-    @deprecated
-    """
-    roman = OrderedDict()
-    roman[1000] = "M"
-    roman[900] = "CM"
-    roman[500] = "D"
-    roman[400] = "CD"
-    roman[100] = "C"
-    roman[90] = "XC"
-    roman[50] = "L"
-    roman[40] = "XL"
-    roman[10] = "X"
-    roman[9] = "IX"
-    roman[5] = "V"
-    roman[4] = "IV"
-    roman[1] = "I"
-
-    def roman_num(num):
-        for r in roman.keys():
-            x, y = divmod(num, r)
-            yield roman[r] * x
-            num -= (r * x)
-            if num > 0:
-                roman_num(num)
-            else:
-                break
-
-    return "".join([a for a in roman_num(num)])
-
-
 class ToRoman(int):
     def __new__(cls, number):
         if number > 3999:
@@ -95,7 +60,7 @@ def roman(number):
     return ToArabic(number).arabic
 
 
-def int_to_roman(value):
+def int_to_roman(value: int) -> str:
     """
     Convert an integer to a Roman numeral.
     """
@@ -114,70 +79,68 @@ def int_to_roman(value):
     return ''.join(result)
 
 
-def roman_to_int(value):
-    """
-    Convert a Roman numeral to an integer.
+def roman_to_int(value: str) -> int:
+    """Convert a Roman numeral to an integer.
     """
     if not isinstance(value, type("")):
         raise TypeError("expected string, got %s" % type(value))
     value = value.upper()
     nums = {'M': 1000, 'D': 500, 'C': 100, 'L': 50, 'X': 10, 'V': 5, 'I': 1}
-    sum = 0
+    sum_total = 0
     for i in range(len(value)):
         try:
             value = nums[value[i]]
             # If the next place holds a larger number, this value is negative
             if i + 1 < len(value) and nums[value[i + 1]] > value:
-                sum -= value
+                sum_total -= value
             else:
-                sum += value
+                sum_total += value
         except KeyError:
             raise ValueError('input is not a valid Roman numeral: %s' % value)
     # easiest test for validity...
-    if int_to_roman(sum) == value:
-        return sum
+    if int_to_roman(sum_total) == value:
+        return sum_total
     else:
         raise ValueError('input is not a valid Roman numeral: %s' % value)
 
 
-def small_int_to_roman(integer):
-    rlist = romanList = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"),
-                         (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
-    romanResult = ""
-    for wholeNumber in rlist:
-        while integer >= wholeNumber[0]:
-            integer -= wholeNumber[0]
-            romanResult += wholeNumber[1]
-    return romanResult
+def small_int_to_roman(integer: int) -> str:
+    rlist = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"),
+             (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+    roman_result = ""
+    for whole_number in rlist:
+        while integer >= whole_number[0]:
+            integer -= whole_number[0]
+            roman_result += whole_number[1]
+    return roman_result
 
 
-def big_int_to_roman(integer):
+def big_int_to_roman(integer: int) -> str:
     thousands, rest = divmod(integer, 1000)
     return "({}){}".format(small_int_to_roman(thousands), small_int_to_roman(rest))
 
 
-def int_2_roman(integer):
+def int_2_roman(integer: int) -> str:
     if integer >= 4000:
         return big_int_to_roman(integer)
     else:
         return small_int_to_roman(integer)
 
 
-def small_romain_to_int(numeral):
+def small_romain_to_int(numeral: str) -> int:
     rlist = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"),
              (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
     index = 0
-    intResult = 0
-    for integer, romanNumeral in rlist:
-        while numeral[index: index + len(romanNumeral)] == romanNumeral:
-            intResult += integer
-            index += len(romanNumeral)
-    return intResult
+    int_result = 0
+    for integer, roman_numeral in rlist:
+        while numeral[index: index + len(roman_numeral)] == roman_numeral:
+            int_result += integer
+            index += len(roman_numeral)
+    return int_result
 
 
-def romain_2_int(numeral):
-    if len(numeral) == 0:
-        return None
+def romain_2_int(numeral: str) -> int:
+    assert len(numeral) > 0, "Numerals should not be empty"
     int_parts = numeral[1:].split(')')  # Better done with regex
     if len(int_parts) == 1:
         return small_romain_to_int(numeral)
@@ -185,19 +148,15 @@ def romain_2_int(numeral):
         big = small_romain_to_int(int_parts[1])
         small = small_romain_to_int(int_parts[0])
         if big is None or small is None:
-            return None
+            raise ValueError("Could not convert")
         else:
             return big * 1000 + small
     else:
-        return None
+        raise ValueError("Could not convert")
 
 
 if __name__ == '__main__':
-    print(write_roman(2018))
     print(roman(2018))
     print(roman("MMXVIII"))
     print(int_2_roman(5555))
     print(ToRoman(2018))
-    # wb = Woordenboek()  # and wb.is_word(int_2_roman(x).replace(")", "").replace("(", ""))
-    # [print(int_2_roman(x)) for x in range(3999, 5500)]
-    # [print(int_2_roman(x)) for x in range(1, 1000000) if len(int_2_roman(x).replace(")", "").replace("(", "")) == 5]

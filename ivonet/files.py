@@ -11,7 +11,7 @@ __doc__ = """
 from ivonet.iter import lmap
 
 
-def open_anything(source):
+def open_anything(source: any):
     """URI, filename, or string --> stream
 
     This function lets you define parsers that take any input source
@@ -52,17 +52,17 @@ def read_data(infile: str) -> str:
         return fi.read().strip()
 
 
-def read_rows(infile: str) -> list:
+def read_rows(infile: str) -> list[str]:
     """Read the puzzle input without extra lines"""
     return read_data(infile).split("\n")
 
 
-def read_ints(infile, delimeter=","):
+def read_ints(infile: str, delimeter: str = ",") -> list[int]:
     """Read the infile and parse it into a list of ints based on the delimiter"""
     return list(map(int, read_data(infile).split(delimeter)))
 
 
-def read_int_matrix(infile):
+def read_int_matrix(infile: str) -> list[list[int]]:
     """Read an infile of the following format into a matrix of ints (list of lists)
     e.g.
     219

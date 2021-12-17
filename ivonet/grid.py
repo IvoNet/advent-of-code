@@ -14,7 +14,7 @@ from itertools import product
 from ivonet.iter import flatten, max_idx
 
 
-def neighbors(grid: list[list[any]], coord: tuple, diagonal=True):
+def neighbors(grid: list[list[any]], coord: tuple, diagonal=True) -> list[tuple[int, int]]:
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
 
     :param diagonal: True if you also want the direction neighbors, False if not
@@ -39,7 +39,7 @@ def neighbors(grid: list[list[any]], coord: tuple, diagonal=True):
     return adjacent
 
 
-def neighbor_values(grid, coord, diagonal=True):
+def neighbor_values(grid: list[list[any]], coord, diagonal=True) -> list:
     """Retrieve the neighbor values of a given 2D grid (list of lists).
 
     >>> neighbor_values([\
@@ -61,7 +61,7 @@ def neighbor_values(grid, coord, diagonal=True):
     return [grid[h][w] for h, w in nb]
 
 
-def neighbors_defined_grid(coord: tuple[int, int], grid=(100, 100), diagonal=True):
+def neighbors_defined_grid(coord: tuple[int, int], grid=(100, 100), diagonal=True) -> list[tuple[int, int]]:
     """Same as neighbors (above) but now with a fictional grid"""
     width = grid[0] - 1
     height = grid[1] - 1
@@ -79,7 +79,7 @@ def neighbors_defined_grid(coord: tuple[int, int], grid=(100, 100), diagonal=Tru
     return adjacent
 
 
-def diagonals(grid, coord, merged=False):
+def diagonals(grid: list[list[any]], coord: tuple[int, int], merged: bool = False) -> list:
     """Get all the direction 'lines' from a staring point to the boundary of the grid
     normally you would get a list in list with the direction coordinates per
     direction in a list. If flatten = True then it will be merged into a single list.
@@ -110,7 +110,7 @@ def diagonals(grid, coord, merged=False):
     return diags
 
 
-def direction(grid, coord, to=(-1, 1)):
+def direction(grid: list[list[any]], coord: tuple[int, int], to: tuple[int, int] = (-1, 1)) -> [int, int]:
     """Direction in a grid based on its staring point and direction.
     """
     vertical, horizontal = to
@@ -128,7 +128,7 @@ def direction(grid, coord, to=(-1, 1)):
         ww += horizontal
 
 
-def nw(grid, coord, value=False):
+def nw(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """North-West direction based on coord in the grid
 
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,4)))
@@ -145,7 +145,7 @@ def nw(grid, coord, value=False):
             yield x
 
 
-def sw(grid, coord, value=False):
+def sw(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """South-West direction based on coord in the grid
 
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,4)))
@@ -162,7 +162,7 @@ def sw(grid, coord, value=False):
             yield x
 
 
-def se(grid, coord, value=False):
+def se(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """South-East direction based on coord in the grid
 
     >>> list(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
@@ -179,7 +179,7 @@ def se(grid, coord, value=False):
             yield x
 
 
-def ne(grid, coord, value=False):
+def ne(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """Nort-East direction based on coord in the grid
 
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
@@ -196,7 +196,7 @@ def ne(grid, coord, value=False):
             yield x
 
 
-def north(grid, coord, value=False):
+def north(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """Nort direction based on coord in the grid
 
     >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
@@ -213,7 +213,7 @@ def north(grid, coord, value=False):
             yield x
 
 
-def east(grid, coord, value=False):
+def east(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """East direction based on coord in the grid
 
     >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,2)))
@@ -230,7 +230,7 @@ def east(grid, coord, value=False):
             yield x
 
 
-def south(grid, coord, value=False):
+def south(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """
     Nort direction based on coord in the grid
 
@@ -248,7 +248,7 @@ def south(grid, coord, value=False):
             yield x
 
 
-def west(grid, coord, value=False):
+def west(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
     """West direction based on coord in the grid
 
     >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
@@ -265,7 +265,7 @@ def west(grid, coord, value=False):
             yield x
 
 
-def directions(grid, coord, value=False) -> dict:
+def directions(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> dict:
     """Create a coordinate generator for all the wind directions.
     The grid should be a 2d matrix (list of lists)
     """
