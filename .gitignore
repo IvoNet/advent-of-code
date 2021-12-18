@@ -11,4 +11,4 @@ venv
 .tmp
 lib
 out
-*_try.py
+*_try.*

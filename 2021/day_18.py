@@ -193,14 +193,6 @@ def snailfish_number(value) -> list:
     return eval(value)
 
 
-def explode(param):
-    pass
-
-
-def splitit(param):
-    pass
-
-
 def parse(sfn: list, depth: int = 0, parent: [Pair | None] = None) -> [Pair | None]:
     ret = Pair(depth=depth, parent=parent)
     # left (zero index)
@@ -217,11 +209,66 @@ def parse(sfn: list, depth: int = 0, parent: [Pair | None] = None) -> [Pair | No
     return ret
 
 
+def expand_depth(sfn: Pair) -> Pair:
+    sfn.depth += 1
+    if sfn.left_pair:
+        sfn.left_pair = expand_depth(sfn)
+    if sfn.right_pair:
+        sfn.right_pair = expand_depth(sfn)
+    return sfn
+
+
+def splitit(sfn: Pair) -> bool:
+    pass
+
+
+def explode(sfn: Pair) -> bool:
+    """Explode function.
+    We explode when:
+    - a depth >= 4
+    - our left and right values not empty
+    """
+    if sfn.depth >= 4 and sfn.left and sfn.right:
+        pass
+
+
+def sfn_reduce(sfn: Pair):
+    """Starfish number reduce function
+    - one action at the time
+    - explode has precedence over split
+    - repeat until no reduce actions left
+    """
+    while True:
+        action_performed = explode(sfn)
+        if action_performed:
+            continue
+        action_performed = splitit(sfn)
+        if not action_performed:
+            break
+
+
+def addition(sf_sum, sfn):
+    ret = Pair()
+    ret.left_pair = expand_depth(sf_sum)
+    ret.right_pair = expand_depth(sfn)
+    ret.left_pair.parent = ret
+    ret.right_pair.parent = ret
+
+    sfn_reduce(ret)
+    return ret
+
+
 def part_1(source):
     numbers: list[Pair] = []
     for i, s in enumerate(source):
         numbers.append(parse(snailfish_number(s), depth=0, parent=None))
-    print(numbers)
+
+    sf_sum = numbers[0]
+    for i, sfn in enumerate(numbers):
+        if i == 0:  # skip as we already assigned it to have a starting point
+            continue
+    sf_sum = addition(sf_sum, sfn)
+
     return 0
 
 
@@ -246,6 +293,7 @@ class UnitTests(unittest.TestCase):
 [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]""")
 
     def test_explode_1(self):
+        print(parse([[[[[9, 8], 1], 2], 3], 4]))
         self.assertEqual([[[[0, 9], 2], 3], 4], explode([[[[[9, 8], 1], 2], 3], 4]))
 
     def test_explode_2(self):
