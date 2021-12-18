@@ -8,11 +8,18 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
 --- Day 18: Snailfish ---
-You descend into the ocean trench and encounter some snailfish. They say they saw the sleigh keys! They'll even tell you which direction the keys went if you help one of the smaller snailfish with his math homework.
+You descend into the ocean trench and encounter some snailfish. They 
+say they saw the sleigh keys! They'll even tell you which direction 
+the keys went if you help one of the smaller snailfish with his math 
+homework.
 
-Snailfish numbers aren't like regular numbers. Instead, every snailfish number is a pair - an ordered list of two elements. Each element of the pair can be either a regular number or another pair.
+Snailfish numbers aren't like regular numbers. Instead, every snailfish 
+number is a pair - an ordered list of two elements. Each element of 
+the pair can be either a regular number or another pair.
 
-Pairs are written as [x,y], where x and y are the elements within the pair. Here are some example snailfish numbers, one snailfish number per line:
+Pairs are written as [x,y], where x and y are the elements within the 
+pair. Here are some example snailfish numbers, one snailfish number per 
+line:
 
 [1,2]
 [[1,2],3]
@@ -21,40 +28,71 @@ Pairs are written as [x,y], where x and y are the elements within the pair. Here
 [[[[1,2],[3,4]],[[5,6],[7,8]]],9]
 [[[9,[3,8]],[[0,9],6]],[[[3,7],[4,9]],3]]
 [[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]
-This snailfish homework is about addition. To add two snailfish numbers, form a pair from the left and right parameters of the addition operator. For example, [1,2] + [[3,4],5] becomes [[1,2],[[3,4],5]].
 
-There's only one problem: snailfish numbers must always be reduced, and the process of adding two snailfish numbers can result in snailfish numbers that need to be reduced.
+This snailfish homework is about addition. To add two snailfish numbers, 
+form a pair from the left and right parameters of the addition operator. 
+For example, [1,2] + [[3,4],5] becomes [[1,2],[[3,4],5]].
 
-To reduce a snailfish number, you must repeatedly do the first action in this list that applies to the snailfish number:
+There's only one problem: snailfish numbers must always be reduced, and 
+the process of adding two snailfish numbers can result in snailfish 
+numbers that need to be reduced.
+
+To reduce a snailfish number, you must repeatedly do the first action 
+in this list that applies to the snailfish number:
 
 If any pair is nested inside four pairs, the leftmost such pair explodes.
 If any regular number is 10 or greater, the leftmost such regular number splits.
 Once no action in the above list applies, the snailfish number is reduced.
 
-During reduction, at most one action applies, after which the process returns to the top of the list of actions. For example, if split produces a pair that meets the explode criteria, that pair explodes before other splits occur.
+During reduction, at most one action applies, after which the process 
+returns to the top of the list of actions. For example, if split 
+produces a pair that meets the explode criteria, that pair explodes 
+before other splits occur.
 
-To explode a pair, the pair's left value is added to the first regular number to the left of the exploding pair (if any), and the pair's right value is added to the first regular number to the right of the exploding pair (if any). Exploding pairs will always consist of two regular numbers. Then, the entire exploding pair is replaced with the regular number 0.
+To explode a pair, the pair's left value is added to the first regular 
+number to the left of the exploding pair (if any), and the pair's 
+right value is added to the first regular number to the right of the 
+exploding pair (if any). Exploding pairs will always consist of two 
+regular numbers. Then, the entire exploding pair is replaced with the 
+regular number 0.
 
 Here are some examples of a single explode action:
 
-[[[[[9,8],1],2],3],4] becomes [[[[0,9],2],3],4] (the 9 has no regular number to its left, so it is not added to any regular number).
-[7,[6,[5,[4,[3,2]]]]] becomes [7,[6,[5,[7,0]]]] (the 2 has no regular number to its right, and so it is not added to any regular number).
-[[6,[5,[4,[3,2]]]],1] becomes [[6,[5,[7,0]]],3].
-[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]] becomes [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]] (the pair [3,2] is unaffected because the pair [7,3] is further to the left; [3,2] would explode on the next action).
-[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]] becomes [[3,[2,[8,0]]],[9,[5,[7,0]]]].
-To split a regular number, replace it with a pair; the left element of the pair should be the regular number divided by two and rounded down, while the right element of the pair should be the regular number divided by two and rounded up. For example, 10 becomes [5,5], 11 becomes [5,6], 12 becomes [6,6], and so on.
+- [[[[[9,8],1],2],3],4] becomes [[[[0,9],2],3],4] (the 9 has no regular 
+  number to its left, so it is not added to any regular number).
+- [7,[6,[5,[4,[3,2]]]]] becomes [7,[6,[5,[7,0]]]] (the 2 has no regular 
+  number to its right, and so it is not added to any regular number).
+- [[6,[5,[4,[3,2]]]],1] becomes [[6,[5,[7,0]]],3].
+- [[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]] becomes 
+  [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]] (the pair [3,2] is unaffected 
+  because the pair [7,3] is further to the left; [3,2] would explode 
+  on the next action).
+- [[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]] becomes [[3,[2,[8,0]]],[9,[5,[7,0]]]].
 
-Here is the process of finding the reduced result of [[[[4,3],4],4],[7,[[8,4],9]]] + [1,1]:
+To split a regular number, replace it with a pair; the left element of 
+the pair should be the regular number divided by two and rounded down, 
+while the right element of the pair should be the regular number divided 
+by two and rounded up. For example, 10 becomes [5,5], 11 becomes [5,6], 
+12 becomes [6,6], and so on.
 
-after addition: [[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]
-after explode:  [[[[0,7],4],[7,[[8,4],9]]],[1,1]]
-after explode:  [[[[0,7],4],[15,[0,13]]],[1,1]]
-after split:    [[[[0,7],4],[[7,8],[0,13]]],[1,1]]
-after split:    [[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]
-after explode:  [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
-Once no reduce actions apply, the snailfish number that remains is the actual result of the addition operation: [[[[0,7],4],[[7,8],[6,0]]],[8,1]].
+Here is the process of finding the reduced result of 
+[[[[4,3],4],4],[7,[[8,4],9]]] + [1,1]:
 
-The homework assignment involves adding up a list of snailfish numbers (your puzzle input). The snailfish numbers are each listed on a separate line. Add the first snailfish number and the second, then add that result and the third, then add that result and the fourth, and so on until all numbers in the list have been used once.
+- after addition: [[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]
+- after explode:  [[[[0,7],4],[7,[[8,4],9]]],[1,1]]
+- after explode:  [[[[0,7],4],[15,[0,13]]],[1,1]]
+- after split:    [[[[0,7],4],[[7,8],[0,13]]],[1,1]]
+- after split:    [[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]
+- after explode:  [[[[0,7],4],[[7,8],[6,0]]],[8,1]]
+
+Once no reduce actions apply, the snailfish number that remains is the 
+actual result of the addition operation: [[[[0,7],4],[[7,8],[6,0]]],[8,1]].
+
+The homework assignment involves adding up a list of snailfish numbers 
+(your puzzle input). The snailfish numbers are each listed on a separate 
+line. Add the first snailfish number and the second, then add that result 
+and the third, then add that result and the fourth, and so on until all 
+numbers in the list have been used once.
 
 For example, the final sum of this list is [[[[1,1],[2,2]],[3,3]],[4,4]]:
 
@@ -62,6 +100,7 @@ For example, the final sum of this list is [[[[1,1],[2,2]],[3,3]],[4,4]]:
 [2,2]
 [3,3]
 [4,4]
+
 The final sum of this list is [[[[3,0],[5,3]],[4,4]],[5,5]]:
 
 [1,1]
@@ -69,6 +108,7 @@ The final sum of this list is [[[[3,0],[5,3]],[4,4]],[5,5]]:
 [3,3]
 [4,4]
 [5,5]
+
 The final sum of this list is [[[[5,0],[7,4]],[5,5]],[6,6]]:
 
 [1,1]
@@ -77,6 +117,7 @@ The final sum of this list is [[[[5,0],[7,4]],[5,5]],[6,6]]:
 [4,4]
 [5,5]
 [6,6]
+
 Here's a slightly larger example:
 
 [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
@@ -89,7 +130,9 @@ Here's a slightly larger example:
 [1,[[[9,3],9],[[9,0],[0,7]]]]
 [[[5,[7,4]],7],1]
 [[[[4,2],2],6],[8,7]]
-The final sum [[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]] is found after adding up the above snailfish numbers:
+
+The final sum [[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]] is 
+found after adding up the above snailfish numbers:
 
   [[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
 + [7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
@@ -126,18 +169,25 @@ The final sum [[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]] is found aft
   [[[[7,7],[7,7]],[[8,7],[8,7]]],[[[7,0],[7,7]],9]]
 + [[[[4,2],2],6],[8,7]]
 = [[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]
-To check whether it's the right answer, the snailfish teacher only checks the magnitude of the final sum. The magnitude of a pair is 3 times the magnitude of its left element plus 2 times the magnitude of its right element. The magnitude of a regular number is just that number.
 
-For example, the magnitude of [9,1] is 3*9 + 2*1 = 29; the magnitude of [1,9] is 3*1 + 2*9 = 21. Magnitude calculations are recursive: the magnitude of [[9,1],[1,9]] is 3*29 + 2*21 = 129.
+To check whether it's the right answer, the snailfish teacher only checks 
+the magnitude of the final sum. The magnitude of a pair is 3 times the 
+magnitude of its left element plus 2 times the magnitude of its right 
+element. The magnitude of a regular number is just that number.
+
+For example, the magnitude of [9,1] is 3*9 + 2*1 = 29; the magnitude of 
+[1,9] is 3*1 + 2*9 = 21. Magnitude calculations are recursive: the 
+magnitude of [[9,1],[1,9]] is 3*29 + 2*21 = 129.
 
 Here are a few more magnitude examples:
 
-[[1,2],[[3,4],5]] becomes 143.
-[[[[0,7],4],[[7,8],[6,0]]],[8,1]] becomes 1384.
-[[[[1,1],[2,2]],[3,3]],[4,4]] becomes 445.
-[[[[3,0],[5,3]],[4,4]],[5,5]] becomes 791.
-[[[[5,0],[7,4]],[5,5]],[6,6]] becomes 1137.
-[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]] becomes 3488.
+- [[1,2],[[3,4],5]] becomes 143.
+- [[[[0,7],4],[[7,8],[6,0]]],[8,1]] becomes 1384.
+- [[[[1,1],[2,2]],[3,3]],[4,4]] becomes 445.
+- [[[[3,0],[5,3]],[4,4]],[5,5]] becomes 791.
+- [[[[5,0],[7,4]],[5,5]],[6,6]] becomes 1137.
+- [[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]] becomes 3488.
+
 So, given this example homework assignment:
 
 [[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
@@ -150,12 +200,44 @@ So, given this example homework assignment:
 [[9,3],[[9,9],[6,[4,9]]]]
 [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
 [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
+
 The final sum is:
 
 [[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]]
+
 The magnitude of this final sum is 4140.
 
-Add up all of the snailfish numbers from the homework assignment in the order they appear. What is the magnitude of the final sum?
+Add up all of the snailfish numbers from the homework assignment in 
+the order they appear. What is the magnitude of the final sum?
+
+You notice a second question on the back of the homework assignment:
+
+What is the largest magnitude you can get from adding only two of the 
+snailfish numbers?
+
+Note that snailfish addition is not commutative - that is, 
+x + y and y + x can produce different results.
+
+Again considering the last example homework assignment above:
+
+[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
+
+The largest magnitude of the sum of any two snailfish numbers in this list 
+is 3993. This is the magnitude of [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]] + 
+[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]], which reduces to 
+[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]].
+
+What is the largest magnitude of any sum of two different snailfish numbers 
+from the homework assignment?
 """
 
 import sys
@@ -271,7 +353,7 @@ def update_down_right(sfn: Pair, value: int):
 
 def update_up_right(sfn: Pair, value: int):
     """Update up right
-    - now you have to look down as we need to
+
     """
     _("update_up_right:", visualize(sfn), value)
     parent: Pair = sfn.parent
@@ -329,11 +411,42 @@ def explode(sfn: Pair) -> bool:
     We explode when:
     - a depth >= 4
     - our left and right values not empty
+    otherwise we first walk left until we do need to explode
+    and then walk right too
+    Explode example:
+    [7, [6, [5, [4, [3, 2]]]]]
+
+            p0
+       l=7      p1
+             6      p2
+                 5      p3
+                     4     p4
+                         3    2   < reduce (explode)
+    - 2 no right => 0
+
+            p0
+       l=7      p1
+             6      p2
+                 5      p3
+                     4     p4
+                         3   0
+
+    - p4 left (3) add with first value left
+      if p3.left has value then add => p3.left := 4 + 3 = 7
+      - p4 has been resolved so its value need to be moved up
+      - p3.right := p4.right and p4.right_pair := None
+
+            p0
+       l=7      p1
+             6      p2
+                 5      p3
+                     7     0
+
+    [7,[6,[5,[7,0]]]]
     """
     _("explode:", str(sfn))
     if sfn.depth >= 4 and sfn.left is not None and sfn.right is not None:
         _("explode:", "Depth found:", repr(sfn))
-        # should there always be a parent? yes as we have a depth of more than 4
         update_up_left(sfn, sfn.left)
         update_up_right(sfn, sfn.right)
 
@@ -402,24 +515,23 @@ def sfn_reduce(sfn: Pair) -> None:
         action_performed = split_it(sfn)
         if not action_performed:
             break
-        else:
-            _("reduce:", "split:", sfn)
+        _("reduce:", "split:", sfn)
 
 
 def addition(left: Pair, right: Pair):
-    """
+    """Sum of two two pairs
+    This means that:
+    - a new top is added to contain the left_pair and right_par
+    - all depths of those left and right trees need to be updated
+    - the old tops now have a parent (needs to be assigned)
+    - when the addition is done it needs to be reduced
     [[[[4,3],4],4],[7,[[8,4],9]]] + [1,1]
 
-    0            p                  p
-               /   \               / \
+    0            p (orig)           p (new)
     1         p     p             1   1
-            /  \   / \      +
     2      p    4 7   p
-          / \        / \
     3    p   4      p   9
-        / \        / \
        4   3      8   4
-
 
     first action: addition
 
@@ -428,21 +540,110 @@ def addition(left: Pair, right: Pair):
         - with right the new pair
 
     0                  p (top)
-                  /        \
     1            p (orig)   p (new)
-               /   \       / \
     2         p     p     1   1
-            /  \   / \
     3      p    4 7   p
-          / \        / \
     4    p   4      p   9
-        / \        / \
        4   3      8   4
 
     - all original pairs (left_pair) have a new depth +1
     - the orig needs to have its parent assigned to the new top pair
         - top.left_pair.parent := top
         - top.right_pair.parent := top
+
+    Noe that the addition is done and all settings corrected we can reduce it
+    - we have a depth >= 4 (two actually but one action at the time)
+
+    second action: explode
+
+    0                  p (top)
+    1            p          p
+    2         p     p     1   1
+    3      p    4 7   p
+    4    p   4      p   9
+       4   3 <-R! 8   4 <-R!
+
+    - actual explosion happens when:
+        - a depth >= 4
+        - our left and right values not empty
+      - so we call explode(top) but the top has no depth of >= 4
+        - first walk left!
+            - if top.left_pair:
+                - explode(that one) etc (recursive)
+                return its boolean value if changed
+        - then walk right
+            - if top.right_pair:
+                - explode(that one) etc (recursive)
+                return its boolean value if changed
+        if none apply then return False as no explode action was performed
+      - explosion:
+         - after walking left for a while (see above)
+           - we find an explode-able pair:
+             explode it
+
+    0                  p (top)
+    1            p          p
+    2         p     p     1   1
+    3      p    4 7   p
+    4   *0  *7      p   9
+                  8   4  <-R!
+           - return True as we have an explosion
+         - new action round: explode
+           -
+    0                  p (top)
+    1            p          p
+    2         p     p     1   1
+    3      p    4 15  p
+    4    0   7      p   13
+                  -   -
+    when done
+    0                  p (top)
+    1            p          p
+    2         p     p     1   1
+    3      p    4 15* p
+         0   7      0   13*
+        - return True
+        - try exploding again results in False
+        - try splitting it
+          - after walking left then right a couple of time we find the 15 value left
+            split it
+    0                    p (top)
+    1              p              p
+    2         p         p       1   1
+    3      p    4     p     p
+         0   7      7   8 0   13*
+         - return True on splitting
+         - try exploding again: False
+         - try splitting again
+
+    0                    p (top)
+    1              p              p
+    2         p         p       1   1
+    3      p    4     p     p
+    4    0   7      7   8 0   p <-Explode
+                            6   7
+         - return True on split
+         - Try exploding again
+
+    intermediary state
+    0                       p (top)
+    1              p                     p
+    2         p         p             *8   1
+    3      p    4     p      p
+    4    0   7      7   8 *6   p <-Explode
+                             -   -
+    final state
+    0                       p (top)
+    1              p                     p
+    2         p           p           *8   1
+    3      p    4     p      p
+    4    0   7      7   8 *6   0
+
+         - Return True on Explode
+         - Try exploding again: False
+         - Try splitting again: False
+         Done!
+    [[[[0,7],4][[7,8][6,0]],[8,1]]]
     """
     _("addition:", left, "+", right)
     top = Pair(left_pair=update_depths(left), right_pair=update_depths(right))
@@ -450,7 +651,6 @@ def addition(left: Pair, right: Pair):
     top.left_pair.parent = top
     top.right_pair.parent = top
 
-    # pair_print(top)
     sfn_reduce(top)
     return top
 

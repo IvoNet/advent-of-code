@@ -51,6 +51,38 @@
 ```
 
 ```text
+[7, [6, [5, [4, [3, 2]]]]]
+
+        p0
+   l=7      p1
+         6      p2
+             5      p3
+                 4     p4
+                     3    2   < reduce (explode)
+- 2 no right => 0
+
+        p0
+   l=7      p1
+         6      p2
+             5      p3
+                 4     p4
+                     3   0
+
+- p4 left (3) add with first value left
+  if p3.left has value then add => p3.left := 4 + 3 = 7
+  - p4 has been resolved so its value need to be moved up
+  - p3.right := p4.right and p4.right_pair := None
+
+        p0
+   l=7      p1
+         6      p2
+             5      p3
+                 7     0
+                 
+[7,[6,[5,[7,0]]]]
+```
+
+```text
 
 
 [[6,[5,[4,[3,2]]]],1]
@@ -114,15 +146,6 @@ right (2)
                7    0
  - explode done = True                   
 [[6,[5,[7,0]]],3]
-```
-
-## Split action
-
-- left down rounded // 2
-- right = orig - left (up rounded)
-
-```text
-
 ```
 
 # Sum example
@@ -300,32 +323,3 @@ final state
                         
 ```
 
-```python
-    def test_explode_1(self):
-    pair = parse([[[[[9, 8], 1], 2], 3], 4])
-    self.assertEqual(True, explode(pair))
-
-
-def test_explode_2(self):
-    self.assertEqual([7, [6, [5, [7, 0]]]], explode([7, [6, [5, [4, [3, 2]]]]]))
-
-
-def test_explode_3(self):
-    self.assertEqual([[6, [5, [7, 0]]], 3], explode([[6, [5, [4, [3, 2]]]], 1]))
-
-
-def test_explode_4(self):
-    self.assertEqual([[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]],
-                     explode([[3, [2, [1, [7, 3]]]], [6, [5, [4, [3, 2]]]]]))
-
-
-def test_explode_5(self):
-    self.assertEqual([[3, [2, [8, 0]]], [9, [5, [7, 0]]]],
-                     explode([[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]]))
-
-
-def test_split_1(self):
-    self.assertEqual([[[[0, 7], 4], [[7, 8], [0, 13]]], [1, 1]],
-                     splitit([[[[0, 7], 4], [15, [0, 13]]], [1, 1]]))
-
-```
