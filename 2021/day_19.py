@@ -17,7 +17,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
