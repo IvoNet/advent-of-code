@@ -166,7 +166,6 @@ from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
-sys.setrecursionlimit(10000000)
 
 DEBUG = False
 
@@ -185,21 +184,26 @@ class Pair:
     parent: Pair | None = None
 
 
-def pair_print(sfn: Pair):
-    print("[", end="")
+def visualize(sfn: Pair):
+    """if you want to debug and visualize the snailfish number"""
+    ret = "["
     if sfn.left is not None:
-        print(f"{sfn.left}", end="")
+        ret += f"{sfn.left}"
     else:
-        pair_print(sfn.left_pair)
-    print(",", end="")
+        ret += visualize(sfn.left_pair)
+    ret += ","
     if sfn.right is not None:
-        print(f"{sfn.right}", end="")
+        ret += f"{sfn.right}"
     else:
-        pair_print(sfn.right_pair)
-    print("]", end="")
+        ret += visualize(sfn.right_pair)
+    ret += "]"
+    return ret
 
 
 def string_to_snailfish_number(value) -> list:
+    """Make a list of the string
+    Easy as it is already in a python format just eval
+    """
     return eval(value)
 
 
@@ -368,19 +372,6 @@ def sfn_reduce(sfn: Pair) -> Pair:
             break
 
 
-def magnitude(sfn: Pair) -> int:
-    total = 0
-    if sfn.left is not None:
-        total += 3 * sfn.left
-    else:
-        total += 3 * magnitude(sfn.left_pair)
-    if sfn.right is not None:
-        total += 2 * sfn.right
-    else:
-        total += 2 * magnitude(sfn.right_pair)
-    return total
-
-
 def addition(left: Pair, right: Pair):
     """
     [[[[4,3],4],4],[7,[[8,4],9]]] + [1,1]
@@ -435,6 +426,19 @@ def addition(left: Pair, right: Pair):
     return top
 
 
+def magnitude(sfn: Pair) -> int:
+    total = 0
+    if sfn.left is not None:
+        total += 3 * sfn.left
+    else:
+        total += 3 * magnitude(sfn.left_pair)
+    if sfn.right is not None:
+        total += 2 * sfn.right
+    else:
+        total += 2 * magnitude(sfn.right_pair)
+    return total
+
+
 def part_1(source):
     snailfish_numbers: list[Pair] = []
     for s in source:
@@ -460,10 +464,10 @@ def part_2(source):
             x_snf = parse(string_to_snailfish_number(x), depth=0, parent=None)
             y_snf = parse(string_to_snailfish_number(y), depth=0, parent=None)
             add = addition(x_snf, y_snf)
-            # pair_print(add)
             mt = magnitude(add)
 
             if mt > max_magnitude:
+                _(visualize(add))
                 max_magnitude = mt
     return max_magnitude
 
@@ -486,13 +490,16 @@ class UnitTests(unittest.TestCase):
 
     def test_split_(self):
         pair = parse([[[[0, 7], 4], [15, [0, 13]]], [1, 1]])
-        print(split_it(pair))
-        pair_print(pair)
-        self.assertEqual(True, True)
+        self.assertTrue(True, split_it(pair))
 
     def test_magnitude(self):
         sfn = parse([[[[6, 6], [7, 6]], [[7, 7], [7, 0]]], [[[7, 7], [7, 7]], [[7, 8], [9, 9]]]])
         self.assertEqual(4140, magnitude(sfn))
+
+    def test_visualize(self):
+        s = "[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]"
+        pair = parse(string_to_snailfish_number(s))
+        self.assertEqual(s, visualize(pair))
 
     def test_example_data_part_1(self):
         self.assertEqual(4140, part_1(self.test_source))
