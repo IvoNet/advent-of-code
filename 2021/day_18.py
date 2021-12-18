@@ -160,14 +160,13 @@ Add up all of the snailfish numbers from the homework assignment in the order th
 
 import sys
 import unittest
-from dataclasses import dataclass
 from pathlib import Path
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
-sys.setrecursionlimit(100000)
+sys.setrecursionlimit(10000000)
 
 DEBUG = False
 
@@ -177,7 +176,6 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-@dataclass
 class Pair:
     left: int | None = None
     right: int | None = None
@@ -201,14 +199,16 @@ def pair_print(sfn: Pair):
     print("]", end="")
 
 
-def snailfish_number(value) -> list:
+def string_to_snailfish_number(value) -> list:
     return eval(value)
 
 
 def parse(sfn: list, depth: int = 0, parent: [Pair | None] = None) -> [Pair | None]:
     """Parse the lists into a pair tree
     """
-    ret = Pair(depth=depth, parent=parent)
+    ret = Pair()
+    ret.depth = depth
+    ret.parent = parent
     # left (zero index)
     if type(sfn[0]) == list:
         ret.left_pair = parse(sfn[0], depth + 1, ret)
@@ -234,7 +234,7 @@ def update_depths(sfn: Pair) -> Pair:
 
 def update_down_right(sfn: Pair, value: int):
     """Updating down right"""
-    _("Updating down right")
+    # _("Updating down right")
     if sfn.left is not None:
         sfn.left += value
     else:
@@ -244,7 +244,7 @@ def update_down_right(sfn: Pair, value: int):
 def update_up_right(sfn: Pair, value: int):
     """Update up right
     """
-    _("Update up right")
+    # _("Update up right")
     parent: Pair = sfn.parent
     if parent is None:
         _("Update up right: No parent found")
@@ -253,7 +253,7 @@ def update_up_right(sfn: Pair, value: int):
         if parent.right is not None:
             parent.right += value
         else:
-            update_down_right(parent.left_pair, value)
+            update_down_right(parent.right_pair, value)
     elif parent.right_pair == sfn:
         update_up_right(parent, value)
     else:
@@ -305,17 +305,17 @@ def explode(sfn: Pair) -> bool:
         if sfn.parent.left_pair == sfn:
             sfn.parent.left_pair = None
             sfn.parent.left = 0
-        elif sfn.parent.left == 0:
+        elif sfn.parent.right_pair == sfn:
             sfn.parent.right_pair = None
             sfn.parent.right = 0
         else:
             _("Explode: no parent to delete?!", sfn)
             return False
         return True
-    if sfn.left_pair is not None:
-        return explode(sfn.left_pair)
-    if sfn.right_pair is not None:
-        return explode(sfn.right_pair)
+    if sfn.left_pair is not None and explode(sfn.left_pair):
+        return True
+    if sfn.right_pair is not None and explode(sfn.right_pair):
+        return True
     return False
 
 
@@ -325,27 +325,34 @@ def split_it(sfn: Pair) -> bool:
     - act on ourselves
     - redepth?!
     """
-    _("Splittit: ", sfn, "\n\n")
     if sfn.left is not None and sfn.left > 9:
         left = sfn.left // 2
         right = sfn.left - left
-        sfn.left_pair = Pair(left=left, right=right, depth=sfn.depth + 1, parent=sfn)
+        sfn.left_pair = Pair()
+        sfn.left_pair.left = left
+        sfn.left_pair.right = right
+        sfn.left_pair.depth = sfn.depth + 1
+        sfn.left_pair.parent = sfn
         sfn.left = None
         return True
-    if sfn.left_pair is not None:
-        return split_it(sfn.left_pair)
+    if sfn.left_pair is not None and split_it(sfn.left_pair):
+        return True
     if sfn.right is not None and sfn.right > 9:
         left = sfn.right // 2
         right = sfn.right - left
-        sfn.right_pair = Pair(left=left, right=right, depth=sfn.depth + 1, parent=sfn)
+        sfn.right_pair = Pair()
+        sfn.right_pair.left = left
+        sfn.right_pair.right = right
+        sfn.right_pair.depth = sfn.depth + 1
+        sfn.right_pair.parent = sfn
         sfn.right = None
         return True
-    if sfn.right_pair is not None:
-        return split_it(sfn.right_pair)
+    if sfn.right_pair is not None and split_it(sfn.right_pair):
+        return True
     return False
 
 
-def sfn_reduce(sfn: Pair):
+def sfn_reduce(sfn: Pair) -> Pair:
     """Starfish number reduce function
     - one action at the time
     - explode has precedence over split
@@ -423,20 +430,19 @@ def addition(left: Pair, right: Pair):
     top.left_pair.parent = top
     top.right_pair.parent = top
 
-    pair_print(top)
+    # pair_print(top)
     sfn_reduce(top)
     return top
 
 
 def part_1(source):
-    numbers: list[Pair] = []
-    for i, s in enumerate(source):
-        numbers.append(parse(snailfish_number(s), depth=0, parent=None))
+    snailfish_numbers: list[Pair] = []
+    for s in source:
+        snailfish_numbers.append(parse(string_to_snailfish_number(s), depth=0, parent=None))
+    _("Numbers:", snailfish_numbers)
 
-    # _("Numbers:", numbers)
-
-    sf_sum = numbers[0]
-    for i, sfn in enumerate(numbers):
+    sf_sum = snailfish_numbers[0]
+    for i, sfn in enumerate(snailfish_numbers):
         if i == 0:  # skip as we already assigned it to have a starting point
             continue
         _("Addition of", sf_sum, "and", sfn)
@@ -446,7 +452,20 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    max_magnitude = 0
+    for i, x in enumerate(source):
+        for j, y in enumerate(source):
+            if i == j:
+                continue
+            x_snf = parse(string_to_snailfish_number(x), depth=0, parent=None)
+            y_snf = parse(string_to_snailfish_number(y), depth=0, parent=None)
+            add = addition(x_snf, y_snf)
+            # pair_print(add)
+            mt = magnitude(add)
+
+            if mt > max_magnitude:
+                max_magnitude = mt
+    return max_magnitude
 
 
 class UnitTests(unittest.TestCase):
@@ -482,10 +501,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3654, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(3993, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(4578, part_2(self.source))
 
 
 if __name__ == '__main__':
