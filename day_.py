@@ -17,6 +17,13 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
+DEBUG = False
+
+
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 def part_1(source):
     return 0

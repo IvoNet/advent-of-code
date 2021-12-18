@@ -130,7 +130,7 @@ right (2)
 ```text
 [[[[4,3],4],4],[7,[[8,4],9]]] + [1,1]
 
-0            p                  p
+0            p (orig)           p (new)
            /   \               / \
 1         p     p             1   1
         /  \   / \      +
@@ -208,7 +208,7 @@ second action: explode
         /  \   / \   
 3      p    4 7   p
       / \        / \
-4    0   7      p   9
+4   *0  *7      p   9
                / \
               8   4  <-R!   
        - return True as we have an explosion
@@ -298,4 +298,34 @@ final state
 
 [[[[0,7],4][[7,8][6,0]],[8,1]]]
                         
+```
+
+```python
+    def test_explode_1(self):
+    pair = parse([[[[[9, 8], 1], 2], 3], 4])
+    self.assertEqual(True, explode(pair))
+
+
+def test_explode_2(self):
+    self.assertEqual([7, [6, [5, [7, 0]]]], explode([7, [6, [5, [4, [3, 2]]]]]))
+
+
+def test_explode_3(self):
+    self.assertEqual([[6, [5, [7, 0]]], 3], explode([[6, [5, [4, [3, 2]]]], 1]))
+
+
+def test_explode_4(self):
+    self.assertEqual([[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]],
+                     explode([[3, [2, [1, [7, 3]]]], [6, [5, [4, [3, 2]]]]]))
+
+
+def test_explode_5(self):
+    self.assertEqual([[3, [2, [8, 0]]], [9, [5, [7, 0]]]],
+                     explode([[3, [2, [8, 0]]], [9, [5, [4, [3, 2]]]]]))
+
+
+def test_split_1(self):
+    self.assertEqual([[[[0, 7], 4], [[7, 8], [0, 13]]], [1, 1]],
+                     splitit([[[[0, 7], 4], [15, [0, 13]]], [1, 1]]))
+
 ```
