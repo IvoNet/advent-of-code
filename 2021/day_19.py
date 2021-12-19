@@ -362,6 +362,14 @@ In total, there are 79 beacons.
 
 Assemble the full map of beacons. How many beacons are there?
 
+--- Part Two ---
+Sometimes, it's a good idea to appreciate just how big the ocean is. Using the Manhattan distance, how far apart do the scanners get?
+
+In the above example, scanners 2 (1105,-1205,1229) and 3 (-92,-2380,-20) are the largest Manhattan distance apart. In total, they are 1197 + 1175 + 1249 = 3621 units apart.
+
+What is the largest Manhattan distance between any two scanners?
+
+
 """
 
 import sys
@@ -494,12 +502,12 @@ class Scanner:
 
     def __init__(self, id: int, beacons: list[tuple[int, int, int]]) -> None:
         self.id = id
-        self.fixed_position = None
         self.orig = beacons.copy()
         self.current = beacons.copy()
         self.length = len(beacons)
+        self.fixed_beacons = None
         self.locked = False
-        # self.rotations: dict[int, tuple[int, int, int]] = {}
+        self.pos = None
 
     def roll(self):
         ret = []
@@ -516,16 +524,16 @@ class Scanner:
     def all(self):
         """https://stackoverflow.com/questions/16452383/how-to-get-all-24-rotations-of-a-3-dimensional-array
         """
-        # if self.locked:
-        #     yield self
         for _ in range(2):
             for action in "RTTTRTTTRTTT":
+                if self.locked:
+                    return
                 if action == "R":
                     self.roll()
-                    yield self
+                    yield self.current
                 else:
                     self.turn()
-                    yield self
+                    yield self.current
             # reorient to do the other 12 positions
             self.roll()
             self.turn()
@@ -534,17 +542,28 @@ class Scanner:
     def reset(self):
         self.current = self.orig.copy()
 
-    # def matches(self, scanner: Scanner) -> bool:
-    #     for crd0 in self.current:
-    #         for crd1 in scanner.current:
-    #             dst = distance(crd0, crd1)
+    def matches(self, scanner: Scanner) -> bool:
+        ...
+        # for crd0 in self.current:
+        #     for crd1 in scanner.current:
+        #         dst = distance(crd0, crd1)
+
+    def find_overlap(self, other: Scanner):
+        if other.fixed_beacons is None:
+            return False
+        self.reset
+        for current_orientation in self.all():
+            for fx, fy, fz in other.fixed_beacons:
+                for bx, by, bz in current_orientation:
+                    dx, dy, dz = (fx - bx, fy - by, fz - bz)
+                    shifted_beacons = {(x + dx, y + dy, z + dz) for x, y, z in current_orientation}
 
     def __str__(self) -> str:
-        s = "\n ".join([str(x).replace(" ", "") for x in self.current])
+        s = " ".join([str(x).replace(" ", "") for x in self.current])
         return f"[{s}]"
 
     def __repr__(self) -> str:
-        return repr(self.current)
+        return f"Scanner[{self.id}]"
 
 
 def manhattan_distance(pos_a, pos_b):
@@ -574,8 +593,15 @@ def part_1(source):
 
     """
     scanners, relative_beacon_positions = parse_scanners(source)
-    fixed_scanner_positions = {0: (0, 0, 0)}
-    known_beacon_positions = set(relative_beacon_positions[0])
+    start_scanner = scanners[0]
+    start_scanner.fixed_beacons = set(start_scanner.current)
+    start_scanner.locked = False
+    start_scanner.pos = (0, 0, 0)
+
+    for i, x in enumerate(start_scanner.all()):
+        if i == 5:
+            start_scanner.locked = True
+        print("!!!", i, x)
 
     return 0
 
@@ -601,7 +627,7 @@ class UnitTests(unittest.TestCase):
         for scnr in scanners.values():
             found = False
             for orientation in scanner.all():
-                if str(orientation) == str(scnr):
+                if orientation == scnr.current:
                     found = True
                     break
             self.assertTrue(found)
@@ -631,8 +657,8 @@ class UnitTests(unittest.TestCase):
               (413, 935, -424),
               (-391, 539, -444),
               (553, 889, -390)]
-        sc0 = Scanner(s0)
-        sc1 = Scanner(s1)
+        sc0 = Scanner(0, s0)
+        sc1 = Scanner(1, s1)
         self.assertTrue(sc0.matches(sc1))
 
     def test_example_data_part_1(self):

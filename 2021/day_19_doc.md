@@ -8,3 +8,8 @@ y0)+abs(y1)
 4,1 -> -1,-1 ....B.        (0+5,2+1) -> 5,2 3,3 -> -2,1 S..... 0
 
 ordering not the same though
+
+p1: -618,-824,-621 p2:  686, 422, 578
+
+Er vanuit gaande dat dit dezelfde punten zijn en en p1 relatief aan s1 s1 =
+0,0,0
