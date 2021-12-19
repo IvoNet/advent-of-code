@@ -509,6 +509,7 @@ class Scanner:
                 else:
                     self.turn()
                     yield self
+            # reorient to do the other 12 positions
             self.roll()
             self.turn()
             self.roll()
