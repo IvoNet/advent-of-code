@@ -372,9 +372,11 @@ What is the largest Manhattan distance between any two scanners?
 
 """
 
+import pickle
 import sys
 import unittest
 from collections import defaultdict
+from itertools import permutations
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -411,69 +413,6 @@ def turn(v):
     return -v[1], v[0], v[2]
 
 
-def sequence(v):
-    """
-    A die (half a pair of dice) is handy for observing the 24 different orientations,
-    and can suggest operation sequences to generate them. You will see that any of
-    six faces can be uppermost, and the sides below can be rotated into four different
-    cardinal directions. Let us denote two operations: “turn” and “roll”, where turn
-    rotates the die about the z axis from one cardinal to the next, and roll rotates
-    the die 90° away from you, so the away-face becomes the bottom face and the near
-    face the top. These operations can be expressed using rotation matrices, or can be
-    expressed as simple functions that when given
-    (x,y,z) return (-y,x,z) or (x,z,-y), respectively.
-
-    Anyhow, if you place the die with 1 on the near face, 2 at right, and 3 on top,
-    you will find that the following sequence of steps generates the twelve different
-    orientations with 1, 2, or 3 spots on top: RTTTRTTTRTTT. Then the sequence RTR
-    exposes 6, 4, 5 where 1, 2, 3 originally were, and a repeat of the sequence
-    RTTTRTTTRTTT generates the twelve orientations with 4, 5, or 6 spots on top.
-    The mentioned sequence is embedded in the following python code.
-
-    https://stackoverflow.com/questions/16452383/how-to-get-all-24-rotations-of-a-3-dimensional-array
-    """
-    for cycle in range(2):
-        for step in range(3):  # Yield RTTT 3 times
-            v = roll(v)
-            yield v  # Yield R
-            for i in range(3):  # Yield TTT
-                v = turn(v)
-                yield v
-        v = roll(turn(roll(v)))  # Do RTR
-
-
-def all_rotations():
-    """
-    [((-1, -1, -1), (-1, 1, 1)),
-     ((-1, -1, -1), (1, -1, 1)),
-     ((-1, -1, -1), (1, 1, -1)),
-     ((-1, -1, 1), (-1, 1, -1)),
-     ((-1, -1, 1), (1, -1, -1)),
-     ((-1, -1, 1), (1, 1, 1)),
-     ((-1, 1, -1), (-1, -1, 1)),
-     ((-1, 1, -1), (1, -1, -1)),
-     ((-1, 1, -1), (1, 1, 1)),
-     ((-1, 1, 1), (-1, -1, -1)),
-     ((-1, 1, 1), (1, -1, 1)),
-     ((-1, 1, 1), (1, 1, -1)),
-     ((1, -1, -1), (-1, -1, 1)),
-     ((1, -1, -1), (-1, 1, -1)),
-     ((1, -1, -1), (1, 1, 1)),
-     ((1, -1, 1), (-1, -1, -1)),
-     ((1, -1, 1), (-1, 1, 1)),
-     ((1, -1, 1), (1, 1, -1)),
-     ((1, 1, -1), (-1, -1, -1)),
-     ((1, 1, -1), (-1, 1, 1)),
-     ((1, 1, -1), (1, -1, 1)),
-     ((1, 1, 1), (-1, -1, 1)),
-     ((1, 1, 1), (-1, 1, -1)),
-     ((1, 1, 1), (1, -1, -1))]
-    """
-    p = sequence((1, 1, 1))
-    q = sequence((-1, -1, 1))
-    return sorted(zip(p, q))
-
-
 def parse(source: list[str]) -> dict[int, list[list[int, int, int]]]:
     ret = defaultdict(list)
     scanner = -1
@@ -483,19 +422,18 @@ def parse(source: list[str]) -> dict[int, list[list[int, int, int]]]:
             continue
         xyz = ints(line)
         if len(xyz) != 3:
-            # _(f"Not a coordinate [{xyz}]")
             continue
         ret[scanner].append(tuple(xyz))
     _("parse:", ret)
     return ret
 
 
-def parse_scanners(source: list[str]):
+def parse_scanners(source: list[str]) -> list[Scanner]:
     relative_beacon_positions = parse(source)
-    scanners = {}
+    scanners = []
     for k, v in relative_beacon_positions.items():
-        scanners[k] = Scanner(k, v)
-    return scanners, relative_beacon_positions
+        scanners.append(Scanner(k, v))
+    return scanners
 
 
 class Scanner:
@@ -539,36 +477,31 @@ class Scanner:
             self.turn()
             self.roll()
 
-    def reset(self):
-        self.current = self.orig.copy()
+    def lock(self, beacons, position):
+        self.locked = True
+        self.fixed_beacons = beacons
+        self.pos = position
 
-    def matches(self, scanner: Scanner) -> bool:
-        ...
-        # for crd0 in self.current:
-        #     for crd1 in scanner.current:
-        #         dst = distance(crd0, crd1)
-
-    def find_overlap(self, other: Scanner):
+    def find_overlap(self, other: Scanner) -> bool:
         if other.fixed_beacons is None:
             return False
-        self.reset
         for current_orientation in self.all():
             for fx, fy, fz in other.fixed_beacons:
                 for bx, by, bz in current_orientation:
                     dx, dy, dz = (fx - bx, fy - by, fz - bz)
                     shifted_beacons = {(x + dx, y + dy, z + dz) for x, y, z in current_orientation}
+                    common_beacons = shifted_beacons.intersection(other.fixed_beacons)
+                    if len(common_beacons) >= 12:
+                        self.lock(shifted_beacons, (dx, dy, dz))
+                        return True
+        return False
 
-    def __str__(self) -> str:
-        s = " ".join([str(x).replace(" ", "") for x in self.current])
-        return f"[{s}]"
+    def manhattan_distance(self, other: Scanner):
+        return abs(self.pos[0] - other.pos[0]) + abs(self.pos[1] - other.pos[1]) + abs(self.pos[2] - other.pos[2])
+        # return sum(abs(a - b) for a, b in zip(self.pos, other.pos))
 
     def __repr__(self) -> str:
         return f"Scanner[{self.id}]"
-
-
-def manhattan_distance(pos_a, pos_b):
-    # return abs(pos_a[0] - pos_b[0]) + abs(pos_a[1] - pos_b[1]) + abs(pos_a[2] - pos_b[2])
-    return sum(abs(a - b) for a, b in zip(pos_a, pos_b))
 
 
 def part_1(source):
@@ -592,22 +525,65 @@ def part_1(source):
     https://matplotlib.org/stable/tutorials/toolkits/mplot3d.html#scatter-plots
 
     """
-    scanners, relative_beacon_positions = parse_scanners(source)
-    start_scanner = scanners[0]
+    scanners: list[Scanner] = parse_scanners(source)
+    start_scanner = scanners.pop(0)
     start_scanner.fixed_beacons = set(start_scanner.current)
-    start_scanner.locked = False
+    start_scanner.locked = True
     start_scanner.pos = (0, 0, 0)
+    matched = [start_scanner, ]
 
-    for i, x in enumerate(start_scanner.all()):
-        if i == 5:
-            start_scanner.locked = True
-        print("!!!", i, x)
+    try:
+        with open('day_19_matched.pickle', 'rb') as fi:
+            matched = pickle.load(fi)
+    except IOError:
+        while len(scanners) != 0:
+            for fixed in matched:
+                for scanner in scanners:
+                    if scanner.find_overlap(fixed):
+                        print("Overlap found: ", scanner)
+                        matched.append(scanner)
+                        scanners.remove(scanner)
+                        break
 
-    return 0
+    beacons = set()
+    for scanner in matched:
+        beacons = beacons.union(scanner.fixed_beacons)
+    part_1 = len(beacons)
+
+    with open("day_19_matched.pickle", "wb") as fo:
+        pickle.dump(matched, fo, protocol=pickle.HIGHEST_PROTOCOL)
+
+    return part_1
 
 
 def part_2(source):
-    return 0
+    scanners: list[Scanner] = parse_scanners(source)
+    start_scanner = scanners.pop(0)
+    start_scanner.fixed_beacons = set(start_scanner.current)
+    start_scanner.locked = True
+    start_scanner.pos = (0, 0, 0)
+    matched = [start_scanner, ]
+
+    try:
+        with open('day_19_matched.pickle', 'rb') as fi:
+            matched = pickle.load(fi)
+    except IOError:
+        while len(scanners) != 0:
+            for fixed in matched:
+                for scanner in scanners:
+                    if scanner.find_overlap(fixed):
+                        print("Overlap found: ", scanner)
+                        matched.append(scanner)
+                        scanners.remove(scanner)
+                        break
+
+    with open("day_19_matched.pickle", "wb") as fo:
+        pickle.dump(matched, fo, protocol=pickle.HIGHEST_PROTOCOL)
+
+    max_dist = max(a.manhattan_distance(b) for a, b in permutations(matched, 2))
+    print(max_dist)
+
+    return max_dist
 
 
 class UnitTests(unittest.TestCase):
@@ -615,16 +591,14 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
         self.source = read_rows(f"day_{day}.txt")
-        self.test_source = read_rows(f"day_{day}_1.txt")
         self.test_source_2 = read_rows(f"day_{day}_2.txt")
 
     def test_rotation(self):
         """All the orientations in this set of scanners should be
         found in the first scanner rotations"""
-        scanners, _ = parse_scanners(self.test_source_2)
-        scanner = scanners[0]
-        del (scanners[0])
-        for scnr in scanners.values():
+        scanners = parse_scanners(self.test_source_2)
+        scanner = scanners.pop()
+        for scnr in scanners:
             found = False
             for orientation in scanner.all():
                 if orientation == scnr.current:
@@ -632,43 +606,8 @@ class UnitTests(unittest.TestCase):
                     break
             self.assertTrue(found)
 
-    def test_match_coordinates(self):
-        s0 = [(-618, -824, -621),
-              (-537, -823, -458),
-              (-447, -329, 318),
-              (404, -588, -901),
-              (544, -627, -890),
-              (528, -643, 409),
-              (-661, -816, -575),
-              (390, -675, -793),
-              (423, -701, 434),
-              (-345, -311, 381),
-              (459, -707, 401),
-              (-485, -357, 347)]
-        s1 = [(686, 422, 578),
-              (605, 423, 415),
-              (515, 917, -361),
-              (-336, 658, 858),
-              (-476, 619, 847),
-              (-460, 603, -452),
-              (729, 430, 532),
-              (-322, 571, 750),
-              (-355, 545, -477),
-              (413, 935, -424),
-              (-391, 539, -444),
-              (553, 889, -390)]
-        sc0 = Scanner(0, s0)
-        sc1 = Scanner(1, s1)
-        self.assertTrue(sc0.matches(sc1))
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
-
     def test_part_1(self):
         self.assertEqual(449, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(13128, part_2(self.source))

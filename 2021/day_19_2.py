@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
-__author__ = "Ivo Woltring"
-__revised__ = "$revised: 01/12/2021 10:39$"
-__copyright__ = "Copyright (c) 2021 Ivo Woltring"
-__license__ = "Apache 2.0"
-__doc__ = """
-
-"""
-
 import sys
 import unittest
 from itertools import permutations
@@ -83,7 +75,6 @@ class Scanner:
                     common_beacons = shifted_beacons.intersection(other.fixed_beacons)
                     if len(common_beacons) >= 12:
                         self.fixed_beacons = shifted_beacons
-                        # ox, oy, oz = other.pos
                         self.pos = (dx, dy, dz)
                         return True
 
@@ -132,16 +123,9 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
         self.source = read_rows(f"day_{day}.txt")
-        self.test_source = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(449, part_1(self.source)[0])
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(13128, part_1(self.source)[1])
