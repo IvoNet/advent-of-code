@@ -364,6 +364,7 @@ Assemble the full map of beacons. How many beacons are there?
 
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -371,7 +372,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -381,6 +382,7 @@ def _(*args, end="\n"):
 
 
 def rotate_matrix(m):
+    """https://stackoverflow.com/questions/53250821/in-python-how-do-i-rotate-a-matrix-90-degrees-counterclockwise"""
     return [[m[j][i] for j in range(len(m))] for i in range(len(m[0]) - 1, -1, -1)]
 
 
@@ -393,29 +395,158 @@ def turn(v):
 
 
 def sequence(v):
-    """https://stackoverflow.com/questions/16452383/how-to-get-all-24-rotations-of-a-3-dimensional-array"""
+    """
+    A die (half a pair of dice) is handy for observing the 24 different orientations,
+    and can suggest operation sequences to generate them. You will see that any of
+    six faces can be uppermost, and the sides below can be rotated into four different
+    cardinal directions. Let us denote two operations: “turn” and “roll”, where turn
+    rotates the die about the z axis from one cardinal to the next, and roll rotates
+    the die 90° away from you, so the away-face becomes the bottom face and the near
+    face the top. These operations can be expressed using rotation matrices, or can be
+    expressed as simple functions that when given
+    (x,y,z) return (-y,x,z) or (x,z,-y), respectively.
+
+    Anyhow, if you place the die with 1 on the near face, 2 at right, and 3 on top,
+    you will find that the following sequence of steps generates the twelve different
+    orientations with 1, 2, or 3 spots on top: RTTTRTTTRTTT. Then the sequence RTR
+    exposes 6, 4, 5 where 1, 2, 3 originally were, and a repeat of the sequence
+    RTTTRTTTRTTT generates the twelve orientations with 4, 5, or 6 spots on top.
+    The mentioned sequence is embedded in the following python code.
+
+    https://stackoverflow.com/questions/16452383/how-to-get-all-24-rotations-of-a-3-dimensional-array
+    """
     for cycle in range(2):
         for step in range(3):  # Yield RTTT 3 times
             v = roll(v)
-            yield (v)  # Yield R
+            yield v  # Yield R
             for i in range(3):  # Yield TTT
                 v = turn(v)
-                yield (v)
+                yield v
         v = roll(turn(roll(v)))  # Do RTR
 
 
 def all_rotations():
+    """
+    [((-1, -1, -1), (-1, 1, 1)),
+     ((-1, -1, -1), (1, -1, 1)),
+     ((-1, -1, -1), (1, 1, -1)),
+     ((-1, -1, 1), (-1, 1, -1)),
+     ((-1, -1, 1), (1, -1, -1)),
+     ((-1, -1, 1), (1, 1, 1)),
+     ((-1, 1, -1), (-1, -1, 1)),
+     ((-1, 1, -1), (1, -1, -1)),
+     ((-1, 1, -1), (1, 1, 1)),
+     ((-1, 1, 1), (-1, -1, -1)),
+     ((-1, 1, 1), (1, -1, 1)),
+     ((-1, 1, 1), (1, 1, -1)),
+     ((1, -1, -1), (-1, -1, 1)),
+     ((1, -1, -1), (-1, 1, -1)),
+     ((1, -1, -1), (1, 1, 1)),
+     ((1, -1, 1), (-1, -1, -1)),
+     ((1, -1, 1), (-1, 1, 1)),
+     ((1, -1, 1), (1, 1, -1)),
+     ((1, 1, -1), (-1, -1, -1)),
+     ((1, 1, -1), (-1, 1, 1)),
+     ((1, 1, -1), (1, -1, 1)),
+     ((1, 1, 1), (-1, -1, 1)),
+     ((1, 1, 1), (-1, 1, -1)),
+     ((1, 1, 1), (1, -1, -1))]
+    """
     p = sequence((1, 1, 1))
     q = sequence((-1, -1, 1))
     return sorted(zip(p, q))
 
 
-def parse(source):
-    pass
+def parse(source: list[str]) -> dict[int, list[list[int, int, int]]]:
+    ret = defaultdict(list)
+    scanner = -1
+    for line in source:
+        if line.startswith("---"):
+            scanner = ints(line)[0]
+            continue
+        xyz = ints(line)
+        if len(xyz) != 3:
+            # _(f"Not a coordinate [{xyz}]")
+            continue
+        ret[scanner].append(tuple(xyz))
+
+    _("parse:", ret)
+    return ret
+
+
+def parse_scanners(source: list[str]):
+    scanner_dict = parse(source)
+    scanners = {}
+    for k, v in scanner_dict.items():
+        scanners[k] = Scanner(v)
+    return scanners
+
+
+class Scanner:
+
+    def __init__(self, beacons: list[list[int, int, int]]) -> None:
+        self.orig = beacons.copy()
+        self.current = beacons.copy()
+
+    def roll(self):
+        ret = []
+        for c in self.current:
+            ret.append(roll(c))
+        self.current = ret
+
+    def turn(self):
+        ret = []
+        for c in self.current:
+            ret.append(turn(c))
+        self.current = ret
+
+    def all(self):
+        for _ in range(2):
+            for action in "RTTTRTTTRTTT":
+                if action == "R":
+                    self.roll()
+                    yield self
+                else:
+                    self.turn()
+                    yield self
+            self.roll()
+            self.turn()
+            self.roll()
+
+    def reset(self):
+        self.current = self.orig.copy()
+
+    def __str__(self) -> str:
+        s = "\n ".join([str(x).replace(" ", "") for x in self.current])
+        return f"[{s}]"
+
+    def __repr__(self) -> str:
+        return repr(self.current)
 
 
 def part_1(source):
-    parse(source)
+    """
+    scanner:
+        - detect all units within 1000 units all axis
+        - beacons relative to scanner (scanner as 0,0,0)
+        - does not detect other scanners
+        - does not know its own position
+    beacon:
+        - motionless
+    region:
+        - overlapping 12 beacons
+    - finding pairs of scanners that have at least 12 overlapping beacons
+    - reconstruct beacon map 1 scanner at the time
+
+    https://www.euclideanspace.com/maths/geometry/rotations/axisAngle/examples/index.htm
+    https://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToMatrix/examples/index.htm
+    https://stackoverflow.com/questions/44073594/how-to-rotate-a-3d-matrix-along-x-y-or-z-axial-plane
+    https://numpy.org/doc/stable/reference/generated/numpy.rot90.html
+    https://matplotlib.org/stable/tutorials/toolkits/mplot3d.html#scatter-plots
+
+    """
+    scanners = parse_scanners(source)
+
     return 0
 
 
@@ -429,6 +560,21 @@ class UnitTests(unittest.TestCase):
         day = ints(Path(__file__).name)[0]
         self.source = read_rows(f"day_{day}.txt")
         self.test_source = read_rows(f"day_{day}_1.txt")
+        self.test_source_2 = read_rows(f"day_{day}_2.txt")
+
+    def test_rotation(self):
+        """All the orientations in this set of scanners should be
+        found in the first scanner rotations"""
+        scanners = parse_scanners(self.test_source_2)
+        scanner = scanners[0]
+        del (scanners[0])
+        for scnr in scanners.values():
+            found = False
+            for orientation in scanner.all():
+                if str(orientation) == str(scnr):
+                    found = True
+                    break
+            self.assertTrue(found)
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))
