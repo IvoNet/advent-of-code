@@ -383,11 +383,6 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def rotate_matrix(m):
-    """https://stackoverflow.com/questions/53250821/in-python-how-do-i-rotate-a-matrix-90-degrees-counterclockwise"""
-    return [[m[j][i] for j in range(len(m))] for i in range(len(m[0]) - 1, -1, -1)]
-
-
 def roll(v):  # Hand rule
     """
     Roll is over X
@@ -484,16 +479,17 @@ def parse(source: list[str]) -> dict[int, list[list[int, int, int]]]:
 
 
 def parse_scanners(source: list[str]):
-    scanner_dict = parse(source)
+    relative_beacon_positions = parse(source)
     scanners = {}
-    for k, v in scanner_dict.items():
-        scanners[k] = Scanner(v)
-    return scanners
+    for k, v in relative_beacon_positions.items():
+        scanners[k] = Scanner(k, v)
+    return scanners, relative_beacon_positions
 
 
 class Scanner:
 
-    def __init__(self, beacons: list[list[int, int, int]]) -> None:
+    def __init__(self, id: int, beacons: list[list[int, int, int]]) -> None:
+        self.id = id
         self.orig = beacons.copy()
         self.current = beacons.copy()
         self.length = len(beacons)
