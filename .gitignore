@@ -12,3 +12,4 @@ venv
 lib
 out
 *_try.*
+*.pickle

@@ -393,16 +393,11 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def rotate_matrix(m):
-    """https://stackoverflow.com/questions/53250821/in-python-how-do-i-rotate-a-matrix-90-degrees-counterclockwise"""
-    return [[m[j][i] for j in range(len(m))] for i in range(len(m[0]) - 1, -1, -1)]
-
-
-def roll(v):  # Hand rule
+def roll(v):
     """
     Roll is over X
     then
-    - x stays the same (make the hand (gun) signal and rotate over ringfinger)
+    - x stays the same (Using the Right-hand rule)
     - y becomes negative z
     - z becomes y
     """
