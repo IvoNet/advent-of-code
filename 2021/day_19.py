@@ -478,26 +478,28 @@ def parse(source: list[str]) -> dict[int, list[list[int, int, int]]]:
             # _(f"Not a coordinate [{xyz}]")
             continue
         ret[scanner].append(tuple(xyz))
-
     _("parse:", ret)
     return ret
 
 
 def parse_scanners(source: list[str]):
-    scanner_dict = parse(source)
+    relative_beacon_positions = parse(source)
     scanners = {}
-    for k, v in scanner_dict.items():
-        scanners[k] = Scanner(v)
-    return scanners
+    for k, v in relative_beacon_positions.items():
+        scanners[k] = Scanner(k, v)
+    return scanners, relative_beacon_positions
 
 
 class Scanner:
 
-    def __init__(self, beacons: list[list[int, int, int]]) -> None:
+    def __init__(self, id: int, beacons: list[tuple[int, int, int]]) -> None:
+        self.id = id
+        self.fixed_position = None
         self.orig = beacons.copy()
         self.current = beacons.copy()
         self.length = len(beacons)
         self.locked = False
+        # self.rotations: dict[int, tuple[int, int, int]] = {}
 
     def roll(self):
         ret = []
@@ -512,8 +514,10 @@ class Scanner:
         self.current = ret
 
     def all(self):
-        if self.locked:
-            yield self
+        """https://stackoverflow.com/questions/16452383/how-to-get-all-24-rotations-of-a-3-dimensional-array
+        """
+        # if self.locked:
+        #     yield self
         for _ in range(2):
             for action in "RTTTRTTTRTTT":
                 if action == "R":
@@ -530,10 +534,10 @@ class Scanner:
     def reset(self):
         self.current = self.orig.copy()
 
-    def matches(self, scanner: Scanner) -> bool:
-        for crd0 in self.current:
-            for crd1 in scanner.current:
-                dst = distance(crd0, crd1)
+    # def matches(self, scanner: Scanner) -> bool:
+    #     for crd0 in self.current:
+    #         for crd1 in scanner.current:
+    #             dst = distance(crd0, crd1)
 
     def __str__(self) -> str:
         s = "\n ".join([str(x).replace(" ", "") for x in self.current])
@@ -544,6 +548,7 @@ class Scanner:
 
 
 def manhattan_distance(pos_a, pos_b):
+    # return abs(pos_a[0] - pos_b[0]) + abs(pos_a[1] - pos_b[1]) + abs(pos_a[2] - pos_b[2])
     return sum(abs(a - b) for a, b in zip(pos_a, pos_b))
 
 
@@ -568,7 +573,9 @@ def part_1(source):
     https://matplotlib.org/stable/tutorials/toolkits/mplot3d.html#scatter-plots
 
     """
-    scanners = parse_scanners(source)
+    scanners, relative_beacon_positions = parse_scanners(source)
+    fixed_scanner_positions = {0: (0, 0, 0)}
+    known_beacon_positions = set(relative_beacon_positions[0])
 
     return 0
 
@@ -588,7 +595,7 @@ class UnitTests(unittest.TestCase):
     def test_rotation(self):
         """All the orientations in this set of scanners should be
         found in the first scanner rotations"""
-        scanners = parse_scanners(self.test_source_2)
+        scanners, _ = parse_scanners(self.test_source_2)
         scanner = scanners[0]
         del (scanners[0])
         for scnr in scanners.values():
