@@ -4,6 +4,7 @@ import re
 import sys
 import textwrap
 from pathlib import Path
+from shutil import copyfile
 
 import requests
 from bs4 import BeautifulSoup
@@ -68,16 +69,24 @@ def get_puzzle_description(year, day, filename):
         line = line.replace(':', ':\n\n')
         description += f"{line}\n"
     description = description.replace("  ", " ").replace("  ", " ")
-    print("Writing description :", filename)
+    print("Writing description      :", filename)
     with open(filename, 'w') as fo:
         fo.write(description)
 
 
 def get_puzzle_input(year, day, filename):
     resp = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies={"session": read_session()})
-    print("Writing puzzle input:", filename)
+    print("Writing puzzle input     :", filename)
     with open(filename, "w") as fo:
         fo.write(resp.text)
+
+
+def get_solution_template(year, day, filename):
+    if os.path.isfile(filename):
+        print("Python solution file seems to already exists... leaving it.")
+        return
+    print("Writing solution template:", filename)
+    copyfile("./day_.py", filename)
 
 
 def main(year, day):
@@ -85,6 +94,7 @@ def main(year, day):
     create_folders(year, day)
     get_puzzle_input(year, day, filename + ".input")
     get_puzzle_description(year, day, filename + ".txt")
+    get_solution_template(year, day, filename + ".py")
 
 
 if __name__ == '__main__':

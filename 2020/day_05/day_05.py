@@ -4,7 +4,11 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import unittest
+from pathlib import Path
+
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 ROWS = list(range(128))
 COLLUMS = list(range(8))
@@ -55,7 +59,18 @@ def part_2(data):
     raise ValueError("Should have found your seat by now")
 
 
+class UnitTests(unittest.TestCase):
+
+    def setUp(self) -> None:
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"day_{day.zfill(2)}.input")
+
+    def test_part_1(self):
+        self.assertEqual(955, part_1(self.source)[1])
+
+    def test_part_2(self):
+        self.assertEqual(569, part_2(self.source))
+
+
 if __name__ == '__main__':
-    source = read_rows("day_5.input")
-    print("Part 1:", part_1(source)[1])  # 955
-    print("part 2:", part_2(source))  #
+    unittest.main()

@@ -4,7 +4,11 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import unittest
+from pathlib import Path
+
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 
 def part_1(data, right=3, down=1):
@@ -31,7 +35,18 @@ def part_2(data):
     return a * b * c * d * e
 
 
+class UnitTests(unittest.TestCase):
+
+    def setUp(self) -> None:
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"day_{day.zfill(2)}.input")
+
+    def test_part_1(self):
+        self.assertEqual(289, part_1(self.source))
+
+    def test_part_2(self):
+        self.assertEqual(5522401584, part_2(self.source))
+
+
 if __name__ == '__main__':
-    source = read_rows("day_3.input")
-    print("Part 1:", part_1(source))  # 289
-    print("part 2:", part_2(source))  # 5522401584
+    unittest.main()

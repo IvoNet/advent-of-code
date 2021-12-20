@@ -4,7 +4,11 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import unittest
+from pathlib import Path
+
 from ivonet.files import read_data
+from ivonet.iter import ints
 
 
 class Group(object):
@@ -27,7 +31,18 @@ def part_1_2(data):
     return count, intersection_count
 
 
+class UnitTests(unittest.TestCase):
+
+    def setUp(self) -> None:
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_data(f"day_{day.zfill(2)}.input")
+
+    def test_part_1(self):
+        self.assertEqual(6585, part_1_2(self.source)[0])
+
+    def test_part_2(self):
+        self.assertEqual(3276, part_1_2(self.source)[1])
+
+
 if __name__ == '__main__':
-    source = read_data("day_6.input")
-    print(part_1_2(source)[0])
-    print(part_1_2(source)[1])
+    unittest.main()

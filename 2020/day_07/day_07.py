@@ -4,11 +4,14 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import unittest
 from collections import defaultdict
+from pathlib import Path
 from queue import Queue
 from typing import List
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 SHINY_GOLD = "shiny gold"
 
@@ -68,7 +71,18 @@ def part_2(data):
     return walk(tree, SHINY_GOLD)
 
 
+class UnitTests(unittest.TestCase):
+
+    def setUp(self) -> None:
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"day_{day.zfill(2)}.input")
+
+    def test_part_1(self):
+        self.assertEqual(289, part_1(self.source))
+
+    def test_part_2(self):
+        self.assertEqual(30055, part_2(self.source))
+
+
 if __name__ == '__main__':
-    source = read_rows("day_7.input")
-    print(part_1(source))
-    print(part_2(source))
+    unittest.main()

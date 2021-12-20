@@ -5,8 +5,11 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 import re
+import unittest
+from pathlib import Path
 
 from ivonet.files import read_data
+from ivonet.iter import ints
 
 PASSPORT_CODES = [
     "byr",
@@ -108,20 +111,19 @@ def part_2(data):
     return valid_passports
 
 
+
+class UnitTests(unittest.TestCase):
+
+    def setUp(self) -> None:
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_data(f"day_{day.zfill(2)}.input")
+
+    def test_part_1(self):
+        self.assertEqual(213, part_1(self.source)[1])
+
+    def test_part_2(self):
+        self.assertEqual(147, part_2(self.source))
+
+
 if __name__ == '__main__':
-    source = read_data("day_4.input")
-    #     print(part_2("""eyr:1972 cid:100
-    # hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
-    #
-    # iyr:2019
-    # hcl:#602927 eyr:1967 hgt:170cm
-    # ecl:grn pid:012533040 byr:1946
-    #
-    # hcl:dab227 iyr:2012
-    # ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
-    #
-    # hgt:59cm ecl:zzz
-    # eyr:2038 hcl:74454a iyr:2023
-    # pid:3556412378 byr:2007"""))
-    print("Part 1:", part_1(source)[1])  # 213
-    print("Part 2:", part_2(source))  # 147
+    unittest.main()

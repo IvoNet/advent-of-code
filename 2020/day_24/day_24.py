@@ -68,9 +68,9 @@ def main():
     tiles = defaultdict()
     data = read_rows("day_24.input")
     # data = example
-    lines = data.split("\n")
+    # lines = data.split("\n")
     black_tiles = set()
-    for line in lines:
+    for line in data:
         # print(line)
         line = line.replace("se", "1") \
             .replace("ne", "5") \
@@ -93,7 +93,7 @@ def main():
 
     for _ in range(100):
         new_black_tiles = set()
-        # Get all neighbors of all black tiles inlcuding themselfs to start processing
+        # Get all neighbors of all black tiles including themselves to start processing
         # now we have the whole grid
         for x, y in set.union(*[set(get_neigbors(xx, yy, True)) for xx, yy in black_tiles]):
             count_black_tiles = 0
@@ -110,8 +110,9 @@ def main():
                 new_black_tiles.add((x, y))
 
         black_tiles = new_black_tiles
-    print(len(black_tiles))
+    print("Answer part_2:", len(black_tiles))
 
 
 if __name__ == '__main__':
     main()
+
