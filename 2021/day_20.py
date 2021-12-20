@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
+from __future__ import annotations
+
 __author__ = "Ivo Woltring"
 __revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
@@ -103,12 +105,23 @@ Through further advances in imaging technology, the above output image can also 
 Truly incredible - now the small details are really starting to come through. After enhancing the original input image twice, 35 pixels are lit.
 
 Start with the original input image and apply the image enhancement algorithm twice, being careful to account for the infinite size of the images. How many pixels are lit in the resulting image?
+
+
+--- Part Two ---
+You still can't quite make out the details in the image. Maybe you just didn't enhance it enough.
+
+If you enhance the starting input image in the above example a total of 50 times, 3351 pixels are lit in the final output image.
+
+Start again with the original input image and apply the image enhancement algorithm 50 times. How many pixels are lit in the resulting image?
 """
 
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
+from ivonet.calc import base_x_to_10
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -123,13 +136,66 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def parse(source):
-    ...
+class Coord(NamedTuple):
+    r: int
+    c: int
+
+
+def parse(source) -> [dict[int, bool], dict[Coord, bool]]:
+    key = defaultdict(bool)
+    value = defaultdict(bool)
+    value.default_factory()
+
+    # key
+    for i, c in enumerate(source[0]):
+        if c == ".":
+            key[i] = False
+        elif c == "#":
+            key[i] = True
+        else:
+            raise ValueError(f"Error: unrecognized value [{c}] at index [{i}].")
+
+    # grid
+    for r, line in enumerate(source[2:]):
+        for c, v in enumerate(line):
+            if v == ".":
+                value[Coord(r, c)] = False
+            elif v == "#":
+                value[Coord(r, c)] = True
+            else:
+                raise ValueError(f"Error: unrecognized value [{v}] at coord [({r}, {c})].")
+
+    return key, value
+
+
+def enhance(grid: dict[Coord], key: dict[int], iteration: int, start_size=()):
+    ret = defaultdict(bool)
+    min_pos = -2 * iteration
+    max_pos = 100 + 2 * iteration
+    for r in range(min_pos, max_pos):
+        for c in range(min_pos, max_pos):
+            binary = ""
+            for row_offset in range(-1, 2):
+                for col_offset in range(-1, 2):
+                    binary += "1" if grid[Coord(r + row_offset, c + col_offset)] else "0"
+            key_index = base_x_to_10(binary, base=2)
+            ret[Coord(r, c)] = key[key_index]
+    return ret
+
+
+def count(grid) -> int:
+    return sum(1 for x in grid if grid[x])
 
 
 def part_1(source):
     key, grid = parse(source)
-    return 0
+    # _(key)
+    # _(grid)
+
+    for i in range(1, 3):
+        grid = enhance(grid, key, i)
+
+    return count(grid)
 
 
 def part_2(source):
@@ -150,10 +216,10 @@ class UnitTests(unittest.TestCase):
 ..###""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(35, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(5218, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
