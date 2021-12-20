@@ -121,7 +121,6 @@ from collections import defaultdict, OrderedDict
 from pathlib import Path
 from typing import NamedTuple
 
-from ivonet.calc import base_x_to_10
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -179,18 +178,22 @@ def enhance(grid: dict[Coord], key: dict[int], iteration: int, orig_size=100):
     max_pos = orig_size + 2 * iteration
     for r in range(min_pos, max_pos):
         for c in range(min_pos, max_pos):
-            binary = ""
+            # binary = ""
+            index = 0
             for row_offset in range(-1, 2):
                 for col_offset in range(-1, 2):
                     crd = Coord(r + row_offset, c + col_offset)
+                    index = index << 1
                     if crd in grid and grid[crd]:
-                        binary += "1"
+                        # binary += "1"
+                        index += 1
                     elif crd not in grid and default_fill:
-                        binary += "1"
-                    else:
-                        binary += "0"
-            key_index = base_x_to_10(binary, base=2)
-            ret[Coord(r, c)] = key[key_index]
+                        # binary += "1"
+                        index += 1
+                    # else:
+                    #     binary += "0"
+            # key_index = base_x_to_10(binary, base=2)
+            ret[Coord(r, c)] = key[index]
     return ret
 
 
