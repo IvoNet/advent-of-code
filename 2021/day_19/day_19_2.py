@@ -86,7 +86,7 @@ class Scanner:
 
 def part_1(source):
     scanners = []
-    with open('../../2020/day_19.txt') as f:
+    with open('day_19.txt') as f:
         for n, block in enumerate(f.read().split('\n\n')):
             lines = block.split('\n')
             positions = []

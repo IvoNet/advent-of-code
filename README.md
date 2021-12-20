@@ -30,11 +30,19 @@ lives
 now the ivonet package is accessible from all the years when running in the
 virtual environment.
 
+## Create a new year
+
+```shell
+mkdir YEAR_HERE
+cd YEAR_HERE
+mkdir day_{01..25}
+find . -type d -name "day*" -exec touch "{}/__init__.py" \;
+```
+
 ## 2021
 
 * [Advent of code 2021](https://adventofcode.com/2021)
 * [Ordina leader board](https://ordinaadventofcode.azurewebsites.net/Leaderboard/Ordina)
-
 
 ## Good links / Articles / Tools
 
