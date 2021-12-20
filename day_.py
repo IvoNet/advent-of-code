@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 __author__ = "Ivo Woltring"
-__revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """

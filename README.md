@@ -35,6 +35,7 @@ virtual environment.
 ```shell
 mkdir YEAR_HERE
 cd YEAR_HERE
+for i in {1..25}; do; python get_input.py $i; done
 mkdir day_{01..25}
 find . -type d -name "day*" -exec touch "{}/__init__.py" \;
 ```
