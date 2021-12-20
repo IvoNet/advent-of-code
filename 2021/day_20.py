@@ -117,7 +117,7 @@ Start again with the original input image and apply the image enhancement algori
 
 import sys
 import unittest
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from pathlib import Path
 from typing import NamedTuple
 
@@ -167,15 +167,16 @@ def parse(source) -> [dict[int, bool], dict[Coord, bool]]:
     return key, value
 
 
-def enhance(grid: dict[Coord], key: dict[int], iteration: int):
+def enhance(grid: dict[Coord], key: dict[int], iteration: int, orig_size=100):
     ret = defaultdict(bool)
     default_fill = False
 
+    # Flip the fill on empty space!
     if key[0]:
         default_fill = iteration % 2 == 0
 
     min_pos = -2 * iteration
-    max_pos = 100 + 2 * iteration
+    max_pos = orig_size + 2 * iteration
     for r in range(min_pos, max_pos):
         for c in range(min_pos, max_pos):
             binary = ""
@@ -197,12 +198,28 @@ def count(grid) -> int:
     return sum(1 for x in grid if grid[x])
 
 
+def visualize(grid):
+    g = OrderedDict(sorted(grid.items()))
+    print("-" * 100)
+    row = -1000
+    for crd in g:
+        if crd.r > row:
+            row = crd.r
+            print()
+        print("#" if g[crd] else ".", end="")
+    print()
+    print("-" * 100)
+
+
 def main(source):
     key, grid = parse(source)
+    orig_size = len(source[2])
 
     grid_part_1 = None
     for i in range(1, 51):
-        grid = enhance(grid, key, i)
+        grid = enhance(grid, key, i, orig_size=orig_size)
+        if DEBUG:
+            visualize(grid)
         if i == 2:
             grid_part_1 = grid
 
