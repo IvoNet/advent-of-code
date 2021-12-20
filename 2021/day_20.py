@@ -218,10 +218,11 @@ def main(source):
     grid_part_1 = None
     for i in range(1, 51):
         grid = enhance(grid, key, i, orig_size=orig_size)
-        if DEBUG:
-            visualize(grid)
         if i == 2:
             grid_part_1 = grid
+    if DEBUG:
+        visualize(grid_part_1)
+        visualize(grid)
 
     return count(grid_part_1), count(grid)
 
