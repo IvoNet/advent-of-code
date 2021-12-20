@@ -142,9 +142,8 @@ class Coord(NamedTuple):
 
 
 def parse(source) -> [dict[int, bool], dict[Coord, bool]]:
-    key = defaultdict(bool)
-    value = defaultdict(bool)
-    value.default_factory()
+    key: [int, bool] = {}
+    value: [Coord, bool] = {}
 
     # key
     for i, c in enumerate(source[0]):
@@ -168,8 +167,13 @@ def parse(source) -> [dict[int, bool], dict[Coord, bool]]:
     return key, value
 
 
-def enhance(grid: dict[Coord], key: dict[int], iteration: int, start_size=()):
+def enhance(grid: dict[Coord], key: dict[int], iteration: int):
     ret = defaultdict(bool)
+    default_fill = False
+
+    if key[0]:
+        default_fill = iteration % 2 == 0
+
     min_pos = -2 * iteration
     max_pos = 100 + 2 * iteration
     for r in range(min_pos, max_pos):
@@ -177,7 +181,13 @@ def enhance(grid: dict[Coord], key: dict[int], iteration: int, start_size=()):
             binary = ""
             for row_offset in range(-1, 2):
                 for col_offset in range(-1, 2):
-                    binary += "1" if grid[Coord(r + row_offset, c + col_offset)] else "0"
+                    crd = Coord(r + row_offset, c + col_offset)
+                    if crd in grid and grid[crd]:
+                        binary += "1"
+                    elif crd not in grid and default_fill:
+                        binary += "1"
+                    else:
+                        binary += "0"
             key_index = base_x_to_10(binary, base=2)
             ret[Coord(r, c)] = key[key_index]
     return ret
@@ -187,19 +197,17 @@ def count(grid) -> int:
     return sum(1 for x in grid if grid[x])
 
 
-def part_1(source):
+def main(source):
     key, grid = parse(source)
-    # _(key)
-    # _(grid)
 
-    for i in range(1, 3):
+    grid_part_1 = None
+    for i in range(1, 51):
         grid = enhance(grid, key, i)
+        if i == 2:
+            grid_part_1 = grid
 
-    return count(grid)
+    return count(grid_part_1), count(grid)
 
-
-def part_2(source):
-    return 0
 
 
 class UnitTests(unittest.TestCase):
@@ -216,16 +224,16 @@ class UnitTests(unittest.TestCase):
 ..###""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(35, part_1(self.test_source))
+        self.assertEqual(35, main(self.test_source)[0])
 
     def test_part_1(self):
-        self.assertEqual(5218, part_1(self.source))
+        self.assertEqual(5218, main(self.source)[0])
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(3351, main(self.test_source)[1])
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(15527, main(self.source)[1])
 
 
 if __name__ == '__main__':
