@@ -209,7 +209,6 @@ def main(source):
     return count(grid_part_1), count(grid)
 
 
-
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -223,17 +222,15 @@ class UnitTests(unittest.TestCase):
 ..#..
 ..###""")
 
-    def test_example_data_part_1(self):
-        self.assertEqual(35, main(self.test_source)[0])
-
-    def test_part_1(self):
-        self.assertEqual(5218, main(self.source)[0])
-
-    def test_example_data_part_2(self):
+    def test_example_data(self):
+        part_1, part_2 = main(self.test_source)
+        self.assertEqual(35, part_1)
         self.assertEqual(3351, main(self.test_source)[1])
 
-    def test_part_2(self):
-        self.assertEqual(15527, main(self.source)[1])
+    def test_real_data(self):
+        part_1, part_2 = main(self.source)
+        self.assertEqual(5218, part_1)
+        self.assertEqual(15527, part_2)
 
 
 if __name__ == '__main__':
