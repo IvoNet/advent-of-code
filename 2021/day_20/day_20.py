@@ -6,8 +6,7 @@ __author__ = "Ivo Woltring"
 __revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """
---- Day 20: Trench Map ---
+__doc__ = """- Day 20: Trench Map -
 
 With the scanners fully deployed, you turn their attention to mapping the 
 floor of the ocean trench.
@@ -235,7 +234,7 @@ def visualize(grid):
     g = OrderedDict(sorted(grid.items()))
     print()
     print("-" * 100)
-    row = -1000000
+    row = -1000  # smaller than smallest
     for crd in g:
         if crd.r > row:
             row = crd.r
