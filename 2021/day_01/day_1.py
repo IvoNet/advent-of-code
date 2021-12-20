@@ -142,7 +142,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_ints(f"day_{day}.txt", delimeter="\n")
+        self.source = read_ints(f"day_{day}.input", delimeter="\n")
         self.test_source = read_ints("""199
 200
 208

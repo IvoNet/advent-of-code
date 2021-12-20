@@ -153,7 +153,7 @@ def part_2(data: list[str], diagonal=True):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_5.txt")
+    source = read_rows("day_5.input")
 
     def test_example_data(self):
         source = """0,9 -> 5,9

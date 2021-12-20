@@ -129,7 +129,7 @@ def plot(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = list(map(int, read_data("day_7.txt").split(",")))
+    source = list(map(int, read_data("day_7.input").split(",")))
     test_source = list(map(int, "16,1,2,0,4,2,7,1,2,14".split(",")))
 
     def test_example_data_part_1(self):
@@ -146,5 +146,5 @@ class UnitTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # plot(list(map(int, read_data("day_7.txt").split(","))))
+    # plot(list(map(int, read_data("day_7.input").split(","))))
     unittest.main()

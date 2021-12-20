@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 __author__ = "Ivo Woltring"
-__revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
@@ -40,7 +39,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day:02}.txt")
+        self.source = read_rows(f"day_{day:02}.input")
         self.test_source = read_rows("""""")
 
     def test_example_data_part_1(self):

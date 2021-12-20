@@ -129,7 +129,7 @@ def part_2(data, days=256):
 
 
 class UnitTests(unittest.TestCase):
-    source = list(map(int, read_data("day_6.txt").split(",")))
+    source = list(map(int, read_data("day_6.input").split(",")))
     test_source = [3, 4, 3, 1, 2]
 
     def test_example_data_part_1(self):

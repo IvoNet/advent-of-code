@@ -110,7 +110,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day}.txt")
+        self.source = read_rows(f"day_{day}.input")
         self.test_source = read_rows("""NNCB
 
 CH -> B

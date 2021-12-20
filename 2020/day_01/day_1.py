@@ -36,6 +36,6 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = read_rows("day-1.txt")
+    source = read_rows("day_01.input")
     print(part_1(source))  # 889779
     print(part_2(source))  # 76110336

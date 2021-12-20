@@ -119,7 +119,7 @@ def part_2(data):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_11.txt")
+        self.source = read_rows("day_11.input")
         self.test_source = read_rows("""L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..

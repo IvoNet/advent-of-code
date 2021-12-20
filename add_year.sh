@@ -16,10 +16,6 @@ if [ -d "$1" ]; then
   exit 1
 fi
 
-mkdir -p "$1"
-cp -v get_input.py "./$1/"
-sed -i "" "s/YEAR_HERE/$1/g" "$1/get_input.py"
-
 cd "$1" || exit 1
 
 for i in {1..25}; do

@@ -261,7 +261,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_data(f"day_{day}.txt")
+        self.source = read_data(f"day_{day}.input")
         self.test_source = read_data("""target area: x=20..30, y=-10..-5""")
         self.test_velocities = (
             (23, -10), (25, -9), (27, -5), (29, -6), (22, -6), (21, -7), (9, 0), (27, -7), (24, -5),

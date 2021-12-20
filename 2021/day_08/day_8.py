@@ -283,7 +283,7 @@ def part_2(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_8.txt")
+    source = read_rows("day_8.input")
     test_source_small = ["acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"]
     test_source = """be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc

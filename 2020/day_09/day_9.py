@@ -48,7 +48,7 @@ def part_2(data, preamble=25):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_9.txt")
+    source = read_rows("day_9.input")
     test_source = """35
 20
 15

@@ -120,7 +120,7 @@ def part_2(data):
 
 
 if __name__ == '__main__':
-    source = read_data("day_4.txt")
+    source = read_data("day_4.input")
     #     print(part_2("""eyr:1972 cid:100
     # hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
     #

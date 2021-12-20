@@ -82,7 +82,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_data(f"day_{day:02}.txt")
+        self.source = read_data(f"day_{day:02}.input")
 
     def test_example_data_part_1(self):
         self.assertEqual(0, part_1("(())"))

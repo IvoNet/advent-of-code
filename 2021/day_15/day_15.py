@@ -263,7 +263,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_int_matrix(f"day_{day}.txt")
+        self.source = read_int_matrix(f"day_{day}.input")
         self.test_source = read_int_matrix("""1163751742
 1381373672
 2136511328

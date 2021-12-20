@@ -577,9 +577,9 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day}.txt")
-        self.test_source = read_rows(f"day_{day}_1.txt")
-        self.test_source_2 = read_rows(f"day_{day}_2.txt")
+        self.source = read_rows(f"day_{day}.input")
+        self.test_source = read_rows(f"day_{day}_1.input")
+        self.test_source_2 = read_rows(f"day_{day}_2.input")
 
     def test_rotation(self):
         """All the orientations in this set of scanners should be

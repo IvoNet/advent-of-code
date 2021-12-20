@@ -31,7 +31,7 @@ def main(day):
 
     # Get the puzzle input
     resp = requests.get(f"https://adventofcode.com/{YEAR}/day/{day}/input", cookies={"session": read_session()})
-    filename = f"day_{day.zfill(2)}/day_{day.zfill(2)}.txt"
+    filename = f"day_{day.zfill(2)}/day_{day.zfill(2)}.input"
     print("Writing:", filename)
     with open(filename, "w") as fo:
         fo.write(resp.text)

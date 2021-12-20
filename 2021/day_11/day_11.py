@@ -448,7 +448,7 @@ def part_2(matrix):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_int_matrix("day_11.txt")
+        self.source = read_int_matrix("day_11.input")
         self.test_source = read_int_matrix("""5483143223
 2745854711
 5264556173

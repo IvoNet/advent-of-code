@@ -205,7 +205,7 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_12.txt")
+        self.source = read_rows("day_12.input")
         self.test_source = read_rows("""F10
 N3
 F7

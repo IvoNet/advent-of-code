@@ -103,6 +103,6 @@ def test():
 
 if __name__ == '__main__':
     test()
-    source = read_rows("day_17.txt")
+    source = read_rows("day_17.input")
     print("Part 1:", part_1(source))  #
     print("part 2:", part_2(source))  #
