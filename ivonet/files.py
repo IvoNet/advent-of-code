@@ -54,7 +54,7 @@ def read_data(infile: str) -> str:
 
 def read_rows(infile: str) -> list[str]:
     """Read the puzzle input without extra lines"""
-    return read_data(infile).split("\n")
+    return read_data(infile).strip().split("\n")
 
 
 def read_ints(infile: str, delimeter: str = ",") -> list[int]:

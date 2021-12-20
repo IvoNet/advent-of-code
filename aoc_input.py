@@ -94,4 +94,4 @@ if __name__ == '__main__':
         d = datetime.datetime.now()
         main(d.strftime("%Y"), d.strftime("%d"))
     else:
-        main(sys.argv[1], sys.argv[2])
+        main(sys.argv[1], sys.argv[2])  # python aoc_input.py year day

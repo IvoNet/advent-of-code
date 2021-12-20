@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 __author__ = "Ivo Woltring"
-__revised__ = "$revised: 07/12/2021 22:38$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """
-
-"""
 
 from collections import defaultdict
 from itertools import product
@@ -128,7 +124,7 @@ def direction(grid: list[list[any]], coord: tuple[int, int], to: tuple[int, int]
         ww += horizontal
 
 
-def nw(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def nw(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """North-West direction based on coord in the grid
 
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,4)))
@@ -145,7 +141,7 @@ def nw(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [i
             yield x
 
 
-def sw(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def sw(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """South-West direction based on coord in the grid
 
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,4)))
@@ -162,7 +158,7 @@ def sw(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [i
             yield x
 
 
-def se(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def se(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """South-East direction based on coord in the grid
 
     >>> list(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (0,0)))
@@ -179,7 +175,7 @@ def se(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [i
             yield x
 
 
-def ne(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def ne(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """Nort-East direction based on coord in the grid
 
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (4,0)))
@@ -196,7 +192,7 @@ def ne(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [i
             yield x
 
 
-def north(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def north(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """Nort direction based on coord in the grid
 
     >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))
@@ -213,7 +209,7 @@ def north(grid: list[list[any]], coord: tuple[int, int], value: bool = False) ->
             yield x
 
 
-def east(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def east(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """East direction based on coord in the grid
 
     >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,2)))
@@ -230,7 +226,7 @@ def east(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> 
             yield x
 
 
-def south(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def south(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """
     Nort direction based on coord in the grid
 
@@ -248,7 +244,7 @@ def south(grid: list[list[any]], coord: tuple[int, int], value: bool = False) ->
             yield x
 
 
-def west(grid: list[list[any]], coord: tuple[int, int], value: bool = False) -> [int | [int, any]]:
+def west(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     """West direction based on coord in the grid
 
     >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (3,3)))

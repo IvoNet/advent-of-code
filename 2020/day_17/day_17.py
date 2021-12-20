@@ -1,55 +1,8 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 __author__ = "Ivo Woltring"
-__revised__ = "$revised: 01/12/2021 10:39$"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """
-##############################################################################
-# Part 1
-##############################################################################
-
-If a cube is active and exactly 2 or 3 of its neighbors are also active, 
-the cube remains active. Otherwise, the cube becomes inactive.
-
-If a cube is inactive but exactly 3 of its neighbors are active, the cube 
-becomes active. Otherwise, the cube remains inactive.
-
-product neighbors
-
-[(-1, -1, -1),
- (-1, -1, 0),
- (-1, -1, 1),
- (-1, 0, -1),
- (-1, 0, 0),
- (-1, 0, 1),
- (-1, 1, -1),
- (-1, 1, 0),
- (-1, 1, 1),
- (0, -1, -1),
- (0, -1, 0),
- (0, -1, 1),
- (0, 0, -1),
- (0, 0, 0),
- (0, 0, 1),
- (0, 1, -1),
- (0, 1, 0),
- (0, 1, 1),
- (1, -1, -1),
- (1, -1, 0),
- (1, -1, 1),
- (1, 0, -1),
- (1, 0, 0),
- (1, 0, 1),
- (1, 1, -1),
- (1, 1, 0),
- (1, 1, 1)]
-
-##############################################################################
-# Part 2
-##############################################################################
-
-"""
 
 import sys
 from itertools import product
