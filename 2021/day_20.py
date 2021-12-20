@@ -164,7 +164,6 @@ from collections import defaultdict, OrderedDict
 from pathlib import Path
 from typing import NamedTuple
 
-from ivonet.calc import base_x_to_10
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -190,22 +189,12 @@ def parse(source) -> [dict[int, bool], dict[Coord, bool]]:
 
     # key
     for i, c in enumerate(source[0]):
-        if c == ".":
-            key[i] = False
-        elif c == "#":
-            key[i] = True
-        else:
-            raise ValueError(f"Error: unrecognized value [{c}] at index [{i}].")
+        key[i] = c == "#"
 
     # grid
     for r, line in enumerate(source[2:]):
         for c, v in enumerate(line):
-            if v == ".":
-                value[Coord(r, c)] = False
-            elif v == "#":
-                value[Coord(r, c)] = True
-            else:
-                raise ValueError(f"Error: unrecognized value [{v}] at coord [({r}, {c})].")
+            value[Coord(r, c)] = v == "#"
 
     return key, value
 
@@ -217,7 +206,7 @@ def enhance(grid: dict[Coord], key: dict[int], iteration: int, orig_size=100):
     # Flip the fill on empty space!
     # if first char of the enhancement table is "on"
     # in infinite space that will flip the whole empty stuff on
-    if key[0]:
+    if key[0] and not key[511]:
         default_fill = iteration % 2 == 0
 
     min_pos = -2 * iteration
@@ -225,22 +214,16 @@ def enhance(grid: dict[Coord], key: dict[int], iteration: int, orig_size=100):
     for r in range(min_pos, max_pos):
         for c in range(min_pos, max_pos):
             binary = ""
-            # index = 0  # if bitwise :-)
             for row_offset in range(-1, 2):
                 for col_offset in range(-1, 2):
                     crd = Coord(r + row_offset, c + col_offset)
-                    # index = index << 1  # bitwise
                     if crd in grid and grid[crd]:
                         binary += "1"
-                        # index += 1  # bitwise
                     elif crd not in grid and default_fill:
                         binary += "1"
-                        # index += 1  # bitwise
-                    else:  # remove if bitwise
+                    else:
                         binary += "0"
-            key_index = base_x_to_10(binary, base=2)
-            # ret[Coord(r, c)] = key[index]  # bitwise
-            ret[Coord(r, c)] = key[key_index]
+            ret[Coord(r, c)] = key[int(binary, base=2)]
     return ret
 
 
