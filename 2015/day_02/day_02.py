@@ -9,13 +9,14 @@ __license__ = "Apache 2.0"
 import sys
 import unittest
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -24,8 +25,32 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Box(NamedTuple):
+    l: int
+    w: int
+    h: int
+
+
+def parse(source):
+    boxes: list[Box] = []
+    for box in source:
+        boxes.append(Box(*ints(box)))
+    return boxes
+
+
+def wrapping(box: Box) -> int:
+    total = 2 * box.l * box.w + 2 * box.w * box.h + 2 * box.h * box.l
+    b = list(box)
+    b.remove(max(b))
+    total += b[0] * b[1]
+    return total
+
+
 def part_1(source):
-    return 0
+    boxes = parse(source)
+    total = sum(wrapping(box) for box in boxes)
+    _(total)
+    return total
 
 
 def part_2(source):
@@ -37,10 +62,10 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows("""2x3x4""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(58, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))

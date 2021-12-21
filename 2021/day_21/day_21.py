@@ -17,7 +17,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -182,11 +182,11 @@ def part_2(players):
     4 outcomes
 
     this is the same as:
-    product(range(1, 4), repeat=3)
+    - product(range(1, 4), repeat=3)
 
     while playing we need a way to keep track of what has already been played.
     a cache so to speak as otherwise the brute force is going to be nuts!
-    Done is done right
+    Done is done and the same for all universes if it occurs again.
 
     but what is the key for the cache?
     What do I have?
@@ -205,14 +205,16 @@ def part_2(players):
     # a dict with a key and a total of the left vs right wins
     quantum_cache: dict[tuple[tuple[Player, Player], int], tuple[int, int]] = {}
     players = tuple(players.values())
-    _()
     _(players)
     result = dirac_dice(players, 0, quantum_cache)
 
     if DEBUG:
-        with open("cache.output", "w") as fo:
+        with open("sorted_cache.output", "w") as fo:
             for k in sorted(quantum_cache.keys()):
                 fo.write(f"{k} - {quantum_cache[k]}\n")
+        with open("cache.output", "w") as fo:
+            for k, v in quantum_cache.items():
+                fo.write(f"{k} - {v}\n")
     # _(quantum_cache)
     _(len(quantum_cache))
     _(result)
