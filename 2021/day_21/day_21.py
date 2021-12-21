@@ -34,15 +34,15 @@ def parse(source):
     return players
 
 
-@dataclass
-class Player:
+class Player(NamedTuple):
     position: int
-    score: int = 0
+    score: int
 
 
-def play(player, roll):
-    player.position = (player.position - 1 + roll) % 10 + 1
-    player.score += player.position
+def play(player: player, roll: int) -> Player:
+    npos = (player.position - 1 + roll) % 10 + 1
+    nscore = player.score + npos
+    return Player(npos, nscore)
 
 
 def deterministic_die():
@@ -51,7 +51,7 @@ def deterministic_die():
             yield roll
 
 
-def three_sided_die():
+def quantum_die():
     while True:
         for roll in range(1, 4):
             yield roll
@@ -66,9 +66,9 @@ def part_1(players):
     while True:
         throws += 3
         if flip:
-            play(players[1], next(dice) + next(dice) + next(dice))
+            players[1] = play(players[1], next(dice) + next(dice) + next(dice))
         else:
-            play(players[2], next(dice) + next(dice) + next(dice))
+            players[2] = play(players[2], next(dice) + next(dice) + next(dice))
         flip = not flip
         _(throws, players)
         if players[1].score >= 1000:
@@ -86,8 +86,10 @@ def part_2(players):
     """
 
 
+
     """
-    state: dict
+    end = 21
+
 
     return 0
 
