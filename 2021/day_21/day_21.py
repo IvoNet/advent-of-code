@@ -48,12 +48,6 @@ def parse(source):
     return players
 
 
-def check(player):
-    if player.score >= 1000:
-        return True
-    return False
-
-
 def deterministic_die():
     while True:
         for roll in range(1, 101):
