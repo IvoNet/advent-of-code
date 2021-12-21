@@ -16,17 +16,13 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
-
-
-def parse(source):
-    ...
 
 
 class Santa:
@@ -66,38 +62,10 @@ class Santa:
 
 
 def part_1(source):
-    locations = defaultdict(int)
-    north = 0
-    east = 0
-    south = 0
-    west = 0
-    locations[(0, 0, 0, 0)] = 1
+    santa = Santa()
     for c in source:
-        if c == "^":
-            if south > 0:
-                south -= 1
-            else:
-                north += 1
-        elif c == "v":
-            if north > 0:
-                north -= 1
-            else:
-                south += 1
-        elif c == "<":
-            if east > 0:
-                east -= 1
-            else:
-                west += 1
-        elif c == ">":
-            if west > 0:
-                west -= 1
-            else:
-                east += 1
-        else:
-            raise ValueError(f"Unknown direction [{c}]")
-        locations[(north, east, south, west)] += 1
-    _(locations)
-    return len(locations)
+        santa.go(c)
+    return len(santa.locations)
 
 
 def part_2(source):
