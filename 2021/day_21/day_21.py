@@ -8,7 +8,9 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -24,33 +26,34 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Player:
-
-    def __init__(self, id, pawn=0, score=0) -> None:
-        self.id: int = id
-        self.pawn: int = pawn
-        self.score: int = score
-
-    def go(self, roller):
-        roll_sum = sum([next(roller), next(roller), next(roller)])
-        self.pawn = (self.pawn - 1 + roll_sum) % 10 + 1
-        self.score += self.pawn
-
-    def __repr__(self) -> str:
-        return f"Player[{self.id}, pawn=[{self.pawn}, score=[{self.score}]"
-
-
 def parse(source):
     players = {}
     for line in source:
         player, start = ints(line)
-        players[player] = Player(player, start, 0)
+        players[player] = Player(start, 0)
     return players
+
+
+@dataclass
+class Player:
+    position: int
+    score: int = 0
+
+
+def play(player, roll):
+    player.position = (player.position - 1 + roll) % 10 + 1
+    player.score += player.position
 
 
 def deterministic_die():
     while True:
         for roll in range(1, 101):
+            yield roll
+
+
+def three_sided_die():
+    while True:
+        for roll in range(1, 4):
             yield roll
 
 
@@ -63,9 +66,9 @@ def part_1(players):
     while True:
         throws += 3
         if flip:
-            players[1].go(dice)
+            play(players[1], next(dice) + next(dice) + next(dice))
         else:
-            players[2].go(dice)
+            play(players[2], next(dice) + next(dice) + next(dice))
         flip = not flip
         _(throws, players)
         if players[1].score >= 1000:
@@ -74,7 +77,18 @@ def part_1(players):
             return players[1].score * throws
 
 
+class State(NamedTuple):
+    players: dict[Player]
+    next: int
+
+
 def part_2(players):
+    """
+
+
+    """
+    state: dict
+
     return 0
 
 
