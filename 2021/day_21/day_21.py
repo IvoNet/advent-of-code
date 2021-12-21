@@ -113,6 +113,13 @@ def dirac_dice(players: tuple[Player, Player], player: int, cache) -> tuple[int,
     - to spead things up signifficantly we save every state that resulted in a terminator in a dictonary and before
       going into a quantum roll flow we check if this combination has already occurred in another universe. If so we know
       the result and just return that.
+    - so whats different "every" turn?
+        - the score
+        - position on the board
+        - which player is actually playing
+    - the thing is that they will also occur in some or all the other multiverses at some point
+    - so we need to calculate all the possible outcomes per universe, but we need to do it only once and lookup the
+      rest for the count
     """
     if players[0].score >= 21:
         return 1, 0  # player 0 wins (represented by left)
