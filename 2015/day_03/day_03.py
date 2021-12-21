@@ -29,6 +29,42 @@ def parse(source):
     ...
 
 
+class Santa:
+
+    def __init__(self) -> None:
+        self.locations = defaultdict(int)
+        self.north = 0
+        self.east = 0
+        self.south = 0
+        self.west = 0
+        self.locations[(0, 0, 0, 0)] = 1
+
+    def go(self, c: str):
+        if c == "^":
+            if self.south > 0:
+                self.south -= 1
+            else:
+                self.north += 1
+        elif c == "v":
+            if self.north > 0:
+                self.north -= 1
+            else:
+                self.south += 1
+        elif c == "<":
+            if self.east > 0:
+                self.east -= 1
+            else:
+                self.west += 1
+        elif c == ">":
+            if self.west > 0:
+                self.west -= 1
+            else:
+                self.east += 1
+        else:
+            raise ValueError(f"Unknown direction [{c}]")
+        self.locations[(self.north, self.east, self.south, self.west)] += 1
+
+
 def part_1(source):
     locations = defaultdict(int)
     north = 0
@@ -65,7 +101,19 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    santa = Santa()
+    robo_santa = Santa()
+    flip = True
+    for c in source:
+        if flip:
+            santa.go(c)
+        else:
+            robo_santa.go(c)
+        flip = not flip
+    locations = santa.locations
+    for k, v in robo_santa.locations.items():
+        locations[k] += v
+    return len(locations)
 
 
 class UnitTests(unittest.TestCase):
@@ -79,13 +127,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(4, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(2572, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(3, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(2631, part_2(self.source))
 
 
 if __name__ == '__main__':
