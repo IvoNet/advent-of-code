@@ -6,8 +6,10 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import re
 import sys
 import unittest
+from itertools import groupby
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -17,6 +19,13 @@ sys.dont_write_bytecode = True
 
 DEBUG = False
 
+WRONG = [
+    "ab",
+    "cd",
+    "pq",
+    "xy",
+]
+
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
@@ -24,8 +33,19 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+def nice(word):
+    for w in WRONG:
+        if w in word:
+            return False
+    if len(re.findall("[aeiou]", word)) < 3:
+        return False
+    if max([(label, sum(1 for _ in group)) for label, group in groupby(word)], key=lambda x: x[1])[1] < 2:
+        return False
+    return True
+
+
 def part_1(source):
-    return 0
+    return sum(1 for word in source if nice(word))
 
 
 def part_2(source):
@@ -37,10 +57,14 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows("""ugknbfddgicrmopn
+aaa
+jchzalrnumimnmhp
+haegwjzuvuyypxyu
+dvszwmarrgswjxmb""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(2, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
