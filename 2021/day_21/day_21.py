@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, chunkify
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -27,17 +27,17 @@ def _(*args, end="\n"):
 class Player:
 
     def __init__(self, id, pawn=0, score=0) -> None:
-        self.board = list(range(1, 11)) * 100000
         self.id: int = id
         self.pawn: int = pawn
         self.score: int = score
 
-    def walk(self, die: range):
-        self.pawn += sum(die)
-        self.score += self.board[self.pawn - 1]
+    def go(self, roller):
+        roll_sum = sum([next(roller), next(roller), next(roller)])
+        self.pawn = (self.pawn - 1 + roll_sum) % 10 + 1
+        self.score += self.pawn
 
     def __repr__(self) -> str:
-        return f"Player[{self.id}, pawn=[{self.board[self.pawn]}, score=[{self.score}]"
+        return f"Player[{self.id}, pawn=[{self.pawn}, score=[{self.score}]"
 
 
 def parse(source):
@@ -54,30 +54,30 @@ def check(player):
     return False
 
 
-def next_throw(loops=10000):
-    deterministic_die = list(range(1, 101)) * loops
-    for chunk in chunkify(deterministic_die, 3):
-        yield chunk
+def deterministic_die():
+    while True:
+        for roll in range(1, 101):
+            yield roll
 
 
 def part_1(players):
     print()
     _("Starting players:", players)
+    dice = deterministic_die()
     throws = 0
     flip = True
-    for dice in next_throw():
+    while True:
         throws += 3
         if flip:
-            players[1].walk(dice)
+            players[1].go(dice)
         else:
-            players[2].walk(dice)
+            players[2].go(dice)
         flip = not flip
         _(throws, players)
-        for player in players:
-            if check(players[player]):
-                if player == 1:
-                    return players[2].score * throws
-                return players[1].score + throws
+        if players[1].score >= 1000:
+            return players[2].score * throws
+        if players[2].score >= 1000:
+            return players[1].score * throws
 
 
 def part_2(players):
@@ -96,7 +96,7 @@ Player 2 starting position: 8"""))
         self.assertEqual(739785, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(597600, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
