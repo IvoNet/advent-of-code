@@ -91,6 +91,29 @@ def add(tuples):
 
 
 def dirac_dice(players: tuple[Player, Player], player: int, cache) -> tuple[int, int]:  # left player 0, right player 1
+    """The quantum game
+    - Every roll of the die all possible outcomes will be met by multiversing it :-)
+    - in effect the product of 1,2,3 -> 27 possibilities with a "cost" of 3..9
+    - 1 player is playing at the time, but two players are in the game and both wil play
+    - if a player reaches 21 it terminates with a win so that is the boundary per player
+    - as this gets out of hand fast (I tried :-)). We can cache all outcomes so we can do a lookup
+      in stead of going at it again
+    - so there are in effect 27 so called quantum rolls per player per turn
+    - in a quantum roll a combination of 1,2,3 is thrown. The new score and position is determined for the currently
+      playing player (the other will be playing next) and the game starts again with this state.
+    - determining a new position on the board for a player:
+      - current position + the sum of the quantum roll combination taking the 10 positions of the board into account
+      - effectively: (curr_pos - 1 + sum(quantum_roll) div 10) + 1 same as part 1 with quantum roll adjustment
+    - determining a new score:
+        - score of current player + the new position of that player
+    - now do that to the other player with this new state recursively until a terminator is reached.
+    - every flow will end up in a terminator and the only thing we think important is the end result per game / flow
+    - the result per game is either (1, 0) telling player 0 has won or (0, 1) if player 1 wins
+    - we keep a intermedeary result list and sum those per collumn
+    - to spead things up signifficantly we save every state that resulted in a terminator in a dictonary and before
+      going into a quantum roll flow we check if this combination has already occurred in another universe. If so we know
+      the result and just return that.
+    """
     if players[0].score >= 21:
         return 1, 0  # player 0 wins (represented by left)
     if players[1].score >= 21:
@@ -110,7 +133,7 @@ def dirac_dice(players: tuple[Player, Player], player: int, cache) -> tuple[int,
             new_players = (players[0], Player(new_pos, new_score))
         results.append(dirac_dice(new_players, (player + 1) % 2, cache))
         cache[key] = add(results)
-    # _(results)
+    # _(key, cache[key])
     return cache[key]
 
 
@@ -155,19 +178,38 @@ def part_2(players):
     product(range(1, 4), repeat=3)
 
     while playing we need a way to keep track of what has already been played.
+    a cache so to speak as otherwise the brute force is going to be nuts!
     Done is done right
 
+    but what is the key for the cache?
+    What do I have?
+    - players - are immutable so they can function as keys
+    - a playing player - int 0/1 (so everything happends twice right per player?!
+    so cache key := ((player(0), player(1)), current_player) ?!
+
     so if a score of a play in the product goes over 21 it is done and should be cached or something
-    and removed from the player list
+    so that it can be retrieved when it happends again (which it will) and not be calculated every time
 
     it does not matter which player wins just the amount it wins with (max)
+    So just total it per flow (1,0) or (0,1) only one can win right?
 
     I feel a recursive function comming up :-)
-
     """
     # a dict with a key and a total of the left vs right wins
     quantum_cache: dict[tuple[tuple[Player, Player], int], tuple[int, int]] = {}
-    return max(dirac_dice(tuple(players.values()), 0, quantum_cache))
+    players = tuple(players.values())
+    _()
+    _(players)
+    result = dirac_dice(players, 0, quantum_cache)
+
+    if DEBUG:
+        with open("cache.output", "w") as fo:
+            for k in sorted(quantum_cache.keys()):
+                fo.write(f"{k} - {quantum_cache[k]}\n")
+    # _(quantum_cache)
+    _(len(quantum_cache))
+    _(result)
+    return max(result)
 
 
 class UnitTests(unittest.TestCase):
