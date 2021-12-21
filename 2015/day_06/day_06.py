@@ -8,14 +8,16 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -24,8 +26,48 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Coord(NamedTuple):
+    x: int
+    y: int
+
+
+def turn(grid: dict, start: Coord, stop: Coord, state=True):
+    for x in range(start.x, stop.x + 1):
+        for y in range(start.y, stop.y + 1):
+            grid[Coord(x, y)] = state
+
+
+def toggle(grid: dict, start: Coord, stop: Coord):
+    for x in range(start.x, stop.x + 1):
+        for y in range(start.y, stop.y + 1):
+            grid[Coord(x, y)] = not grid[Coord(x, y)]
+
+
+def process(source):
+    grid = defaultdict(bool)
+    # instructions = []
+    for line in source:
+        x1, y1, x2, y2 = ints(line)
+        _(x1, y1, x2, y2)
+        start = Coord(x1, y1)
+        stop = Coord(x2, y2)
+        if "turn on" in line:
+            # instructions.append(("on", start, stop))
+            turn(grid, start, stop, state=True)
+            continue
+        if "turn off" in line:
+            # instructions.append(("off", start, stop))
+            turn(grid, start, stop, state=False)
+            continue
+        if "toggle" in line:
+            # instructions.append(("toggle", start, stop))
+            toggle(grid, start, stop)
+    return grid #, instructions
+
+
 def part_1(source):
-    return 0
+    grid = process(source)
+    return sum(1 for v in grid.values() if v is True)
 
 
 def part_2(source):
