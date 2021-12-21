@@ -11,6 +11,7 @@ Look-and-say sequences are generated iteratively, using the previous value as
 input for the next step. For each step, take the previous value, and replace
 each run of digits (like 111) with the number of digits (3) followed by the
 digit itself (1).
+
 For example:
 
 
@@ -23,3 +24,4 @@ For example:
 
 Starting with the digits in your puzzle input, apply this process 40 times.
 What is the length of the result?
+

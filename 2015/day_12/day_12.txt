@@ -12,6 +12,7 @@ objects ({"a":
 1, "b":
 2}), numbers, and strings. Your first job is to simply
 find all of the numbers throughout the document and add them together.
+
 For example:
 
 
