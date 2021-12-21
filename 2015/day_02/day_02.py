@@ -46,6 +46,14 @@ def wrapping(box: Box) -> int:
     return total
 
 
+def ribbon(box: Box) -> int:
+    total = box.l * box.h * box.w
+    b = list(box)
+    b.remove(max(b))
+    total += 2 * b[0] + 2 * b[1]
+    return total
+
+
 def part_1(source):
     boxes = parse(source)
     total = sum(wrapping(box) for box in boxes)
@@ -54,7 +62,10 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    boxes = parse(source)
+    total = sum(ribbon(box) for box in boxes)
+    _(total)
+    return total
 
 
 class UnitTests(unittest.TestCase):
@@ -68,13 +79,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(58, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1598415, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(34, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(3812909, part_2(self.source))
 
 
 if __name__ == '__main__':
