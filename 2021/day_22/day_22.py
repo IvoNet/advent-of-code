@@ -130,7 +130,7 @@ def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
     what can happen:
     - 1: No overlap (see function no_overlap)
     - 2: left full overlap of right (lllrrrlll)
-         left.lower.x/y/z
+    - 3 partial overlap
     """
     if not has_overlap(left, right):
         _(f"No overlap between left({left}) and right({right})")
@@ -171,9 +171,10 @@ def how_many_on(instructions: list[Instruction]) -> int:
         if cmd.toggle_on:
             to_add.append(left)
         for right in cuboids_on:
-            is_overlap = overlap(left, right)
-            if is_overlap is None:
+            overlap_cuboid = overlap(left, right)
+            if overlap_cuboid is None:
                 continue
+            _(overlap_cuboid)
             ...  # add more stuff here when there is an overlap
         for c in to_add:
             cuboids_on[c] = True
