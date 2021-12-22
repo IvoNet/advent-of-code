@@ -10,31 +10,30 @@ import sys
 import unittest
 from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
+
+X = 0
+Y = 1
+Z = 2
+
+first_debug_statement = True
 
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
+    global first_debug_statement
     if DEBUG:
+        if first_debug_statement:
+            first_debug_statement = not first_debug_statement
+            print()
         print(" ".join(str(x) for x in args), end=end)
-
-
-def turn(grid: dict, start: Coord, stop: Coord, state=True):
-    for x in range(start.x, stop.x + 1):
-        for y in range(start.y, stop.y + 1):
-            grid[Coord(x, y)] = state
-
-
-def toggle(grid: dict, start: Coord, stop: Coord):
-    for x in range(start.x, stop.x + 1):
-        for y in range(start.y, stop.y + 1):
-            grid[Coord(x, y)] = not grid[Coord(x, y)]
 
 
 def part_1(source):
@@ -69,36 +68,49 @@ def part_1(source):
     return sum(1 for v in grid.values() if v is True)
 
 
-def part_2(source):
-    grid = defaultdict(bool)
+class Coord(NamedTuple):
+    x: int
+    y: int
+    z: int
+
+
+class Cuboid(NamedTuple):
+    lower: Coord
+    upper: Coord
+
+
+class Instruction(NamedTuple):
+    toggle_on: bool
+    cube: Cuboid
+
+
+def volume(cuboid: Cuboid):
+    """Calc the volume of a cuboid"""
+    return (cuboid.upper.x - cuboid.lower.x + 1) * (cuboid.upper.y - cuboid.lower.y + 1) * (cuboid.upper.z - cuboid.lower.z + 1)
+
+
+def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
+    ...
+
+
+def parse(source) -> list[Instruction]:
+    instructions: list[Instruction] = []
     for cmd in source:
         x1, x2, y1, y2, z1, z2 = ints(cmd)
-        # skip if totally out of range
-        if x2 < -50 or y2 < -50 or z2 < -50:
-            continue
-        if x1 > 50 or y1 > 50 or z1 > 50:
-            continue
-        #  if partly out of range set the range
-        if x1 < -50:
-            x1 = -50
-        if x2 > 50:
-            x2 = 50
-        if y1 < -50:
-            y1 = -50
-        if y2 > 50:
-            y2 = 50
-        if z1 < -50:
-            z1 = -50
-        if z2 > 50:
-            z2 = 50
-        for x in range(x1, x2 + 1):
-            for y in range(y1, y2 + 1):
-                for z in range(z1, z2 + 1):
-                    # if -50 >= x >= 50 or -50 >= y >= 50 or -50 >= z >= 50:
-                    #     continue
-                    grid[(x, y, z)] = cmd.startswith("on")
+        instructions.append(Instruction(cmd.startswith("on"), Cuboid(Coord(x1, y1, z1), Coord(x2, y2, z2))))
+    return instructions
 
-    return sum(1 for v in grid.values() if v is True)
+
+def how_many_on(instructions: list[Instruction]) -> int:
+    cuboids_on: dict[Cuboid, bool] = defaultdict(bool)
+    for cmd in instructions:
+        to_add: Cuboid = []
+
+
+def part_2(source):
+    instructions = parse(source)
+    _(instructions)
+    return 0
 
 
 class UnitTests(unittest.TestCase):
@@ -206,10 +218,10 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507""")
         self.assertEqual(583641, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(2758514936282235, part_2(self.test_source))
+        self.assertEqual(2758514936282235, part_2(self.test_sources_3))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1182153534186233, part_2(self.source))
 
 
 if __name__ == '__main__':
