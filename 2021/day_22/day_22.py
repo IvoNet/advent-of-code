@@ -81,13 +81,14 @@ class Cuboid(NamedTuple):
 
 class Instruction(NamedTuple):
     toggle_on: bool
-    cube: Cuboid
+    cuboid: Cuboid
 
 
 def volume(cuboid: Cuboid):
     """Calc the volume of a cuboid"""
     return (cuboid.upper.x - cuboid.lower.x + 1) * (cuboid.upper.y - cuboid.lower.y + 1) * (
-                cuboid.upper.z - cuboid.lower.z + 1)
+            cuboid.upper.z - cuboid.lower.z + 1)
+
 
 def no_overlap(left: Cuboid, right: Cuboid) -> bool:
     """No overlap
@@ -106,12 +107,11 @@ def no_overlap(left: Cuboid, right: Cuboid) -> bool:
          Means that even if one of the upper parts is lower than its corresponding lower parts it is
          completely out if range right?!
     """
-    if left.lower.x > right.upper.x:
-        return True
-    if left.lower.y > right.upper.y:
-        return True
-    if left.lower.z > right.upper.z:
-        return True
+    for i in range(3):
+        if left.lower[i] > right.upper[i]:
+            return True
+        if left.upper[i] < right.lower[i]:
+            return True
     return False
     ...
 
@@ -123,8 +123,8 @@ def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
     - 2:
     """
     if no_overlap(left, right):
+        _(f"No overlap between left({left}) and right({right})")
         return None
-
 
 
 def parse(source) -> list[Instruction]:
@@ -138,13 +138,28 @@ def parse(source) -> list[Instruction]:
 def how_many_on(instructions: list[Instruction]) -> int:
     cuboids_on: dict[Cuboid, bool] = defaultdict(bool)
     for cmd in instructions:
-        to_add: Cuboid = []
+        to_add: list[Cuboid] = []
+        left = cmd.cuboid
+        if cmd.toggle_on:
+            to_add.append(left)
+        for right in cuboids_on:
+            is_overlap = overlap(left, right)
+            if is_overlap is None:
+                continue
+            ... # add more stuff here when there is an overlap
+        for c in to_add:
+            cuboids_on[c] = True
+    total = 0
+    for cuboid in cuboids_on:
+        total += volume(cuboid)
+    return total
+
 
 
 def part_2(source):
     instructions = parse(source)
     _(instructions)
-    return 0
+    return how_many_on(instructions)
 
 
 class UnitTests(unittest.TestCase):
