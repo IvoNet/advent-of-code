@@ -9,7 +9,6 @@ __license__ = "Apache 2.0"
 import sys
 import unittest
 from collections import defaultdict
-from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
 
@@ -69,8 +68,7 @@ def part_1(source):
     return sum(1 for v in grid.values() if v is True)
 
 
-@dataclass
-class Coord:
+class Coord(NamedTuple):
     x: int
     y: int
     z: int
@@ -136,30 +134,77 @@ def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
         _(f"No overlap between left({left}) and right({right})")
         return None
 
-    ret: Cuboid = Cuboid(Coord(), Coord())
+    lower = [None, None, None]
+    upper = [None, None, None]
     _(f"Start overlap check with left({left}) vs right({right})")
     for i in range(3):  # for all sides
         if left.upper[i] <= right.upper[i] and left.lower[i] >= right.lower[i]:
             # left contain right
             _("left >= right")
-            ret.upper[i] = left.upper[i]
-            ret.lower[i] = left.lower[i]
+            upper[i] = left.upper[i]
+            lower[i] = left.lower[i]
         elif right.upper[i] <= left.upper[i] and right.lower[i] >= left.lower[i]:
             # right contain left
             _("right >= left")
-            ret.upper[i] = right.upper[i]
-            ret.lower[i] = right.lower[i]
+            upper[i] = right.upper[i]
+            lower[i] = right.lower[i]
         elif left.lower[i] <= right.lower[i] and left.lower[i] <= right.upper[i]:
             _("Partial left")
-            ret.upper[i] = left.upper[i]
-            ret.lower[i] = right.lower[i]
+            upper[i] = left.upper[i]
+            lower[i] = right.lower[i]
         elif right.lower[i] <= left.lower[i] and right.lower[i] <= left.upper[i]:
             _("Partial right")
-            ret.upper[i] = right.upper[i]
-            ret.lower[i] = left.lower[i]
+            upper[i] = right.upper[i]
+            lower[i] = left.lower[i]
         else:
             _("Something went wrong?!", left, right)
             return None
+    _(lower, upper)
+    return Cuboid(Coord(*lower), Coord(*upper))
+
+
+def subtract(left: Cuboid, overlap: Cuboid) -> list[Cuboid]:
+    """This subract function takes subracts right from left
+    right is an exact subset of what needs to be taken out (overlap)
+    """
+    ret: list[Cuboid] = []
+    if left == overlap:
+        # full delete so return empty
+        # that will cause it to not add new cuboids
+        _("Exact same so just delete")
+        return []
+
+    # now we need to construct new Cuboids of the left over stuff
+    if overlap.lower.z != left.lower.z:
+        lower = left.lower
+        upper = Coord(left.upper.x, left.upper.y, overlap.lower.z - 1)
+        ret.append(Cuboid(lower, upper))
+
+    if left.lower.y != overlap.lower.y:
+        lower = Coord(left.lower.x, left.lower.y, overlap.lower.z)
+        upper = Coord(left.lower.x, overlap.upper.y - 1, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.lower.x != overlap.lower.x:
+        lower = Coord(left.lower.x, overlap.lower.y, overlap.lower.z)
+        upper = Coord(overlap.upper.x - 1, overlap.upper.y, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.upper.x != overlap.upper.x:
+        lower = Coord(overlap.upper.x + 1, overlap.lower.y, overlap.lower.z)
+        upper = Coord(left.upper.x, overlap.upper.y, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.upper.y != overlap.upper.y:
+        lower = Coord(left.lower.x, overlap.upper.y + 1, overlap.lower.z)
+        upper = Coord(left.upper.x, left.upper.y, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.upper.z != overlap.upper.z:
+        lower = Coord(left.lower.x, left.lower.y, overlap.upper.z)
+        upper = left.upper
+        ret.append(Cuboid(lower, upper))
+
     return ret
 
 
@@ -170,11 +215,15 @@ def how_many_on(instructions: list[Instruction]) -> int:
         left = cmd.cuboid
         if cmd.toggle_on:
             to_add.append(left)
-        for right in cuboids_on:
+        for right in cuboids_on.copy():
             overlap_cuboid = overlap(left, right)
             if overlap_cuboid is None:
                 continue
             _(overlap_cuboid)
+            # overlap found so remove the original cuboid and create new ones
+            del (cuboids_on[right])
+            # then add new remaining ones
+            to_add.extend(subtract(right, overlap_cuboid))
             ...  # add more stuff here when there is an overlap
         for c in to_add:
             cuboids_on[c] = True
@@ -185,6 +234,10 @@ def how_many_on(instructions: list[Instruction]) -> int:
 
 
 def part_2(source):
+    """
+    https://www.mathsisfun.com/geometry/cuboids-rectangular-prisms.html#Volume
+    https://www.mathworks.com/matlabcentral/answers/522003-how-do-i-find-the-overlapping-volume-of-multiple-3d-rectangles
+    """
     instructions = parse(source)
     _(instructions)
     return how_many_on(instructions)
@@ -282,6 +335,27 @@ off x=-70369..-16548,y=22648..78696,z=-1892..86821
 on x=-53470..21291,y=-120233..-33476,z=-44150..38147
 off x=-93533..-4276,y=-16170..68771,z=-104985..-24507""")
 
+    def test_overlap_1(self):
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        self.assertEqual(left, overlap(left, left))
+
+    def test_overlap_2(self):
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        right = Cuboid(Coord(2, 2, 2), Coord(4, 4, 4))
+        self.assertEqual(Cuboid(Coord(2, 2, 2), Coord(3, 3, 3)), overlap(left, right))
+
+    def test_overlap_3(self):
+        """Right is bigger than left so overlap is the smaller one rest can be ignored"""
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        right = Cuboid(Coord(0, 0, 0), Coord(4, 4, 4))
+        self.assertEqual(left, overlap(left, right))
+
+    def test_overlap_4(self):
+        """Right is smaller"""
+        left = Cuboid(Coord(0, 0, 0), Coord(4, 4, 4))
+        right = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        self.assertEqual(right, overlap(left, right))
+
     def test_example_data_part_1(self):
         self.assertEqual(39, part_1(self.test_source))
 
@@ -298,7 +372,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507""")
         self.assertEqual(2758514936282235, part_2(self.test_sources_3))
 
     def test_part_2(self):
-        self.assertEqual(1182153534186233, part_2(self.source))
+        self.assertEqual(None, part_2(self.source))
 
 
 if __name__ == '__main__':
