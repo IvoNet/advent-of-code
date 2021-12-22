@@ -86,11 +86,45 @@ class Instruction(NamedTuple):
 
 def volume(cuboid: Cuboid):
     """Calc the volume of a cuboid"""
-    return (cuboid.upper.x - cuboid.lower.x + 1) * (cuboid.upper.y - cuboid.lower.y + 1) * (cuboid.upper.z - cuboid.lower.z + 1)
+    return (cuboid.upper.x - cuboid.lower.x + 1) * (cuboid.upper.y - cuboid.lower.y + 1) * (
+                cuboid.upper.z - cuboid.lower.z + 1)
+
+def no_overlap(left: Cuboid, right: Cuboid) -> bool:
+    """No overlap
+         - left.lower > right.upper
+         - left.upper < right.lower
+         - e.g. left(lower(1,2,3), upper(4,5,6)), right(lower(6,1,8), right(9,10,11))
+
+           left.lower.x > right.upper.x => 1 > 9 -> False
+           left.lower.y > right.upper.y => 2 > 10 -> False
+           left.lower.x > right.upper.x => 3 > 11 -> False
+         or
+           left.upper.x < right.lower.x => 4 < 6 -> True
+           left.upper.y < right.lower.y => 5 < 1 -> False
+           left.upper.x < right.lower.x => 6 < 8 -> True
+
+         Means that even if one of the upper parts is lower than its corresponding lower parts it is
+         completely out if range right?!
+    """
+    if left.lower.x > right.upper.x:
+        return True
+    if left.lower.y > right.upper.y:
+        return True
+    if left.lower.z > right.upper.z:
+        return True
+    return False
+    ...
 
 
 def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
-    ...
+    """Calc the overlap of two cuboids
+    what can happen:
+
+    - 2:
+    """
+    if no_overlap(left, right):
+        return None
+
 
 
 def parse(source) -> list[Instruction]:
