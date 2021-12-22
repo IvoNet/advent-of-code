@@ -8,7 +8,9 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -17,66 +19,206 @@ sys.dont_write_bytecode = True
 
 DEBUG = False
 
+X = 0
+Y = 1
+Z = 2
+
+first_debug_statement = True
+
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
+    global first_debug_statement
     if DEBUG:
-        print(" ".join(str(x) for x in args), end=end)
-
-
-def process(line):
-    x1, x2, y1, y2, z1, z2 = ints(line)
-    return (line.startswith("on"), range(x1, x2 + 1), range(y1, y2 + 1), range(z1, z2 + 1))
-
-
-class Cuboid:
-    def __init__(self, xr, yr, zr):
-        self.x = xr
-        self.y = yr
-        self.z = zr
-        self.total = len(xr) * len(yr) * len(zr)
-
-    def overlap(self, other):
-        x = range(max(self.x[0], other.x[0]), min(self.x[-1], other.x[-1]) + 1)
-        y = range(max(self.y[0], other.y[0]), min(self.y[-1], other.y[-1]) + 1)
-        z = range(max(self.z[0], other.z[0]), min(self.z[-1], other.z[-1]) + 1)
-        if len(x) and len(y) and len(z):
-            return (x, y, z)
-
-
-def count(line, rest):
-    on, xr, yr, zr = line
-    # print(on,xr,yr,zr)
-    this = Cuboid(xr, yr, zr)
-    lights = this.total
-    overlaps = []
-    for on2, x2r, y2r, z2r in rest:
-        other = Cuboid(x2r, y2r, z2r)
-        overlap = this.overlap(other)
-        if overlap:
-            overlaps.append([on2, *overlap])
-    for o, overlap in enumerate(overlaps):
-        lights -= count(overlap, overlaps[o + 1:])
-    return lights
-
-
-def count_lights(lines):
-    lights = 0
-    for i, line in enumerate(lines):
-        if line[0]:
-            lights += count(line, lines[i + 1:])
-    return lights
+        if first_debug_statement:
+            first_debug_statement = not first_debug_statement
+            print()
+        # print(" ".join(str(x) for x in args), end=end)
+        with open("debug.txt", "a") as fo:
+            fo.write(" ".join(str(x) for x in args))
+            fo.write(end)
 
 
 def part_1(source):
-    lines = [process(line.strip()) for line in source]
-    lines = [line for line in lines if len(line[1]) < 1000]
-    return count_lights(lines)
+    grid = defaultdict(bool)
+    for cmd in source:
+        x1, x2, y1, y2, z1, z2 = ints(cmd)
+        # skip if totally out of range
+        if x2 < -50 or y2 < -50 or z2 < -50:
+            continue
+        if x1 > 50 or y1 > 50 or z1 > 50:
+            continue
+        #  if partly out of range set the range
+        if x1 < -50:
+            x1 = -50
+        if x2 > 50:
+            x2 = 50
+        if y1 < -50:
+            y1 = -50
+        if y2 > 50:
+            y2 = 50
+        if z1 < -50:
+            z1 = -50
+        if z2 > 50:
+            z2 = 50
+        for x in range(x1, x2 + 1):
+            for y in range(y1, y2 + 1):
+                for z in range(z1, z2 + 1):
+                    # if -50 >= x >= 50 or -50 >= y >= 50 or -50 >= z >= 50:
+                    #     continue
+                    grid[(x, y, z)] = cmd.startswith("on")
+
+    return sum(1 for v in grid.values() if v is True)
+
+
+class Coord(NamedTuple):
+    x: int
+    y: int
+    z: int
+
+
+class Cuboid(NamedTuple):
+    lower: Coord
+    upper: Coord
+
+
+class Instruction(NamedTuple):
+    toggle_on: bool
+    cuboid: Cuboid
+
+
+def volume(cuboid: Cuboid):
+    """Calc the volume of a cuboid"""
+    return (cuboid.upper.x - cuboid.lower.x + 1) * \
+           (cuboid.upper.y - cuboid.lower.y + 1) * \
+           (cuboid.upper.z - cuboid.lower.z + 1)
+
+
+def parse(source) -> list[Instruction]:
+    instructions: list[Instruction] = []
+    for cmd in source:
+        x1, x2, y1, y2, z1, z2 = ints(cmd)
+        instructions.append(Instruction(cmd.startswith("on"), Cuboid(Coord(x1, y1, z1), Coord(x2, y2, z2))))
+    return instructions
+
+
+def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
+    """Calc the overlap of two cuboids
+    what can happen:
+    - 1: No overlap (see function no_overlap)
+    - 2: left full overlap of right (lllrrrlll)
+    - 3 partial overlap
+    """
+    lower = [None, None, None]
+    upper = [None, None, None]
+    _(f"Start overlap check with left({left}) vs right({right})")
+    for i in range(3):  # for all sides
+        if left.lower[i] > right.upper[i] or left.upper[i] < right.lower[i]:
+            return None
+        elif left.upper[i] <= right.upper[i] and left.lower[i] >= right.lower[i]:
+            # left contain right
+            _("left >= right")
+            upper[i] = left.upper[i]
+            lower[i] = left.lower[i]
+        elif right.upper[i] <= left.upper[i] and right.lower[i] >= left.lower[i]:
+            # right contain left
+            _("right >= left")
+            upper[i] = right.upper[i]
+            lower[i] = right.lower[i]
+        elif right.lower[i] <= left.lower[i] and right.upper[i] <= left.upper[i]:
+            _("Partial right")
+            upper[i] = right.upper[i]
+            lower[i] = left.lower[i]
+        elif left.lower[i] <= right.lower[i] and left.upper[i] <= right.upper[i]:
+            _("Partial left")
+            upper[i] = left.upper[i]
+            lower[i] = right.lower[i]
+        else:
+            _("Something went wrong?!", left, right)
+            return None
+    _(lower, upper)
+    return Cuboid(Coord(*lower), Coord(*upper))
+
+
+def subtract(left: Cuboid, overlap: Cuboid) -> list[Cuboid]:
+    """This subract function takes subracts right from left
+    right is an exact subset of what needs to be taken out (overlap)
+    """
+    ret: list[Cuboid] = []
+    if left == overlap:
+        # full delete so return empty
+        # that will cause it to not add new cuboids
+        _("Exact same so just delete")
+        return ret
+
+    if left.lower.z != overlap.lower.z:
+        _("left.lower.z != overlap.lower.z")
+        lower = left.lower
+        upper = Coord(left.upper.x, left.upper.y, overlap.lower.z - 1)
+        if upper.z:
+            ret.append(Cuboid(lower, upper))
+
+    if left.lower.y != overlap.lower.y:
+        _(left.lower.y != overlap.lower.y)
+        lower = Coord(left.lower.x, left.lower.y, overlap.lower.z)
+        upper = Coord(left.upper.x, overlap.lower.y - 1, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.lower.x != overlap.lower.x:
+        lower = Coord(left.lower.x, overlap.lower.y, overlap.lower.z)
+        upper = Coord(overlap.lower.x - 1, overlap.upper.y, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.upper.x != overlap.upper.x:
+        lower = Coord(overlap.upper.x + 1, overlap.lower.y, overlap.lower.z)
+        upper = Coord(left.upper.x, overlap.upper.y, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.upper.y != overlap.upper.y:
+        lower = Coord(left.lower.x, overlap.upper.y + 1, overlap.lower.z)
+        upper = Coord(left.upper.x, left.upper.y, overlap.upper.z)
+        ret.append(Cuboid(lower, upper))
+
+    if left.upper.z != overlap.upper.z:
+        lower = Coord(left.lower.x, left.lower.y, overlap.upper.z + 1)
+        upper = left.upper
+        ret.append(Cuboid(lower, upper))
+    _("subract:", ret)
+    return ret
+
+
+def how_many_on(instructions: list[Instruction]) -> int:
+    cuboids_on = {}
+    for cmd in instructions:
+        to_add: list[Cuboid] = []
+        left = cmd.cuboid
+        if cmd.toggle_on:
+            to_add.append(left)
+        for right in list(cuboids_on):
+            overlap_cuboid = overlap(left, right)
+            if overlap_cuboid is None:
+                continue
+            _("Overlapping cuboid:", overlap_cuboid)
+            del (cuboids_on[right])
+            to_add.extend(subtract(right, overlap_cuboid))
+        for c in to_add:
+            cuboids_on[c] = True
+    total = 0
+    _(cuboids_on)
+    _(len(cuboids_on))
+    for cuboid in cuboids_on:
+        total += volume(cuboid)
+    return total
 
 
 def part_2(source):
-    lines = [process(line.strip()) for line in source]
-    return count_lights(lines)
+    """
+    https://www.mathsisfun.com/geometry/cuboids-rectangular-prisms.html#Volume
+    https://www.mathworks.com/matlabcentral/answers/522003-how-do-i-find-the-overlapping-volume-of-multiple-3d-rectangles
+    """
+    instructions = parse(source)
+    _(instructions)
+    return how_many_on(instructions)
 
 
 class UnitTests(unittest.TestCase):
@@ -170,6 +312,51 @@ off x=-27365..46395,y=31009..98017,z=15428..76570
 off x=-70369..-16548,y=22648..78696,z=-1892..86821
 on x=-53470..21291,y=-120233..-33476,z=-44150..38147
 off x=-93533..-4276,y=-16170..68771,z=-104985..-24507""")
+
+    def test_overlap_1(self):
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        self.assertEqual(left, overlap(left, left))
+
+    def test_overlap_2(self):
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        right = Cuboid(Coord(2, 2, 2), Coord(4, 4, 4))
+        self.assertEqual(Cuboid(Coord(2, 2, 2), Coord(3, 3, 3)), overlap(left, right))
+
+    def test_overlap_3(self):
+        """Right is bigger than left so overlap is the smaller one rest can be ignored"""
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        right = Cuboid(Coord(0, 0, 0), Coord(4, 4, 4))
+        self.assertEqual(left, overlap(left, right))
+
+    def test_overlap_4(self):
+        """Right is smaller"""
+        left = Cuboid(Coord(0, 0, 0), Coord(4, 4, 4))
+        right = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        self.assertEqual(right, overlap(left, right))
+
+    def test_subtract_1(self):
+        left = Cuboid(Coord(0, 0, 0), Coord(2, 2, 2))
+        right = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        self.assertEqual([Cuboid(lower=Coord(x=0, y=0, z=1), upper=Coord(x=2, y=0, z=2)),
+                          Cuboid(lower=Coord(x=0, y=1, z=1), upper=Coord(x=0, y=2, z=2))],
+                         subtract(left, overlap(left, right)))
+
+    def test_subtract_2(self):
+        """Right is bigger than left so overlap is the smaller one rest can be ignored"""
+        left = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        right = Cuboid(Coord(0, 0, 0), Coord(4, 4, 4))
+        self.assertEqual([], subtract(left, overlap(left, right)))
+
+    def test_subtact_3(self):
+        """Right is smaller"""
+        left = Cuboid(Coord(0, 0, 0), Coord(4, 4, 4))
+        right = Cuboid(Coord(1, 1, 1), Coord(3, 3, 3))
+        self.assertEqual([Cuboid(lower=Coord(x=0, y=0, z=1), upper=Coord(x=4, y=0, z=3)),
+                          Cuboid(lower=Coord(x=0, y=1, z=1), upper=Coord(x=0, y=3, z=3)),
+                          Cuboid(lower=Coord(x=4, y=1, z=1), upper=Coord(x=4, y=3, z=3)),
+                          Cuboid(lower=Coord(x=0, y=4, z=1), upper=Coord(x=4, y=4, z=3)),
+                          Cuboid(lower=Coord(x=0, y=0, z=4), upper=Coord(x=4, y=4, z=4))],
+                         subtract(left, overlap(left, right)))
 
     def test_example_data_part_1(self):
         self.assertEqual(39, part_1(self.test_source))

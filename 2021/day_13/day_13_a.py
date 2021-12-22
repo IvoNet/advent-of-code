@@ -35,7 +35,7 @@ def part_1(source):
         matrix = matrix.fold_horizontal(v)
     else:  # x
         matrix = matrix.fold_vertical(v)
-    return matrix.total()
+    return matrix.volume()
 
 
 def part_2(source):
