@@ -148,7 +148,7 @@ def subtract(left: Cuboid, overlap: Cuboid) -> list[Cuboid]:
     if left == overlap:
         # full delete so return empty
         # that will cause it to not add new cuboids
-        _("Exact same so just delete")
+        _("left == overlap")
         return ret
 
     if left.lower.z != overlap.lower.z:
@@ -156,33 +156,49 @@ def subtract(left: Cuboid, overlap: Cuboid) -> list[Cuboid]:
         lower = left.lower
         upper = Coord(left.upper.x, left.upper.y, overlap.lower.z - 1)
         if upper.z:
-            ret.append(Cuboid(lower, upper))
+            cuboid = Cuboid(lower, upper)
+            _("Adding cuboid:", cuboid)
+            ret.append(cuboid)
 
     if left.lower.y != overlap.lower.y:
-        _(left.lower.y != overlap.lower.y)
+        _("left.lower.y != overlap.lower.y")
         lower = Coord(left.lower.x, left.lower.y, overlap.lower.z)
         upper = Coord(left.upper.x, overlap.lower.y - 1, overlap.upper.z)
-        ret.append(Cuboid(lower, upper))
+        cuboid = Cuboid(lower, upper)
+        _("Adding cuboid:", cuboid)
+        ret.append(cuboid)
 
     if left.lower.x != overlap.lower.x:
+        _("left.lower.x != overlap.lower.x")
         lower = Coord(left.lower.x, overlap.lower.y, overlap.lower.z)
         upper = Coord(overlap.lower.x - 1, overlap.upper.y, overlap.upper.z)
-        ret.append(Cuboid(lower, upper))
+        cuboid = Cuboid(lower, upper)
+        _("Adding cuboid:", cuboid)
+        ret.append(cuboid)
 
     if left.upper.x != overlap.upper.x:
+        _("left.upper.x != overlap.upper.x")
         lower = Coord(overlap.upper.x + 1, overlap.lower.y, overlap.lower.z)
         upper = Coord(left.upper.x, overlap.upper.y, overlap.upper.z)
-        ret.append(Cuboid(lower, upper))
+        cuboid = Cuboid(lower, upper)
+        _("Adding cuboid:", cuboid)
+        ret.append(cuboid)
 
     if left.upper.y != overlap.upper.y:
+        _("left.upper.y != overlap.upper.y")
         lower = Coord(left.lower.x, overlap.upper.y + 1, overlap.lower.z)
         upper = Coord(left.upper.x, left.upper.y, overlap.upper.z)
-        ret.append(Cuboid(lower, upper))
+        cuboid = Cuboid(lower, upper)
+        _("Adding cuboid:", cuboid)
+        ret.append(cuboid)
 
     if left.upper.z != overlap.upper.z:
+        _("left.upper.z != overlap.upper.z")
         lower = Coord(left.lower.x, left.lower.y, overlap.upper.z + 1)
         upper = left.upper
-        ret.append(Cuboid(lower, upper))
+        cuboid = Cuboid(lower, upper)
+        _("Adding cuboid:", cuboid)
+        ret.append(cuboid)
     _("subract:", ret)
     return ret
 
@@ -198,7 +214,8 @@ def how_many_on(instructions: list[Instruction]) -> int:
             overlap_cuboid = overlap(left, right)
             if overlap_cuboid is None:
                 continue
-            _("Overlapping cuboid:", overlap_cuboid)
+            _("Overlapping cuboid found:", overlap_cuboid)
+            _("Deleting cubiod:", right)
             del (cuboids_on[right])
             to_add.extend(subtract(right, overlap_cuboid))
         for c in to_add:
