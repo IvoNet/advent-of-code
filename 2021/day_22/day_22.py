@@ -9,6 +9,7 @@ __license__ = "Apache 2.0"
 import sys
 import unittest
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
 
@@ -68,7 +69,8 @@ def part_1(source):
     return sum(1 for v in grid.values() if v is True)
 
 
-class Coord(NamedTuple):
+@dataclass
+class Coord:
     x: int
     y: int
     z: int
@@ -90,7 +92,7 @@ def volume(cuboid: Cuboid):
             cuboid.upper.z - cuboid.lower.z + 1)
 
 
-def no_overlap(left: Cuboid, right: Cuboid) -> bool:
+def has_overlap(left: Cuboid, right: Cuboid) -> bool:
     """No overlap
          - left.lower > right.upper
          - left.upper < right.lower
@@ -109,22 +111,10 @@ def no_overlap(left: Cuboid, right: Cuboid) -> bool:
     """
     for i in range(3):
         if left.lower[i] > right.upper[i]:
-            return True
+            return False
         if left.upper[i] < right.lower[i]:
-            return True
-    return False
-    ...
-
-
-def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
-    """Calc the overlap of two cuboids
-    what can happen:
-
-    - 2:
-    """
-    if no_overlap(left, right):
-        _(f"No overlap between left({left}) and right({right})")
-        return None
+            return False
+    return True
 
 
 def parse(source) -> list[Instruction]:
@@ -133,6 +123,44 @@ def parse(source) -> list[Instruction]:
         x1, x2, y1, y2, z1, z2 = ints(cmd)
         instructions.append(Instruction(cmd.startswith("on"), Cuboid(Coord(x1, y1, z1), Coord(x2, y2, z2))))
     return instructions
+
+
+def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
+    """Calc the overlap of two cuboids
+    what can happen:
+    - 1: No overlap (see function no_overlap)
+    - 2: left full overlap of right (lllrrrlll)
+         left.lower.x/y/z
+    """
+    if not has_overlap(left, right):
+        _(f"No overlap between left({left}) and right({right})")
+        return None
+
+    ret: Cuboid = Cuboid(Coord(), Coord())
+    _(f"Start overlap check with left({left}) vs right({right})")
+    for i in range(3):  # for all sides
+        if left.upper[i] <= right.upper[i] and left.lower[i] >= right.lower[i]:
+            # left contain right
+            _("left >= right")
+            ret.upper[i] = left.upper[i]
+            ret.lower[i] = left.lower[i]
+        elif right.upper[i] <= left.upper[i] and right.lower[i] >= left.lower[i]:
+            # right contain left
+            _("right >= left")
+            ret.upper[i] = right.upper[i]
+            ret.lower[i] = right.lower[i]
+        elif left.lower[i] <= right.lower[i] and left.lower[i] <= right.upper[i]:
+            _("Partial left")
+            ret.upper[i] = left.upper[i]
+            ret.lower[i] = right.lower[i]
+        elif right.lower[i] <= left.lower[i] and right.lower[i] <= left.upper[i]:
+            _("Partial right")
+            ret.upper[i] = right.upper[i]
+            ret.lower[i] = left.lower[i]
+        else:
+            _("Something went wrong?!", left, right)
+            return None
+    return ret
 
 
 def how_many_on(instructions: list[Instruction]) -> int:
@@ -146,14 +174,13 @@ def how_many_on(instructions: list[Instruction]) -> int:
             is_overlap = overlap(left, right)
             if is_overlap is None:
                 continue
-            ... # add more stuff here when there is an overlap
+            ...  # add more stuff here when there is an overlap
         for c in to_add:
             cuboids_on[c] = True
     total = 0
     for cuboid in cuboids_on:
         total += volume(cuboid)
     return total
-
 
 
 def part_2(source):
