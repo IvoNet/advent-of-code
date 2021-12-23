@@ -11,7 +11,7 @@ import heapq
 import sys
 import unittest
 from pathlib import Path
-from typing import NamedTuple, TypeVar, Callable, Optional
+from typing import TypeVar, Callable
 
 from ivonet.files import read_int_matrix
 from ivonet.iter import ints
@@ -45,83 +45,67 @@ def parse(source: list[list[int]], times: int = 5) -> (list[list[int]], int):
     return grid, side * times
 
 
-class DijkstraNode(NamedTuple):
-    cost: int
-    x: int
-    y: int
-
-
-def neighbors(boundary: int) -> Callable[[DijkstraNode], list[tuple[int, int]]]:
+def neighbors(boundary: int) -> Callable[[T], list[tuple[int, int]]]:
     """Up, down, left, right
     Does take the boundaries of the grid into account
     """
 
-    def do(dn: DijkstraNode) -> list[tuple[int, int]]:
-        potential = [(dn.x - 1, dn.y),  # left
-                     (dn.x + 1, dn.y),  # right
-                     (dn.x, dn.y - 1),  # down
-                     (dn.x, dn.y + 1)]  # up
+    def do(x, y) -> list[tuple[int, int]]:
+        potential = [(x - 1, y),  # left
+                     (x + 1, y),  # right
+                     (x, y - 1),  # down
+                     (x, y + 1)]  # up
         # remove the coords outside the boundary
-        ret = []
-        for x, y in potential:
-            if x < 0 or y < 0 or x >= boundary or y >= boundary:
-                continue
-            ret.append((x, y))
-        return ret
+        return [(x, y) for x, y in potential if 0 <= x < boundary and 0 <= y < boundary]
 
     return do
 
 
-def is_goal(boundary: int) -> Callable[[DijkstraNode], bool]:
-    def reached(dn: DijkstraNode) -> bool:
-        return dn.x == dn.y == boundary - 1
+def is_goal(boundary: int) -> Callable[[T], bool]:
+    def reached(x, y) -> bool:
+        return x == y == boundary - 1
 
     return reached
 
 
-def cost_calculator(grid: list[list[int]]) -> Callable[[int, int], int]:
+def cost_calculator(grid: list[list[int]]) -> Callable[[T], int]:
     def do(x, y) -> int:
         return grid[x][y]
 
     return do
 
 
-def dijkstra(initial: T,
-             goal: Callable[[T], bool],
-             successors: Callable[[T], list[tuple[int, int]]],
-             cost: Callable[[int, int], int]) -> Optional[DijkstraNode[T]]:
-    priority_queue: list[DijkstraNode] = [initial]
+def dijkstra(initial: [int, int],
+             goal: Callable[[int, int], bool],
+             successors: Callable[[int, int], list[tuple[int, int]]],
+             cost: Callable[[int, int], int],
+             initial_cost: int = 0) -> int:
+    priority_queue = [(initial_cost, initial[0], initial[1])]
     visited = set()
 
     while priority_queue:
-        current = heapq.heappop(priority_queue)
-        if goal(current):
-            return current
-        if current in visited:
+        current_cost, x, y = heapq.heappop(priority_queue)
+        if goal(x, y):
+            return current_cost
+        if (x, y) in visited:
             continue
-        visited.add(current)
-        for nx, ny in successors(current):
+        visited.add((x, y))
+        for nx, ny in successors(x, y):
             if (nx, ny) in visited:
                 continue
-            heapq.heappush(priority_queue, DijkstraNode(current.cost + cost(nx, ny), nx, ny))
+            heapq.heappush(priority_queue, (current_cost + cost(nx, ny), nx, ny))
 
-    return None
+    return -1
 
 
 def part_1(source: list[list[int]]):
     grid, boundary = parse(source, times=1)
-
-    start = DijkstraNode(0, 0, 0)
-    finished = is_goal(boundary)
-    return dijkstra(start, finished, neighbors(boundary), cost_calculator(grid)).cost
+    return dijkstra((0, 0), is_goal(boundary), neighbors(boundary), cost_calculator(grid))
 
 
 def part_2(source):
     grid, boundary = parse(source, times=5)
-
-    start = DijkstraNode(0, 0, 0)
-    finished = is_goal(boundary)
-    return dijkstra(start, finished, neighbors(boundary), cost_calculator(grid)).cost
+    return dijkstra((0, 0), is_goal(boundary), neighbors(boundary), cost_calculator(grid))
 
 
 class UnitTests(unittest.TestCase):
