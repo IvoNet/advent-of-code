@@ -69,8 +69,8 @@ __doc__ = """
   mul x 0  -->                    0
   add x z  -->                    z
   mod x 26 -->                    z%26
-  div z 26 -->                                                              z // 26 round down
-  add x -11-->                    z%26 - 11
+  div z 26 -->                                                              z // 26                   <-round down
+  add x -11-->                    z%26 + -11
   eql x w  -->                    1 or 0
   eql x 0  -->                    0 or 1
   mul y 0  -->                                        0
@@ -102,7 +102,7 @@ type 2 decreases z about 26 times if we have the left calc and stays roughly the
 we need the round down! as the other increases every time! so the left one of type 2 is needed as that decreases a lot
 and z needs to be zero at the end
 how do we guarantee a decrease? that happens in type 2 calculations and only if
-the (z%26)-X == w happends
+the (z%26)+ ? == w happends
 
 Intermezzo / summerize:
 - z is maintained throughout the whole run
@@ -168,7 +168,7 @@ class Alu:
         _("Type_1:", self.type_1)
         _("Type_2:", self.type_2)
 
-    def is_type_1(self, idx):
+    def _is_type_1(self, idx):
         return self.types[idx]
 
     def __correct(self, digits):
@@ -180,15 +180,16 @@ class Alu:
             inc = self.type_1[i]
             req = self.type_2[i]
 
-            if self.is_type_1(i):
+            if self._is_type_1(i):
                 z = z * 26 + digits[idx] + inc
                 res[i] = digits[idx]
                 idx += 1
             else:
-                res[i] = (z % 26) + req
+                w = (z % 26) + req
                 z //= 26
-                if not (1 <= res[i] <= 9):
+                if not (1 <= w <= 9):
                     return False
+                res[i] = w
         return res
 
     def __monad(self, all_digits):
