@@ -113,218 +113,45 @@ add y 14 -->                                        w + 14
 mul y x  -->                                        0 or w + 14
 add z y  -->                                                             z // 26 or 26(z // 26) + w + 14
 -----------------------------------------------------------------------------------------------
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 1  -->
-add x 14 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 5  -->
-mul y x  -->
-add z y  --
------------------------------------------------------------------------------------------------>
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 26 -->
-add x 0  -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 15 -->
-mul y x  -->
-add z y  --
------------------------------------------------------------------------------------------------>
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 1  -->
-add x 12 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 4  -->
-mul y x  -->
-add z y  --
------------------------------------------------------------------------------------------------>
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 1  -->
-add x 12 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 11 -->
-mul y x  -->
-add z y  --
------------------------------------------------------------------------------------------------>
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 1  -->
-add x 14 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 1  -->
-mul y x  -->
-add z y  --
------------------------------------------------------------------------------------------------>
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 26 -->
-add x -6 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 15 -->
-mul y x  -->
-add z y  -->
------------------------------------------------------------------------------------------------
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 26 -->
-add x -10-->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 12 -->
-mul y x  -->
-add z y  -->
------------------------------------------------------------------------------------------------
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 26 -->
-add x -12-->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 8  -->
-mul y x  -->
-add z y  -->
------------------------------------------------------------------------------------------------
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 26 -->
-add x -3 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 14 -->
-mul y x  -->
-add z y  -->
------------------------------------------------------------------------------------------------
-inp w
-mul x 0  -->
-add x z  -->
-mod x 26 -->
-div z 26 -->
-add x -5 -->
-eql x w  -->
-eql x 0  -->
-mul y 0  -->
-add y 25 -->
-mul y x  -->
-add y 1  -->
-mul z y  -->
-mul y 0  -->
-add y w  -->
-add y 9  -->
-mul y x  -->
-add z y  -->
 
-So
+Looking further we see only these types of calculations
+
 2 types of caclulations
-either we get
 7 of the one and 7 of the other!
+
 Identified by either 'div z 26' or 'div z 1'
 
-type 1          type 2
-26z+w+X         z // 26 or 26(z//26+w+Y)
+type 1      |    type 2
+-----------------------------------------
+'div z 1'   |    'div z 26'
+26z+w+?     |    z // 26 or 26(z//26+w+?)
 
-type 1 increases z about 26 times
-type 2 decreases z about 26 times if we have the left one of type two and stays roughly the same of we have the right one
-7 increases and 7 decreases
-we need the round down! as the other increases every time! so the left one of type 2
-how do we guarantee a decrease wel that happens in type 2 calculations and only if
-the (z%26)-X == w
+type 1 increases z about 26 times (huge increase)
+type 2 decreases z about 26 times if we have the left calc and stays roughly the same of we have the right one
+7 huge increases and 7 possible decreases or samesies
+we need the round down! as the other increases every time! so the left one of type 2 is needed as that decreases a lot
+and z needs to be zero at the end
+how do we guarantee a decrease? that happens in type 2 calculations and only if
+the (z%26)-X == w happends
 
-So to be clear:
+Intermezzo / summerize:
 - z is maintained throughout the whole run
-- every digit modifies z
-- type 1: z = 26z + w + X?
+- z is always modified
+- type 1: z = 26z + w + ?
 - type 2: z = z // 26
 The question is in what conditions do we get z to be zero?
 Conditions:
-e.g
-(z % 26) - 11 = w
+e.g (my first input that was different)
+(z % 26) - 11 == w
+In this case we can actually calculate what the value of z must be! nice so in 7 of the cases we know!
+the other we just have to try :-) a lot less tries thatn 9**14
+we only need to try 9**7 times which is about 5 milion times very nice!
+
+We need the highest value so we need to count down from 9999999 to 9999998 etc
+
+if every 4th command is
+  - 'div z 1'  -> Type 1
+  - 'div z 26' -> Type 2
+
+if type 1 then we need the Y of the set of instructions (15th instruction)
+if type 2 then we need the x of the instruction after the 'div z 26' (the negative or zero number and 5th command)

@@ -144,7 +144,7 @@ ADD_Y_POS = 15
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -158,14 +158,18 @@ class Alu:
         self.assembly = source
         self.type_1 = [None] * 14
         self.type_2 = [None] * 14
+        self.types = [True] * 14
 
         for i in range(14):
-            if source[i * 18 + 4] == 'div z 1':
-                self.type_1[i] = ints(source[i * 18 + ADD_Y_POS])[0]
-            else:  # 'div z 26'
-                self.type_2[i] = ints(source[i * 18 + ADD_X_POS])[0]
+            self.type_1[i] = ints(source[i * 18 + ADD_Y_POS])[0]
+            self.type_2[i] = ints(source[i * 18 + ADD_X_POS])[0]
+            if source[i * 18 + 4] == 'div z 26':
+                self.types[i] = False
         _("Type_1:", self.type_1)
         _("Type_2:", self.type_2)
+
+    def is_type_1(self, idx):
+        return self.types[idx]
 
     def __correct(self, digits):
         z = 0
@@ -176,11 +180,11 @@ class Alu:
             inc = self.type_1[i]
             req = self.type_2[i]
 
-            if inc is not None:  # type 1 calc
+            if self.is_type_1(i):
                 z = z * 26 + digits[idx] + inc
                 res[i] = digits[idx]
                 idx += 1
-            else:  # type 2 calc
+            else:
                 res[i] = (z % 26) + req
                 z //= 26
                 if not (1 <= res[i] <= 9):
