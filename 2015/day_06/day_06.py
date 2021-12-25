@@ -86,7 +86,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(377891, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
