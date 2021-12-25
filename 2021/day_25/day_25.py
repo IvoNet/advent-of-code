@@ -55,11 +55,11 @@ def move(sea_floor, cucumber):
 
 
 def visualise(sea_floor):
-    str = ""
+    ret = ""
     for r in sea_floor:
-        str += "".join(r)
-        str += "\n"
-    return str
+        ret += "".join(r)
+        ret += "\n"
+    return ret
 
 
 def part_1(source):
@@ -74,9 +74,6 @@ def part_1(source):
             return steps
     return -1
 
-
-def part_2(source):
-    return 0
 
 
 class UnitTests(unittest.TestCase):
