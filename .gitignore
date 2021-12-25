@@ -14,4 +14,4 @@ out
 *_try.*
 *.pickle
 .ipynb_checkpoints
-.testmondata
+*.output
