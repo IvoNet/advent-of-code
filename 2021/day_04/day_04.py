@@ -7,7 +7,7 @@ __license__ = "Apache 2.0"
 import unittest
 from pathlib import Path
 
-from ivonet.files import read_data, read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 VALUE_IDX = 0
@@ -88,7 +88,6 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
         self.source = read_data(f"day_{day.zfill(2)}.input")
-
 
     def test_example_data(self):
         source = """7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1

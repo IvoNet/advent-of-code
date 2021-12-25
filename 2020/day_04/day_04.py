@@ -111,7 +111,6 @@ def part_2(data):
     return valid_passports
 
 
-
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:

@@ -149,9 +149,6 @@ def read_european_number(european_number):
         return european_number
 
 
-
-
-
 if __name__ == '__main__':
     import doctest
 

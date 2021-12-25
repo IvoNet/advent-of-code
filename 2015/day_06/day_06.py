@@ -62,7 +62,7 @@ def process(source):
         if "toggle" in line:
             # instructions.append(("toggle", start, stop))
             toggle(grid, start, stop)
-    return grid #, instructions
+    return grid  # , instructions
 
 
 def part_1(source):

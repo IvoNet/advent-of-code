@@ -13,8 +13,6 @@ from ivonet.grid import neighbors, neighbor_values
 
 BOUNDARY = 9
 
-BOUNDARY = 9
-
 sys.dont_write_bytecode = True
 
 

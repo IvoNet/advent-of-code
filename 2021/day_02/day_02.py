@@ -7,7 +7,7 @@ __license__ = "Apache 2.0"
 import unittest
 from pathlib import Path
 
-from ivonet.files import read_rows, read_ints
+from ivonet.files import read_rows
 from ivonet.iter import ints
 
 

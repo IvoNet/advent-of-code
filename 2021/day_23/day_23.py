@@ -77,10 +77,10 @@ def parse(source):
     a1, b1, c1, d1 = words(source[2])
     a2, b2, c2, d2 = words(source[3])
     return {
-        'A' : (a1,a2),
-        'B' : (b1,b2),
-        'C' : (c1,c2),
-        'D' : (d1,d2),
+        'A': (a1, a2),
+        'B': (b1, b2),
+        'C': (c1, c2),
+        'D': (d1, d2),
     }
 
 

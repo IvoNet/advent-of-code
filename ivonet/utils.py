@@ -28,7 +28,6 @@ def make_grid(*dimensions: list[int], fill=None):
     return [list(next_down) for _ in range(dimensions[0])]
 
 
-
 # endregion
 
 # region Algorithms

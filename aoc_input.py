@@ -86,7 +86,7 @@ def get_solution_template(year, day, filename):
         print("Python solution file seems to already exists... leaving it.")
         return
     print("Writing solution template:", filename)
-    copyfile("./day_.py", filename)
+    copyfile("./template.py", filename)
 
 
 def main(year, day):

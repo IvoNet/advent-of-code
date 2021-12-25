@@ -152,6 +152,7 @@ def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
 
+
 class Alu:
 
     def __init__(self, source) -> None:
@@ -205,6 +206,7 @@ class Alu:
 
     def lowest_monad(self):
         return self.__monad(product(range(1, 10), repeat=7))
+
 
 def part_1(source):
     return Alu(source).highest_monad()

@@ -8,11 +8,12 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from hashlib import md5
 from pathlib import Path
 
-from ivonet.files import read_rows, read_data
+from ivonet.files import read_data
 from ivonet.iter import ints
-from hashlib import md5
+
 sys.dont_write_bytecode = True
 
 DEBUG = False
