@@ -15,7 +15,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -58,7 +58,12 @@ class Interpreter:
             left, op, right = todo
             result = self.operator_functions[op](self.evaluate(left), self.evaluate(right))
         self.cache[item] = result
+        _(self.cache)
         return result
+
+    def override(self, key, value) -> self:
+        self.cache[key] = value
+        return self
 
     def __init(self):
         for line in self.source:
@@ -68,35 +73,11 @@ class Interpreter:
 
 
 def part_1(source):
-    part1 = Interpreter(source).evaluate("a")
-    return part1
-
-
-def indent_print(cmd):
-    ind = 0
-    inds = "  "
-    prev = ""
-    for i, c in enumerate(cmd):
-        if c in "()":
-            prev = c
-            if c == "(":
-                print(f"\n{inds * ind}{c}", end="")
-                ind += 1
-            if c == ")":
-                ind -= 1
-                print(f"\n{inds * ind}{c}", end="")
-            if ind < 0:
-                ind = 0
-        else:
-            if prev == "(":
-                print(f"\n{inds * ind}{c}", end="")
-                prev = ""
-            else:
-                print(f"{c}", end="")
+    return Interpreter(source).evaluate("a")
 
 
 def part_2(source):
-    return 0
+    return Interpreter(source).override("b", part_1(source)).evaluate("a")
 
 
 class UnitTests(unittest.TestCase):
@@ -114,16 +95,20 @@ NOT x -> h
 NOT y -> i""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(72, Interpreter(self.test_source).evaluate("d"))
+        self.assertEqual(507, Interpreter(self.test_source).evaluate("e"))
+        self.assertEqual(492, Interpreter(self.test_source).evaluate("f"))
+        self.assertEqual(114, Interpreter(self.test_source).evaluate("g"))
+        self.assertEqual(65412, Interpreter(self.test_source).evaluate("h"))
+        self.assertEqual(65079, Interpreter(self.test_source).evaluate("i"))
+        self.assertEqual(123, Interpreter(self.test_source).evaluate("x"))
+        self.assertEqual(456, Interpreter(self.test_source).evaluate("y"))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(956, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(40149, part_2(self.source))
 
 
 if __name__ == '__main__':
