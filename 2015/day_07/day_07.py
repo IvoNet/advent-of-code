@@ -39,6 +39,19 @@ class Interpreter:
         }
         self.__init()
 
+    def __init(self):
+        for line in self.source:
+            v, k = line.split(" -> ")
+            value = v.split()
+            self.instructions[k] = value
+
+    def override(self, key, value) -> self:
+        """Builder like function to override a cached item
+        it returns self so that chaining of commands is possible
+        """
+        self.cache[key] = value
+        return self
+
     def evaluate(self, item):
         """Evaluate recursively until breaking time or solving time"""
         if item in self.cache:
@@ -62,16 +75,6 @@ class Interpreter:
         self.cache[item] = result
         _(self.cache)
         return result
-
-    def override(self, key, value) -> self:
-        self.cache[key] = value
-        return self
-
-    def __init(self):
-        for line in self.source:
-            v, k = line.split(" -> ")
-            value = v.split()
-            self.instructions[k] = value
 
 
 def part_1(source):
