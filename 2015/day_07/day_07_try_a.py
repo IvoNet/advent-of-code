@@ -24,52 +24,40 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Interpreter:
-
-    def __init__(self, source) -> None:
-        self.source = source
-        self.instructions = {}
-        self.cache = {}
-        self.operator_functions = {
-            "AND": lambda left, right: int(left) & int(right),
-            "OR": lambda left, right: int(left) | int(right),
-            "LSHIFT": lambda left, right: (int(left) << int(right)) & 0xFFFF,
-            "RSHIFT": lambda left, right: (int(left) >> int(right)) & 0xFFFF,
-            "NOT": lambda right: ~right & 0xFFFF
-        }
-        self.__init()
-
-    def evaluate(self, item):
-        if item in self.cache:
-            return self.cache[item]
-
-        try:
-            return int(item)
-        except ValueError:
-            pass
-
-        todo = self.instructions[item]
-        if len(todo) == 1:  # integer value
-            result = self.evaluate(todo[0])
-        elif len(todo) == 2:  # NOT operator
-            op, right = todo
-            result = self.operator_functions[op](self.evaluate(right))
-        else:  # expression
-            left, op, right = todo
-            result = self.operator_functions[op](self.evaluate(left), self.evaluate(right))
-        self.cache[item] = result
-        return result
-
-    def __init(self):
-        for line in self.source:
-            v, k = line.split(" -> ")
-            value = v.split()
-            self.instructions[k] = value
-
-
 def part_1(source):
-    part1 = Interpreter(source).evaluate("a")
-    return part1
+    instructions = {}
+    for line in source:
+        v, k = line.split(" -> ")
+        # value = v.replace("AND", "&").replace("LSHIFT", "<<").replace("RSHIFT", ">>").replace("OR", "|")
+        # if value.strip().startswith("NOT"):
+        #     value = value.replace("NOT ", "")
+        #     value += " ^ 0xFFFF"
+        # numbers = ints(value)
+        # if len(value.strip().split()) == 1 == len(numbers):
+        #     value = numbers[0]
+        instructions[k.strip()] = v.strip()
+    _(instructions)
+    for i in instructions:
+        for k, v in instructions.items():
+            if k == "a":
+                continue
+            numbers = ints(v)
+            if len(v.strip().split()) == 1 == len(numbers):
+                instructions["a"] = instructions["a"].replace(f"{k}", f"{v}")
+            else:
+                instructions["a"] = instructions["a"].replace(f"{k}", f"({v})")
+    _(instructions["a"])
+    cmd = instructions["a"]
+    cmd = cmd.replace("AND", "&") \
+        .replace("LSHIFT", "<<") \
+        .replace("RSHIFT", ">>") \
+        .replace("OR", "|") \
+        .replace("NOT", "0xFFFF ^")
+    indent_print(cmd)
+    indent_print(instructions["a"])
+
+    # _(cmd)
+    return eval(cmd)
 
 
 def indent_print(cmd):
