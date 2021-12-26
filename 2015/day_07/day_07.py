@@ -31,15 +31,16 @@ class Interpreter:
         self.instructions = {}
         self.cache = {}
         self.operator_functions = {
-            "AND": lambda left, right: int(left) & int(right),
-            "OR": lambda left, right: int(left) | int(right),
-            "LSHIFT": lambda left, right: (int(left) << int(right)) & 0xFFFF,
-            "RSHIFT": lambda left, right: (int(left) >> int(right)) & 0xFFFF,
+            "AND": lambda left, right: left & right,
+            "OR": lambda left, right: left | right,
+            "LSHIFT": lambda left, right: left << right,
+            "RSHIFT": lambda left, right: left >> right,
             "NOT": lambda right: ~right & 0xFFFF
         }
         self.__init()
 
     def evaluate(self, item):
+        """Evaluate recursively until breaking time or solving time"""
         if item in self.cache:
             return self.cache[item]
 
@@ -48,14 +49,15 @@ class Interpreter:
         except ValueError:
             pass
 
-        todo = self.instructions[item]
-        if len(todo) == 1:  # integer value
-            result = self.evaluate(todo[0])
-        elif len(todo) == 2:  # NOT operator
-            op, right = todo
+        to_solve = self.instructions[item]
+
+        if len(to_solve) == 1:  # integer value
+            result = self.evaluate(to_solve[0])
+        elif len(to_solve) == 2:  # NOT operator
+            op, right = to_solve
             result = self.operator_functions[op](self.evaluate(right))
         else:  # expression
-            left, op, right = todo
+            left, op, right = to_solve
             result = self.operator_functions[op](self.evaluate(left), self.evaluate(right))
         self.cache[item] = result
         _(self.cache)
