@@ -42,6 +42,11 @@ def parse(source):
 
 
 def best_seating_arrangement(persons, happiness):
+    """Check for all permutations of the persons the best happiness table seating
+    - check both ways
+    - don't forget to "loop" around and compare the first and the last member
+      (also both ways)
+    """
     happiest = float("-inf")
     for i, seating in enumerate(permutations(persons)):
         scale = 0
