@@ -220,6 +220,19 @@ def consecutive_element_pairing(data: list,
             zip(*(data[i:len(data) - (consecutive_element - i) + 1] for i in range(consecutive_element)))))
 
 
+def combinations(a, n):
+    if n == 1:
+        for x in a:
+            yield [x]
+    else:
+        for i in range(len(a)):
+            for x in combinations(a[:i] + a[i+1:], n-1):
+                yield [a[i]] + x
+
+def permutations(a):
+    return combinations(a, len(a))
+
+
 def pretty(iterable, sort_keys=True, indent=2):
     """Pretty print an iterable
     >>> pretty([1,2,3])
