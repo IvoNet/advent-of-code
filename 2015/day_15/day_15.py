@@ -42,31 +42,41 @@ def parse(source) -> list[Ingredient]:
     return ret
 
 
-def calc(ingredients: list[Ingredient], spoons: tuple) -> int:
+def calc(ingredients: list[Ingredient], spoons: tuple) -> tuple[int, int]:
     score = defaultdict(int)
+    calories = 0
     for i, ingredient in enumerate(ingredients):
         score["c"] += spoons[i] * ingredient.capacity
         score["d"] += spoons[i] * ingredient.durability
         score["f"] += spoons[i] * ingredient.flavor
         score["t"] += spoons[i] * ingredient.texture
+        calories += spoons[i] * ingredient.calories
     for v in score.values():
         if v < 0:
-            return 0
-    _(spoons)
-    return int(prod(list(score.values())))
+            return 0, 0
+    total_score = int(prod(list(score.values())))
+    if calories == 500:
+        _(spoons, total_score)
+    return total_score, calories
 
 
 def part_1(source):
     ingredients = parse(source)
     score = []
     for spoons in four_way_split(100, first=0, inclusive=True):
-        score.append(calc(ingredients, spoons))
+        score.append(calc(ingredients, spoons)[0])
 
     return max(score)
 
 
 def part_2(source):
-    return 0
+    ingredients = parse(source)
+    score = []
+    for spoons in four_way_split(100, first=0, inclusive=True):
+        total, calories = calc(ingredients, spoons)
+        if total > 0 and calories == 500:
+            score.append(total)
+    return max(score)
 
 
 class UnitTests(unittest.TestCase):
@@ -84,10 +94,10 @@ Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3""")
         self.assertEqual(18965440, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(57600000, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(15862900, part_2(self.source))
 
 
 if __name__ == '__main__':

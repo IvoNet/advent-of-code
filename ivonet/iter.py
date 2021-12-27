@@ -245,6 +245,9 @@ def four_way_split(n: int, first: int = 1, inclusive: bool = False) -> Generator
             for k in range(j, n + addition):
                 for l in range(k, n + addition):
                     if i + j + k + l == n:
+                        if i == j == k == l:
+                            yield i, j, k, l
+                            continue
                         for a, b, c, d in permutations((i, j, k, l)):
                             yield a, b, c, d
 
