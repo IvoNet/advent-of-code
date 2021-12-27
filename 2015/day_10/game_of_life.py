@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 __doc__ = """
+Interesting stuff
 https://www.geeksforgeeks.org/conways-game-life-python-implementation/
+https://towardsdatascience.com/from-scratch-the-game-of-life-161430453ee3
+https://beltoforion.de/en/recreational_mathematics/game_of_life.php
+https://github.com/beltoforion/recreational_mathematics_with_python
 """
 
 import argparse
@@ -59,32 +63,32 @@ def add_gosper_glider_gun(i, j, grid):
     grid[i:i + 11, j:j + 38] = gun
 
 
-def update(frameNum, img, grid, N):
+def update(frame_num, img, grid, size):
     # copy grid since we require 8 neighbors
     # for calculation and we go line by line
-    newGrid = grid.copy()
-    for i in range(N):
-        for j in range(N):
+    new_grid = grid.copy()
+    for i in range(size):
+        for j in range(size):
 
             # compute 8-neighbor sum
             # using toroidal boundary conditions - x and y wrap around
             # so that the simulaton takes place on a toroidal surface.
-            total = int((grid[i, (j - 1) % N] + grid[i, (j + 1) % N] +
-                         grid[(i - 1) % N, j] + grid[(i + 1) % N, j] +
-                         grid[(i - 1) % N, (j - 1) % N] + grid[(i - 1) % N, (j + 1) % N] +
-                         grid[(i + 1) % N, (j - 1) % N] + grid[(i + 1) % N, (j + 1) % N]) / 255)
+            total = int((grid[i, (j - 1) % size] + grid[i, (j + 1) % size] +
+                         grid[(i - 1) % size, j] + grid[(i + 1) % size, j] +
+                         grid[(i - 1) % size, (j - 1) % size] + grid[(i - 1) % size, (j + 1) % size] +
+                         grid[(i + 1) % size, (j - 1) % size] + grid[(i + 1) % size, (j + 1) % size]) / 255)
 
             # apply Conway's rules
             if grid[i, j] == ON:
                 if (total < 2) or (total > 3):
-                    newGrid[i, j] = OFF
+                    new_grid[i, j] = OFF
             else:
                 if total == 3:
-                    newGrid[i, j] = ON
+                    new_grid[i, j] = ON
 
     # update data
-    img.set_data(newGrid)
-    grid[:] = newGrid[:]
+    img.set_data(new_grid)
+    grid[:] = new_grid[:]
     return img,
 
 
