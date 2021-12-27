@@ -5,6 +5,7 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 import re
+from typing import Generator
 
 
 def lmap(func, *iterables):
@@ -226,11 +227,26 @@ def combinations(a, n):
             yield [x]
     else:
         for i in range(len(a)):
-            for x in combinations(a[:i] + a[i+1:], n-1):
+            for x in combinations(a[:i] + a[i + 1:], n - 1):
                 yield [a[i]] + x
+
 
 def permutations(a):
     return combinations(a, len(a))
+
+
+def four_way_split(n: int, first: int = 1, inclusive: bool = False) -> Generator:
+    """Yields a new 4 way split of the number provided as n"""
+    addition = 0
+    if inclusive:
+        addition = 1
+    for i in range(first, n + addition):
+        for j in range(i, n + addition):
+            for k in range(j, n + addition):
+                for l in range(k, n + addition):
+                    if i + j + k + l == n:
+                        for a, b, c, d in permutations((i, j, k, l)):
+                            yield a, b, c, d
 
 
 def pretty(iterable, sort_keys=True, indent=2):

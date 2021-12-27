@@ -40,7 +40,7 @@ def prod(*iterable) -> float:
         if type(it[0]) == list or type(it[0]) == set or isinstance(it[0], types.GeneratorType):
             it = it[0]
         elif type(it[0]) == dict:
-            it = it[0].values()
+            it = list(it[0].values())
     return reduce(lambda a, b: a * b, it, 1)
 
 

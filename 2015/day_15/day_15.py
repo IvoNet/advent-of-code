@@ -8,10 +8,13 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
+from ivonet.calc import prod
 from ivonet.files import read_rows
-from ivonet.iter import ints
+from ivonet.iter import ints, four_way_split
 
 sys.dont_write_bytecode = True
 
@@ -24,8 +27,42 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Ingredient(NamedTuple):
+    capacity: int
+    durability: int
+    flavor: int
+    texture: int
+    calories: int
+
+
+def parse(source) -> list[Ingredient]:
+    ret = []
+    for line in source:
+        ret.append(Ingredient(*ints(line)))
+    return ret
+
+
+def calc(ingredients: list[Ingredient], spoons: tuple) -> int:
+    score = defaultdict(int)
+    for i, ingredient in enumerate(ingredients):
+        score["c"] += spoons[i] * ingredient.capacity
+        score["d"] += spoons[i] * ingredient.durability
+        score["f"] += spoons[i] * ingredient.flavor
+        score["t"] += spoons[i] * ingredient.texture
+    for v in score.values():
+        if v < 0:
+            return 0
+    _(spoons)
+    return int(prod(list(score.values())))
+
+
 def part_1(source):
-    return 0
+    ingredients = parse(source)
+    score = []
+    for spoons in four_way_split(100, first=0, inclusive=True):
+        score.append(calc(ingredients, spoons))
+
+    return max(score)
 
 
 def part_2(source):
@@ -37,13 +74,14 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows("""Butterscotch: capacity -1, durability -2, flavor 6, texture 3, calories 8
+Cinnamon: capacity 2, durability 3, flavor -2, texture -1, calories 3""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(62842880, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(18965440, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
