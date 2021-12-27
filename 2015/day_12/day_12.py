@@ -25,38 +25,9 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def remove_red(source):
-    """First try of part 2.... went wrong!"""
-    try:
-        idx = source.index("red")
-    except ValueError:
-        return source
-    start = -1
-    pos = -1
-    for i in range(idx, -1, -1):
-        if source[i] == "[":
-            break
-        if source[i] == "{":
-            start = 1
-            pos = i
-            break
-    if start >= 0:
-        if pos >= 0:
-            for i in range(idx, len(source)):
-                if source[i] == "{":
-                    start += 1
-                elif source[i] == "}":
-                    start -= 1
-                if start == 0:
-                    new = source[:pos] + source[i + 1:]
-                    return remove_red(new)
-    elif idx >= 0:
-        return remove_red(source.replace("red", "!!!", 1))
-    _(source)
-    return source
-
-
 def exclude_red_sum(source):
+    """Recursively solve the red exclude by 'walking' the json object
+    """
     if isinstance(source, int):
         return source
     elif isinstance(source, str):
@@ -76,8 +47,7 @@ def part_1(source):
 
 
 def part_2(source):
-    data = json.loads(source)
-    return exclude_red_sum(data)
+    return exclude_red_sum(json.loads(source))
 
 
 class UnitTests(unittest.TestCase):
