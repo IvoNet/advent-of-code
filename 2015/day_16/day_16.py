@@ -67,16 +67,16 @@ def part_1(source, logica):
 
 
 FUNCTION = {
-    "cats": lambda l, r: l > r,
-    "trees": lambda l, r: l > r,
-    "pomeranians": lambda l, r: l < r,
-    "goldfish": lambda l, r: l < r,
-    "children": lambda l, r: l == r,
-    "samoyeds": lambda l, r: l == r,
-    "akitas": lambda l, r: l == r,
-    "vizslas": lambda l, r: l == r,
-    "cars": lambda l, r: l == r,
-    "perfumes": lambda l, r: l == r,
+    "cats": lambda left, right: left > right,
+    "trees": lambda left, right: left > right,
+    "pomeranians": lambda left, right: left < right,
+    "goldfish": lambda left, right: left < right,
+    "children": lambda left, right: left == right,
+    "samoyeds": lambda left, right: left == right,
+    "akitas": lambda left, right: left == right,
+    "vizslas": lambda left, right: left == right,
+    "cars": lambda left, right: left == right,
+    "perfumes": lambda left, right: left == right,
 }
 
 
