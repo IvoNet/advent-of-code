@@ -15,7 +15,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -66,8 +66,38 @@ def part_1(source, logica):
     return list(aunties.keys())[0]
 
 
-def part_2(source):
-    return 0
+FUNCTION = {
+    "cats": lambda l, r: l > r,
+    "trees": lambda l, r: l > r,
+    "pomeranians": lambda l, r: l < r,
+    "goldfish": lambda l, r: l < r,
+    "children": lambda l, r: l == r,
+    "samoyeds": lambda l, r: l == r,
+    "akitas": lambda l, r: l == r,
+    "vizslas": lambda l, r: l == r,
+    "cars": lambda l, r: l == r,
+    "perfumes": lambda l, r: l == r,
+}
+
+
+def narrow_down_2(aunties: dict, item: str, amount: int):
+    ret = aunties.copy()
+    for aunt, items in aunties.items():
+        if item in items and not FUNCTION[item](aunties[aunt][item], amount):
+            _("deleting:", aunt, item)
+            del ret[aunt]
+    return ret
+
+
+def part_2(source, logica):
+    facts = logic(logica)
+    aunties = aunts(source)
+
+    for key, value in facts.items():
+        aunties = narrow_down_2(aunties, key, value)
+        _(aunties)
+    assert len(aunties) == 1
+    return list(aunties.keys())[0]
 
 
 class UnitTests(unittest.TestCase):
@@ -90,7 +120,7 @@ perfumes: 1""")
         self.assertEqual(373, part_1(self.source, self.logica))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(260, part_2(self.source, self.logica))
 
 
 if __name__ == '__main__':
