@@ -9,7 +9,6 @@ __license__ = "Apache 2.0"
 import re
 import sys
 import unittest
-from itertools import permutations
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -32,19 +31,18 @@ def parse(source):
     return molecule, replacements
 
 
-def count(replacements: dict, molecule: str):
-    total = 0
-    for k, v in replacements.items():
-        nr = molecule.count(k)
-        combi = list(permutations(v, min(len(v), nr)))
-        total += len(combi) * nr
-    return total
-
-
 def calibrate(replacements, molecule):
-    for k, v in replacements:
-        for m in re.finditer(k, molecule):
-            yield molecule[:m.start()] + v + molecule[m.end():]
+    for key, value in replacements:
+        for m in re.finditer(key, molecule):
+            yield molecule[:m.start()] + value + molecule[m.end():]
+
+
+def reverse_engineer(replacements, molecule):
+    """Note that the key, value has been reversed in this loop!"""
+    for value, key in replacements:
+        for m in re.finditer(key, molecule):
+            yield molecule[:m.start()] + value + molecule[m.end():]
+
 
 def part_1(source):
     molecule, replacements = parse(source)
@@ -52,7 +50,26 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    """To build a molecule we need to start with 'e', so in order to get to build the molecule we already have
+    as a starting point we need to reverse engineer back to e.
+    Replacements in reverse and than look at the shortest path to e
+    """
+    molecule, replacements = parse(source)
+
+    idx = 0
+    while molecule != "e":
+        shortest_len = float("inf")
+        shortest = None
+        for candidate in reverse_engineer(replacements, molecule):
+            s = len(candidate)
+            if s < shortest_len:
+                shortest_len = s
+                shortest = candidate
+        assert molecule is not None
+        molecule = shortest
+        idx += 1
+
+    return idx
 
 
 class UnitTests(unittest.TestCase):
@@ -65,6 +82,13 @@ H => OH
 O => HH
 
 HOHOHO""")
+        self.test_source = read_rows("""e => H
+e => O
+H => HO
+H => OH
+O => HH
+
+HOHOHO""")
 
     def test_example_data_part_1(self):
         self.assertEqual(7, part_1(self.test_source))
@@ -73,10 +97,10 @@ HOHOHO""")
         self.assertEqual(535, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(6, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(212, part_2(self.source))
 
 
 if __name__ == '__main__':
