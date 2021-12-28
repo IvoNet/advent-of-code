@@ -12,7 +12,7 @@ from ivonet.files import read_rows
 from ivonet.iter import ints
 
 
-def initOn(init, dimensions):
+def init_on(init, dimensions):
     on = set()
     for i, row in enumerate(init):
         for j, val in enumerate(row):
@@ -22,7 +22,7 @@ def initOn(init, dimensions):
 
 
 def cicle(init, dimensions, steps):
-    on = initOn(init, dimensions)
+    on = init_on(init, dimensions)
     for _ in range(steps):
         c = {}
         for loc in on:
@@ -33,11 +33,11 @@ def cicle(init, dimensions, steps):
                         c[new] = 1
                     else:
                         c[new] += 1
-        stayOn = set(
+        stay_on = set(
             [loc for loc in on if loc in c.keys() and c[loc] in [2, 3]])
-        turnOn = set([loc for loc, v in c.items()
+        turn_on = set([loc for loc, v in c.items()
                       if loc not in on and v == 3])
-        on = stayOn | turnOn
+        on = stay_on | turn_on
     return len(on)
 
 
