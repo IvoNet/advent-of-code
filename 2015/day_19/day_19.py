@@ -16,7 +16,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -32,13 +32,15 @@ def parse(source):
 
 
 def calibrate(replacements, molecule):
+    """Yields all combinations without making it unique"""
     for key, value in replacements:
         for m in re.finditer(key, molecule):
             yield molecule[:m.start()] + value + molecule[m.end():]
 
 
 def reverse_engineer(replacements, molecule):
-    """Note that the key, value has been reversed in this loop!"""
+    """Note that the key, value has been reversed in this loop!
+    Reverse enginering you know :-)"""
     for value, key in replacements:
         for m in re.finditer(key, molecule):
             yield molecule[:m.start()] + value + molecule[m.end():]
