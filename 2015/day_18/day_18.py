@@ -21,12 +21,20 @@ DEBUG = False
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n"):
+def p(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
 
 
-def flip_lights(source):
+def corners(matrix, corner_stuck):
+    if corner_stuck:
+        matrix[0][0] = "#"
+        matrix[0][len(matrix[0]) - 1] = "#"
+        matrix[len(matrix) - 1][0] = "#"
+        matrix[len(matrix) - 1][len(matrix[0]) - 1] = "#"
+
+
+def flip_lights(source, corner_stuck=False):
     matrix = deepcopy(source)
     for h, row in enumerate(source):
         for w, col in enumerate(row):
@@ -37,6 +45,7 @@ def flip_lights(source):
             else:  # of
                 if nb_on == 3:
                     matrix[h][w] = "#"
+            corners(matrix, corner_stuck)
     return matrix
 
 
@@ -44,15 +53,20 @@ def count_lights(matrix):
     return sum(1 for h, row in enumerate(matrix) for w, col in enumerate(row) if matrix[h][w] == "#")
 
 
-def part_1(source, steps=100):
+def process(source, steps, corners_on=False):
     matrix = [list(row) for row in source]
+    corners(matrix, corners_on)
     for _ in range(steps):
-        matrix = flip_lights(matrix)
+        matrix = flip_lights(matrix, corners_on)
     return count_lights(matrix)
 
 
-def part_2(source):
-    return 0
+def part_1(source, steps=100):
+    return process(source, steps)
+
+
+def part_2(source, steps=100):
+    return process(source, steps=steps, corners_on=True)
 
 
 class UnitTests(unittest.TestCase):
@@ -71,13 +85,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(4, part_1(self.test_source, steps=4))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source, steps=100))
+        self.assertEqual(814, part_1(self.source, steps=100))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(17, part_2(self.test_source, steps=5))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(924, part_2(self.source, steps=100))
 
 
 if __name__ == '__main__':
