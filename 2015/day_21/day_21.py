@@ -20,16 +20,16 @@ sys.dont_write_bytecode = True
 DEBUG = False
 
 
-class Item(NamedTuple):
-    cost: int
-    damage: int
-    armor: int
-
-
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
+
+
+class Item(NamedTuple):
+    cost: int
+    damage: int
+    armor: int
 
 
 @dataclass
@@ -40,15 +40,15 @@ class Player:
 
 
 def play(me, boss) -> bool:
-    left = False
+    me_play = True
     while me.hit_points > 0 and boss.hit_points > 0:
-        left = not left
-        if left:
+        if me_play:
             damage = me.armor - boss.damage
             me.hit_points += damage if damage < 0 else -1
-            continue
-        damage = boss.armor - me.damage
-        boss.hit_points += damage if damage < 0 else -1
+        else:
+            damage = boss.armor - me.damage
+            boss.hit_points += damage if damage < 0 else -1
+        me_play = not me_play
     return me.hit_points > boss.hit_points
 
 
