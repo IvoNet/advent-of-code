@@ -15,9 +15,9 @@
 # limitations under the License.
 from __future__ import annotations
 
-from collections import deque
-from heapq import heappush, heappop
-from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Set, Deque, Dict, Any, Optional, Protocol
+from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Set, Dict, Any, Optional, Protocol
+
+from ivonet.collection import PriorityQueue, Stack, Queue
 
 T = TypeVar('T')
 C = TypeVar("C", bound="Comparable")
@@ -59,24 +59,6 @@ def binary_contains(sequence: Sequence[C], key: C) -> bool:
         else:
             return True
     return False
-
-
-class Stack(Generic[T]):
-    def __init__(self) -> None:
-        self._container: List[T] = []
-
-    @property
-    def empty(self) -> bool:
-        return not self._container  # not is true for empty container
-
-    def push(self, item: T) -> None:
-        self._container.append(item)
-
-    def pop(self) -> T:
-        return self._container.pop()  # LIFO
-
-    def __repr__(self) -> str:
-        return repr(self._container)
 
 
 class Node(Generic[T]):
@@ -128,24 +110,6 @@ def node_to_path(node: Node[T]) -> List[T]:
     return path
 
 
-class Queue(Generic[T]):
-    def __init__(self) -> None:
-        self._container: Deque[T] = deque()
-
-    @property
-    def empty(self) -> bool:
-        return not self._container  # not is true for empty container
-
-    def push(self, item: T) -> None:
-        self._container.append(item)
-
-    def pop(self) -> T:
-        return self._container.popleft()  # FIFO
-
-    def __repr__(self) -> str:
-        return repr(self._container)
-
-
 def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
     # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
@@ -167,24 +131,6 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], Li
             explored.add(child)
             frontier.push(Node(child, current_node))
     return None  # went through everything and never found goal
-
-
-class PriorityQueue(Generic[T]):
-    def __init__(self) -> None:
-        self._container: List[T] = []
-
-    @property
-    def empty(self) -> bool:
-        return not self._container  # not is true for empty container
-
-    def push(self, item: T) -> None:
-        heappush(self._container, item)  # in by priority
-
-    def pop(self) -> T:
-        return heappop(self._container)  # out by priority
-
-    def __repr__(self) -> str:
-        return repr(self._container)
 
 
 def astar(initial: T, goal_test: Callable[[T], bool],
