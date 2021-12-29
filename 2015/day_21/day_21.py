@@ -17,45 +17,13 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 class Item(NamedTuple):
     cost: int
     damage: int
     armor: int
-
-
-# ITEM       Cost  Damage  Armor
-store = """
-Dagger        8     4       0
-Shortsword   10     5       0
-Warhammer    25     6       0
-Longsword    40     7       0
-Greataxe     74     8       0
-Leather      13     0       1
-Chainmail    31     0       2
-Splintmail   53     0       3
-Bandedmail   75     0       4
-Platemail   102     0       5
-Damage+1    25     1       0
-Damage+2    50     2       0
-Damage+3   100     3       0
-Defense+1   20     0       1
-Defense+2   40     0       2
-Defense+3   80     0       3
-""".strip().splitlines(keepends=False)
-
-items = [Item(int(cost), int(damage), int(armor)) for name, cost, damage, armor in [x.split() for x in store]]
-weaponry = items[:5]
-armory = [Item(0, 0, 0)]
-armory.extend(items[5:10])
-damagery = items[10:13]
-defencery = items[13:]
-
-for a in armory.copy():
-    for d in defencery.copy():
-        armory.append(Item(a.cost + d.cost, 0, a.armor + d.armor))
 
 
 # noinspection DuplicatedCode
@@ -84,13 +52,47 @@ def play(me, boss) -> bool:
     return me.hit_points > boss.hit_points
 
 
+def prepare():
+    # ITEM       Cost  Damage  Armor
+    store = """
+Dagger        8     4       0
+Shortsword   10     5       0
+Warhammer    25     6       0
+Longsword    40     7       0
+Greataxe     74     8       0
+Leather      13     0       1
+Chainmail    31     0       2
+Splintmail   53     0       3
+Bandedmail   75     0       4
+Platemail   102     0       5
+Damage+1    25     1       0
+Damage+2    50     2       0
+Damage+3   100     3       0
+Defense+1   20     0       1
+Defense+2   40     0       2
+Defense+3   80     0       3
+""".strip().splitlines(keepends=False)
+
+    items = [Item(int(cost), int(damage), int(armor)) for name, cost, damage, armor in [x.split() for x in store]]
+    weaponry = items[:5]  # must buy 1 weapon
+    armory = [Item(0, 0, 0)]  # Init with no cost and no armor
+    armory.extend(items[5:10])
+    damagery = items[10:13]
+    defencery = items[13:]
+
+    for a in armory.copy():
+        for d in defencery.copy():
+            armory.append(Item(a.cost + d.cost, 0, a.armor + d.armor))
+
+    for d in damagery.copy():
+        for w in weaponry.copy():
+            weaponry.append(Item(d.cost + w.cost, d.damage + w.damage, 0))
+
+    return weaponry, armory
+
 
 def part_1(source):
-    print()
-    print(weaponry)
-    print(armory)
-    print(damagery)
-    print(defencery)
+    weaponry, armory = prepare()
     gold = float("inf")
     for weapon in weaponry:
         for armor in armory:
@@ -98,18 +100,35 @@ def part_1(source):
             me = Player(100, weapon.damage, armor.armor)
             win = play(me, boss)
             if win:
-                print("Won:", me, boss)
-                print("Weapon:", weapon)
-                print("Armor:", armor)
                 cost = weapon.cost + armor.cost
-                print("Cost", cost)
                 if cost < gold:
                     gold = cost
+                if DEBUG:
+                    print("Won:", me, boss)
+                    print("Weapon:", weapon)
+                    print("Armor:", armor)
+                    print("Cost", cost)
     return gold
 
 
 def part_2(source):
-    return 0
+    weaponry, armory = prepare()
+    gold = float("-inf")
+    for weapon in weaponry:
+        for armor in armory:
+            boss = Player(109, 8, 2)
+            me = Player(100, weapon.damage, armor.armor)
+            win = play(me, boss)
+            if not win:
+                cost = weapon.cost + armor.cost
+                if cost > gold:
+                    gold = cost
+                if DEBUG:
+                    print("loose:", me, boss)
+                    print("Weapon:", weapon)
+                    print("Armor:", armor)
+                    print("Cost", cost)
+    return gold
 
 
 class UnitTests(unittest.TestCase):
@@ -117,16 +136,12 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
 
     def test_part_1(self):
         self.assertEqual(111, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
-
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(188, part_2(self.source))
 
 
 if __name__ == '__main__':
