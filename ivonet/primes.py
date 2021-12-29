@@ -5,7 +5,7 @@
 def prime_factors(n: int) -> list[int]:
     """Returns all the prime factors of a positive integer
 
-    used in "opgave 22" of 2017
+    used in "opgave 22" of 2017 (aivd puzzle)
     """
     factors = []
     d = 2
@@ -24,7 +24,7 @@ def prime_factors(n: int) -> list[int]:
 def prime_factors_unique(n: int) -> list[int]:
     """Returns all the prime factors of a positive integer
 
-    used in "opgave 22" of 2017
+    used in "opgave 22" of 2017 (aivd puzzle)
     """
     factors = []
     d = 2
