@@ -193,7 +193,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(1269, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1309, part_2(self.source))
 
 
 if __name__ == '__main__':
