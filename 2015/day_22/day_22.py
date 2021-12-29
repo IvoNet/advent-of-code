@@ -184,7 +184,7 @@ class UnitTests(unittest.TestCase):
         self.source = read_rows(f"day_{day.zfill(2)}.input")
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1269, part_1(self.source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
