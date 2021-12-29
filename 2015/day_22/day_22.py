@@ -71,12 +71,18 @@ class Move(NamedTuple):
     enemy: Enemy
 
 
-def play():
+def play(hard_mode=False):
     pq: PriorityQueue[Move] = PriorityQueue()
     pq.push(Move(0, Player(), Enemy()))
     while True:
         mana_spent, player, enemy = pq.pop()
         player: Player = player.copy()
+
+        if hard_mode:
+            player.hp -= 1
+            if player.hp <= 0:
+                continue
+
         enemy: Enemy = enemy.copy()
 
         def apply_effects(player: Player, enemy: Enemy) -> bool:
@@ -174,7 +180,7 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    return play(hard_mode=True)
 
 
 class UnitTests(unittest.TestCase):
