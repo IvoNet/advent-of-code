@@ -8,6 +8,7 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
@@ -52,7 +53,7 @@ def play(me, boss) -> bool:
     return me.hit_points > boss.hit_points
 
 
-def prepare():
+def prepare(source):
     # ITEM       Cost  Damage  Armor
     store = """
 Dagger        8     4       0
@@ -80,23 +81,28 @@ Defense+3   80     0       3
     damagery = items[10:13]
     defencery = items[13:]
 
+    # create new combinations of armor with extra defence (and cost)
     for a in armory.copy():
         for d in defencery.copy():
             armory.append(Item(a.cost + d.cost, 0, a.armor + d.armor))
 
+    # create new combinations of weapons with extra damage (and cost)
     for d in damagery.copy():
         for w in weaponry.copy():
             weaponry.append(Item(d.cost + w.cost, d.damage + w.damage, 0))
 
-    return weaponry, armory
+    # create boss
+    boss = Player(*[int(x.split()[-1]) for x in source])
+
+    return weaponry, armory, boss
 
 
 def part_1(source):
-    weaponry, armory = prepare()
+    weaponry, armory, enemy = prepare(source)
     gold = float("inf")
     for weapon in weaponry:
         for armor in armory:
-            boss = Player(109, 8, 2)
+            boss = copy(enemy)
             me = Player(100, weapon.damage, armor.armor)
             win = play(me, boss)
             if win:
@@ -112,11 +118,11 @@ def part_1(source):
 
 
 def part_2(source):
-    weaponry, armory = prepare()
+    weaponry, armory, enemy = prepare(source)
     gold = float("-inf")
     for weapon in weaponry:
         for armor in armory:
-            boss = Player(109, 8, 2)
+            boss = copy(enemy)
             me = Player(100, weapon.damage, armor.armor)
             win = play(me, boss)
             if not win:
