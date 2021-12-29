@@ -25,22 +25,13 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def presents(match):
-    presents = defaultdict(int)
+def presents(match, nr_of_presents=10, nr_of_houses=float("inf")):
+    gifts = defaultdict(int)
     max_elves = match // 10
     for elf in range(1, max_elves):
-        for house in range(elf, max_elves, elf):
-            presents[house] += elf * 10
-    return min([x for x in presents.items() if x[1] >= match], key=lambda x: x[0])[0]
-
-
-def presents_v2(match):
-    presents = defaultdict(int)
-    max_elves = match // 10
-    for elf in range(1, max_elves):
-        for house in range(elf, min(max_elves, elf * 50), elf):
-            presents[house] += elf * 11
-    return min([x for x in presents.items() if x[1] >= match], key=lambda x: x[0])[0]
+        for house in range(elf, min(max_elves, elf * nr_of_houses), elf):
+            gifts[house] += elf * nr_of_presents
+    return min([x for x in gifts.items() if x[1] >= match], key=lambda x: x[0])[0]
 
 
 def part_1(source):
@@ -48,7 +39,7 @@ def part_1(source):
 
 
 def part_2(source):
-    return presents_v2(int(source))
+    return presents(int(source), nr_of_presents=11, nr_of_houses=50)
 
 
 class UnitTests(unittest.TestCase):
