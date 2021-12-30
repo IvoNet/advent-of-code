@@ -28,6 +28,8 @@ def prod(*iterable) -> float:
     'aaaaaaaaaa'
     >>> prod([1, 2, 3, 4])
     24
+    >>> prod((1, 83, 101, 103, 107, 113))
+    10439961859
     >>> prod({1, 2, 3, 4})
     24
     >>> prod({'a': 7, "b": 6})
@@ -37,7 +39,7 @@ def prod(*iterable) -> float:
     """
     it = iterable
     if len(it) == 1:
-        if type(it[0]) == list or type(it[0]) == set or isinstance(it[0], types.GeneratorType):
+        if type(it[0]) in [list, set, tuple] or isinstance(it[0], types.GeneratorType):
             it = it[0]
         elif type(it[0]) == dict:
             it = list(it[0].values())
