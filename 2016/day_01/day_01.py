@@ -52,7 +52,8 @@ def parse(source: str) -> list[Instruction]:
 
 class City:
 
-    def __init__(self, instructions: list[Instruction], start: Location = Location(0, 0),
+    def __init__(self, instructions: list[Instruction],
+                 start: Location = Location(0, 0),
                  start_orientation="N") -> None:
         self.instructions = instructions
         self.start = start
@@ -77,7 +78,7 @@ class City:
         }
         self.location = defaultdict(int)
         self.distance = manhattan_distance(self.start)
-        self.history = defaultdict(int)
+        self.history: list[Location] = []
         self.col = start.col
         self.row = start.row
 
@@ -86,13 +87,13 @@ class City:
         right = abs(self.location["E"] - self.location["W"])
         return Location(up, right)
 
-    def walk(self):
+    def walk(self) -> int:
         for direction, blocks in self.instructions:
             self.orientation = self.directions[self.orientation][direction]
             self.location[self.orientation] += blocks
         return self.distance(self.current_location())
 
-    def visited(self):
+    def visited(self) -> int:
         for direction, blocks in self.instructions:
             self.orientation = self.directions[self.orientation][direction]
             if self.orientation == "E":
@@ -102,7 +103,7 @@ class City:
                     loc = Location(self.row, i)
                     if loc in self.history:
                         return self.distance(loc)
-                    self.history[loc] += 1
+                    self.history.append(loc)
                 continue
             if self.orientation == "W":
                 col = self.col
@@ -111,7 +112,7 @@ class City:
                     loc = Location(self.row, i)
                     if loc in self.history:
                         return self.distance(loc)
-                    self.history[loc] += 1
+                    self.history.append(loc)
                 continue
             if self.orientation == "N":
                 row = self.row
@@ -120,7 +121,7 @@ class City:
                     loc = Location(i, self.col)
                     if loc in self.history:
                         return self.distance(loc)
-                    self.history[loc] += 1
+                    self.history.append(loc)
                 continue
             if self.orientation == "S":
                 row = self.row
@@ -129,7 +130,7 @@ class City:
                     loc = Location(i, self.col)
                     if loc in self.history:
                         return self.distance(loc)
-                    self.history[loc] += 1
+                    self.history.append(loc)
 
 
 def part_1(source):
@@ -147,14 +148,12 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
         self.source = read_data(f"day_{day.zfill(2)}.input")
-        self.test_source = read_data("""R5, L5, R5, R3""")
-        self.test_source2 = read_data("""R2, R2, R2""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(12, part_1(self.test_source))
+        self.assertEqual(12, part_1("""R5, L5, R5, R3"""))
 
     def test_example_data_1_part_1(self):
-        self.assertEqual(2, part_1(self.test_source2))
+        self.assertEqual(2, part_1("""R2, R2, R2"""))
 
     def test_part_1(self):
         self.assertEqual(230, part_1(self.source))
