@@ -77,10 +77,9 @@ class City:
         }
         self.location = defaultdict(int)
         self.distance = manhattan_distance(self.start)
-
-    def go(self, direction, blocks):
-        self.orientation = self.directions[self.orientation][direction]
-        self.location[self.orientation] += blocks
+        self.history = defaultdict(int)
+        self.col = start.col
+        self.row = start.row
 
     def current_location(self) -> Location:
         up = abs(self.location["N"] - self.location["S"])
@@ -88,10 +87,49 @@ class City:
         return Location(up, right)
 
     def walk(self):
-        for instruction in self.instructions:
-            self.go(*instruction)
-            _(self.location)
+        for direction, blocks in self.instructions:
+            self.orientation = self.directions[self.orientation][direction]
+            self.location[self.orientation] += blocks
         return self.distance(self.current_location())
+
+    def visited(self):
+        for direction, blocks in self.instructions:
+            self.orientation = self.directions[self.orientation][direction]
+            if self.orientation == "E":
+                col = self.col
+                self.col += blocks
+                for i in range(col, self.col):
+                    loc = Location(self.row, i)
+                    if loc in self.history:
+                        return self.distance(loc)
+                    self.history[loc] += 1
+                continue
+            if self.orientation == "W":
+                col = self.col
+                self.col -= blocks
+                for i in range(col, self.col, -1):
+                    loc = Location(self.row, i)
+                    if loc in self.history:
+                        return self.distance(loc)
+                    self.history[loc] += 1
+                continue
+            if self.orientation == "N":
+                row = self.row
+                self.row += blocks
+                for i in range(row, self.row):
+                    loc = Location(i, self.col)
+                    if loc in self.history:
+                        return self.distance(loc)
+                    self.history[loc] += 1
+                continue
+            if self.orientation == "S":
+                row = self.row
+                self.row -= blocks
+                for i in range(row, self.row, -1):
+                    loc = Location(i, self.col)
+                    if loc in self.history:
+                        return self.distance(loc)
+                    self.history[loc] += 1
 
 
 def part_1(source):
@@ -100,7 +138,8 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    instructions = parse(source)
+    return City(instructions).visited()
 
 
 class UnitTests(unittest.TestCase):
@@ -121,10 +160,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(230, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(4, part_2("R8, R4, R4, R8"))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(154, part_2(self.source))
 
 
 if __name__ == '__main__':
