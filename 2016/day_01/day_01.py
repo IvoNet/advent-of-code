@@ -94,6 +94,7 @@ class City:
         return self.distance(self.current_location())
 
     def visited(self) -> int:
+        """Keeps track of the places we passed and if we cross one of those places again we be done."""
         for direction, blocks in self.instructions:
             self.orientation = self.directions[self.orientation][direction]
             if self.orientation == "E":
@@ -101,37 +102,40 @@ class City:
                 self.col += blocks
                 for i in range(col, self.col):
                     loc = Location(self.row, i)
-                    if loc in self.history:
+                    if self.visit(loc):
                         return self.distance(loc)
-                    self.history.append(loc)
                 continue
             if self.orientation == "W":
                 col = self.col
                 self.col -= blocks
                 for i in range(col, self.col, -1):
                     loc = Location(self.row, i)
-                    if loc in self.history:
+                    if self.visit(loc):
                         return self.distance(loc)
-                    self.history.append(loc)
                 continue
             if self.orientation == "N":
                 row = self.row
                 self.row += blocks
                 for i in range(row, self.row):
                     loc = Location(i, self.col)
-                    if loc in self.history:
+                    if self.visit(loc):
                         return self.distance(loc)
-                    self.history.append(loc)
                 continue
             if self.orientation == "S":
                 row = self.row
                 self.row -= blocks
                 for i in range(row, self.row, -1):
                     loc = Location(i, self.col)
-                    if loc in self.history:
+                    if self.visit(loc):
                         return self.distance(loc)
-                    self.history.append(loc)
 
+    def visit(self, loc: Location) -> bool:
+        """Adds True if the location was already visited otherwize it adds the location to the
+        history and returns False"""
+        if loc in self.history:
+            return True
+        self.history.append(loc)
+        return False
 
 def part_1(source):
     instructions = parse(source)
