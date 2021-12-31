@@ -47,7 +47,7 @@ class Instruction(NamedTuple):
 
 
 def parse(source: str) -> list[Instruction]:
-    return [Instruction(x[0], int(x[1])) for x in source.strip().split(", ")]
+    return [Instruction(x[0], int(x[1:])) for x in source.strip().split(", ")]
 
 
 class City:
@@ -84,8 +84,7 @@ class City:
 
     def current_location(self) -> Location:
         up = abs(self.location["N"] - self.location["S"])
-        right = abs(self.location["W"] - self.location["E"])
-        _(up, right)
+        right = abs(self.location["E"] - self.location["W"])
         return Location(up, right)
 
     def walk(self):
@@ -119,7 +118,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(2, part_1(self.test_source2))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(230, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
