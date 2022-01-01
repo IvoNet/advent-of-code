@@ -6,18 +6,20 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import re
 import sys
 import unittest
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
+from ivonet.caesar import caesar_cipher
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -33,21 +35,22 @@ class Room:
     checksum: list
 
     def valid(self) -> bool:
-        code = sorted(self.name)
+        code = sorted([x for x in self.name if x != "-"])
         groups = Counter(code).most_common(5)
         left = [x[0] for x in groups]
-        _(left, self.checksum, left == self.checksum)
-        return left == self.checksum
+        _(left, self.checksum, left == list(self.checksum))
+        return left == list(self.checksum)
+
+    def decode(self):
+        return " ".join([caesar_cipher(x, self.sector) for x in self.name.split("-")]).strip()
 
 
 def prepare(source):
     ret = []
-    for line in source:
-        d = line.split("-")
-        room = "".join(d[:-1])
-        sector = ints(d[-1])[0]
-        checksum = d[-1].split("[")[1][:-1]
-        ret.append(Room(room, sector, list(checksum)))
+    for room in source:
+        match = re.match("([^\d]+)(\d+)\[(\w+)\]", room)
+        groups = match.groups(0)
+        ret.append(Room(groups[0], int(groups[1]), groups[2]))
     return ret
 
 
@@ -57,7 +60,14 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    potentials = prepare(source)
+    _(potentials)
+    for room in potentials:
+        if room.valid():
+            _(room.decode(), room.sector)
+            if "northpole object storage" in room.decode():
+                return room.sector
+    return -1
 
 
 class UnitTests(unittest.TestCase):
@@ -80,10 +90,11 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(158835, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual("very encrypted name",
+                         Room(name='qzmt-zixmtkozy-ivhz-', sector=343, checksum='zimth').decode())
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(993, part_2(self.source))
 
 
 if __name__ == '__main__':
