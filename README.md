@@ -55,7 +55,7 @@ virtual environment.
 - None yet
 
 # 2016
-- day 1
+- days 1..2
 
 ## 2015
 - 50 stars!
