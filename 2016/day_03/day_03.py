@@ -36,7 +36,7 @@ def valid(potential):
     [(4, 21, 894),  # same as idx 2
      (4, 894, 21),  # same as idx 4
      (21, 4, 894),  # same as idx 0
-     (21, 894, 4),  ...
+     (21, 894, 4),  # etc...
      (894, 4, 21),
      (894, 21, 4)]
     """
@@ -45,12 +45,14 @@ def valid(potential):
             return False
     return True
 
+
 def is_valid(potential):
     """More verbose but also more precise then the valid method as it tests 50% less than the permutations
     """
     return (potential[0] + potential[1] > potential[2]) \
            and (potential[1] + potential[2] > potential[0]) \
            and (potential[2] + potential[0] > potential[1])
+
 
 def part_1(source, valid_check=is_valid):
     total = 0
