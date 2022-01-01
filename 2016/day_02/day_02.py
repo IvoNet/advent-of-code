@@ -28,9 +28,9 @@ def _(*args, end="\n"):
 @dataclass
 class StandardKeypad:
     keypad = [
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9]
+        ["1", "2", "3"],
+        ["4", "5", "6"],
+        ["7", "8", "9"],
     ]
 
     row: int
@@ -51,17 +51,25 @@ class StandardKeypad:
     def key(self):
         return self.keypad[self.row][self.col]
 
-    def move(self, m):
-        if m == "L":
+    def move(self, direction):
+        if direction == "L":
             self.left()
-        elif m == "R":
+        elif direction == "R":
             self.right()
-        elif m == "U":
+        elif direction == "U":
             self.up()
-        elif m == "D":
+        elif direction == "D":
             self.down()
         else:
             raise ValueError("Should not be here")
+
+    def walk(self, instructions):
+        nr = ""
+        for line in instructions:
+            for c in line:
+                self.move(c)
+            nr += self.key()
+        return nr
 
 
 @dataclass
@@ -71,8 +79,7 @@ class DesignKeypad:
         [None, "2", "3", "4", None],
         ["5", "6", "7", "8", "9"],
         [None, "A", "B", "C", None],
-        [None, None, "D", None, None]
-
+        [None, None, "D", None, None],
     ]
 
     row: int
@@ -101,37 +108,33 @@ class DesignKeypad:
     def key(self):
         return self.keypad[self.row][self.col]
 
-    def move(self, m):
-        if m == "L":
+    def move(self, direction):
+        if direction == "L":
             self.left()
-        elif m == "R":
+        elif direction == "R":
             self.right()
-        elif m == "U":
+        elif direction == "U":
             self.up()
-        elif m == "D":
+        elif direction == "D":
             self.down()
         else:
             raise ValueError("Should not be here")
 
+    def walk(self, instructions):
+        nr = ""
+        for line in instructions:
+            for c in line:
+                self.move(c)
+            nr += self.key()
+        return nr
+
 
 def part_1(source):
-    loc = StandardKeypad(1, 1)
-    nr = ""
-    for line in source:
-        for c in line:
-            loc.move(c)
-        nr += str(loc.key())
-    return nr
+    return StandardKeypad(1, 1).walk(source)
 
 
 def part_2(source):
-    loc = DesignKeypad(2, 0)
-    nr = ""
-    for line in source:
-        for c in line:
-            loc.move(c)
-        nr += loc.key()
-    return nr
+    return DesignKeypad(2, 0).walk(source)
 
 
 class UnitTests(unittest.TestCase):
@@ -154,7 +157,7 @@ UUUUD""")
         self.assertEqual("5DB3", part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("46C92", part_2(self.source))
 
 
 if __name__ == '__main__':
