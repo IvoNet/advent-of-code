@@ -8,9 +8,11 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from functools import lru_cache
+from hashlib import md5
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -24,32 +26,66 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+def decoder(key):
+    idx = 0
+    while True:
+        answer = f"{key}{idx}".encode("ascii")
+        digest = md5(answer).hexdigest()
+        if digest.startswith("00000"):
+            _(answer, digest)
+            yield digest[5]
+        idx += 1
+
+
+def inspired_decoder(key):
+    idx = 0
+    while True:
+        answer = f"{key}{idx}".encode("ascii")
+        digest = md5(answer).hexdigest()
+        if digest.startswith("00000") and digest[5] in "01234567":
+            _(answer, digest)
+            yield digest[5], digest[6]
+        idx += 1
+
+
 def part_1(source):
-    return 0
+    ret = ""
+    decode = decoder(source)
+    for _ in range(8):
+        ret += next(decode)
+    return ret
 
 
 def part_2(source):
-    return 0
+    ret = [None] * 8
+    decode = inspired_decoder(source)
+    while None in ret:
+        k, v = next(decode)
+        k = int(k)
+        if ret[k] is None:
+            ret[k] = v
+        _(ret)
+    return "".join(ret)
 
 
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"day_{day.zfill(2)}.input")
+        self.test_source = read_data("""abc""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual("18f47a30", part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual("f77a0e6e", part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual("05ace8e3", part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("999828ec", part_2(self.source))
 
 
 if __name__ == '__main__':
