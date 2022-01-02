@@ -11,14 +11,15 @@ import unittest
 from itertools import combinations
 from pathlib import Path
 
+from more_itertools import set_partitions
+
 from ivonet.calc import prod
 from ivonet.files import read_ints
 from ivonet.iter import ints
-from more_itertools import set_partitions
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -74,13 +75,13 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_ints(f"day_{day.zfill(2)}.input", delimiter="\n")
+        self.source = read_ints(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")), delimiter="\n")
 
     def test_part_1(self):
         self.assertEqual(10439961859, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(72050269, part_2(self.source))
 
 
 if __name__ == '__main__':

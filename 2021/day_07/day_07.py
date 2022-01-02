@@ -5,12 +5,14 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 import unittest
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 from numpy import mean
 
 from ivonet.calc import step_sequence_calc
-from ivonet.files import read_data
+from ivonet.files import read_ints
+from ivonet.iter import ints
 
 
 def part_1(data):
@@ -48,8 +50,12 @@ def plot(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = list(map(int, read_data("day_07.input").split(",")))
-    test_source = list(map(int, "16,1,2,0,4,2,7,1,2,14".split(",")))
+
+    def setUp(self) -> None:
+        print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_ints(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")), delimiter=",")
+        self.test_source = read_ints("""16,1,2,0,4,2,7,1,2,14""")
 
     def test_example_data_part_1(self):
         self.assertEqual(37, part_1(self.test_source))

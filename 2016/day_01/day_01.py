@@ -18,7 +18,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -151,7 +151,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(f"day_{day.zfill(2)}.input")
+        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_example_data_part_1(self):
         self.assertEqual(12, part_1("""R5, L5, R5, R3"""))

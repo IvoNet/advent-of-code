@@ -27,7 +27,7 @@ MAGIC_MISSILE_COST = 53
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -85,17 +85,17 @@ def play(hard_mode=False):
 
         enemy: Enemy = enemy.copy()
 
-        def apply_effects(player: Player, enemy: Enemy) -> bool:
-            if player.shield_timer > 0:
-                player.shield_timer -= 1
-                player.armor = 7
-            if player.poison_timer > 0:
-                player.poison_timer -= 1
-                enemy.hp -= 3
-            if player.recharge_timer > 0:
-                player.recharge_timer -= 1
-                player.mana += 101
-            if enemy.hp <= 0:
+        def apply_effects(me: Player, boss: Enemy) -> bool:
+            if me.shield_timer > 0:
+                me.shield_timer -= 1
+                me.armor = 7
+            if me.poison_timer > 0:
+                me.poison_timer -= 1
+                boss.hp -= 3
+            if me.recharge_timer > 0:
+                me.recharge_timer -= 1
+                me.mana += 101
+            if boss.hp <= 0:
                 return True
             return False
 
@@ -112,10 +112,10 @@ def play(hard_mode=False):
             new_enemy.hp -= MAGIC_MISSILE_DAMAGE
             if apply_effects(new_player, new_enemy):
                 return new_mana_spent
-            # reverse play (enemy against player)
+            # reverse play (boss against me)
             new_player.hp -= max(enemy.damage - player.armor, 1)
             if new_player.hp > 0:
-                pq.push((new_mana_spent, new_player, new_enemy))
+                pq.push(Move(new_mana_spent, new_player, new_enemy))
 
         # Drain
         if player.mana >= DRAIN_COST:
@@ -130,7 +130,7 @@ def play(hard_mode=False):
                 return new_mana_spent
             new_player.hp -= max(enemy.damage - player.armor, 1)
             if new_player.hp > 0:
-                pq.push((new_mana_spent, new_player, new_enemy))
+                pq.push(Move(new_mana_spent, new_player, new_enemy))
 
         # Shield
         if player.mana >= SHIELD_COST and player.shield_timer == 0:
@@ -144,7 +144,7 @@ def play(hard_mode=False):
                 return new_mana_spent
             new_player.hp -= max(enemy.damage - player.armor, 1)
             if new_player.hp > 0:
-                pq.push((new_mana_spent, new_player, new_enemy))
+                pq.push(Move(new_mana_spent, new_player, new_enemy))
 
         # Poison
         if player.mana >= POISON_COST and player.poison_timer == 0:
@@ -158,7 +158,7 @@ def play(hard_mode=False):
                 return new_mana_spent
             new_player.hp -= max(enemy.damage - player.armor, 1)
             if new_player.hp > 0:
-                pq.push((new_mana_spent, new_player, new_enemy))
+                pq.push(Move(new_mana_spent, new_player, new_enemy))
 
         # Recharge
         if player.mana >= RECHARGE_COST and player.recharge_timer == 0:
@@ -172,7 +172,7 @@ def play(hard_mode=False):
                 return new_mana_spent
             new_player.hp -= max(enemy.damage - player.armor, 1)
             if new_player.hp > 0:
-                pq.push((new_mana_spent, new_player, new_enemy))
+                pq.push(Move(new_mana_spent, new_player, new_enemy))
 
 
 def part_1(source):
@@ -186,8 +186,9 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
+        print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_part_1(self):
         self.assertEqual(1269, part_1(self.source))

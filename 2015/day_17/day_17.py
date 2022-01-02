@@ -53,7 +53,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_ints(f"day_{day.zfill(2)}.input", delimiter="\n")
+        self.source = read_ints(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")), delimiter="\n")
         self.test_source = read_ints("""20
 15
 10

@@ -17,7 +17,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -48,7 +48,7 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_rows("""eedadn
 drvtee
 eandsr

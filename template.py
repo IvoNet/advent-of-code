@@ -7,6 +7,7 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """"""
 
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -38,7 +39,7 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source = read_rows("""""")
 
     def test_example_data_part_1(self):

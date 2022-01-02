@@ -6,9 +6,11 @@ __license__ = "Apache 2.0"
 
 import unittest
 from copy import deepcopy
+from pathlib import Path
 
 from ivonet.files import read_rows
 from ivonet.grid import neighbors_defined_grid, directions
+from ivonet.iter import ints
 
 OCCUPIED_SEAT = '#'
 EMPTY_SEAT = 'L'
@@ -115,7 +117,8 @@ def part_2(data):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_11.input")
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_rows("""L.LL.LL.LL
 LLLLLLL.LL
 L.L.L..L..

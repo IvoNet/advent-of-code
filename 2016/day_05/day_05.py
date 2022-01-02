@@ -8,7 +8,6 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
-from functools import lru_cache
 from hashlib import md5
 from pathlib import Path
 
@@ -72,7 +71,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(f"day_{day.zfill(2)}.input")
+        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_data("""abc""")
 
     def test_example_data_part_1(self):

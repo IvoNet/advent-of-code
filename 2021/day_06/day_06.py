@@ -6,8 +6,10 @@ __license__ = "Apache 2.0"
 
 import unittest
 from collections import defaultdict
+from pathlib import Path
 
-from ivonet.files import read_data
+from ivonet.files import read_ints
+from ivonet.iter import ints
 
 
 def growth_calculator(fishes: list[int], days: int = 80):
@@ -42,8 +44,12 @@ def part_2(data, days=256):
 
 
 class UnitTests(unittest.TestCase):
-    source = list(map(int, read_data("day_06.input").split(",")))
-    test_source = [3, 4, 3, 1, 2]
+
+    def setUp(self) -> None:
+        print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_ints(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")), delimiter=",")
+        self.test_source = [3, 4, 3, 1, 2]
 
     def test_example_data_part_1(self):
         self.assertEqual(5934, part_1(self.test_source, 80))

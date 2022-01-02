@@ -7,8 +7,10 @@ __license__ = "Apache 2.0"
 import sys
 import unittest
 from collections import defaultdict
+from pathlib import Path
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -106,7 +108,8 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_12.input")
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_rows("""F10
 N3
 F7

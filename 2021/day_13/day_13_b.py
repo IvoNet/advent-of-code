@@ -83,8 +83,8 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day}.input")
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_rows("""6,10
 0,14
 9,10

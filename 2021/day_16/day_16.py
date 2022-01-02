@@ -189,7 +189,7 @@ def print_operators():
     print("eq:", BITS("9C0141080250320F1802104A08").go()[0].type_id)  # equal test true
 
 
-def calculate(packet: Packet) -> int:
+def calculate(packet: Packet) -> int | float:
     if packet.type_id == 0:
         return sum([calculate(c) for c in packet.children])
     elif packet.type_id == 1:
@@ -235,7 +235,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(f"day_{day.zfill(2)}.input")
+        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_data("""D2FE28""")
         self.test_source_a = read_data("""8A004A801A8002F478""")  # 16
         self.test_source_b = read_data("""620080001611562C8802118E34""")  # 12

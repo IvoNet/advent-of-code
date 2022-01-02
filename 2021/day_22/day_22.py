@@ -102,7 +102,7 @@ def parse(source) -> list[Instruction]:
     return instructions
 
 
-def overlap(left: Cuboid, right: Cuboid) -> Cuboid:
+def overlap(left: Cuboid, right: Cuboid) -> Cuboid | None:
     """Calc the overlap of two cuboids
     what can happen:
     - 1: No overlap (see function no_overlap)
@@ -242,7 +242,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_rows("""on x=10..12,y=10..12,z=10..12
 on x=11..13,y=11..13,z=11..13
 off x=9..11,y=9..11,z=9..11

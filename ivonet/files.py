@@ -8,6 +8,10 @@ __doc__ = """
 
 """
 
+import sys
+import urllib.request
+from io import StringIO
+
 from ivonet.iter import lmap
 
 
@@ -25,11 +29,10 @@ def open_anything(source: any):
         return source
 
     if source == "-":
-        import sys
         return sys.stdin
 
     # try to open with urllib (if source is http, ftp, or file URL)
-    import urllib.request
+
     try:
         return urllib.request.urlopen(source)
     except (IOError, OSError, ValueError):
@@ -42,7 +45,6 @@ def open_anything(source: any):
         pass
 
     # treat source as string
-    from io import StringIO
     return StringIO(str(source))
 
 
@@ -59,7 +61,7 @@ def read_rows(infile: str) -> list[str]:
 
 def read_ints(infile: str, delimiter: str = ",") -> list[int]:
     """Read the infile and parse it into a list of ints based on the delimiter"""
-    return list(map(int, read_data(infile).split(delimiter)))
+    return list(map(int, read_data(infile).strip().split(delimiter)))
 
 
 def read_int_matrix(infile: str) -> list[list[int]]:

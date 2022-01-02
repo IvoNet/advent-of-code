@@ -6,10 +6,11 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from pathlib import Path
 
 from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
-from ivonet.iter import max_2d, print_2d
+from ivonet.iter import max_2d, print_2d, ints
 
 PREVENT_ENDLESS_LOOP = 1000
 
@@ -86,7 +87,8 @@ def part_2(matrix):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_int_matrix("day_11.input")
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_int_matrix(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_int_matrix("""5483143223
 2745854711
 5264556173

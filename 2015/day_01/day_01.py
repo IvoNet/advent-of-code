@@ -25,7 +25,6 @@ def _(*args, end="\n"):
 
 
 def part_1(source):
-    print(source)
     return sum(1 if x == "(" else -1 for x in source)
 
 
@@ -44,8 +43,8 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        day = ints(Path(__file__).name)[0]
-        self.source = read_data(f"day_{day:02}.input")
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_example_data_part_1(self):
         self.assertEqual(0, part_1("(())"))

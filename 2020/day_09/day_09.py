@@ -12,6 +12,14 @@ from ivonet.iter import consecutive_element_pairing
 
 MINIMAL_PAIRING_LEN: int = 2
 
+DEBUG = False
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 def part_1(data, preamble=25):
     data = list(map(int, data))
@@ -35,10 +43,10 @@ def part_2(data, preamble=25):
         if to_find in sums:
             find_idx = sums.index(to_find)
             lst = data_ints[find_idx: find_idx + i]
-            print(i)
-            print(lst)
-            print(min(lst))
-            print(max(lst))
+            _(i)
+            _(lst)
+            _(min(lst))
+            _(max(lst))
             return min(lst) + max(lst)
     return -1
 

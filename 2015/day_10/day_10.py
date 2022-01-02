@@ -56,7 +56,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(f"day_{day.zfill(2)}.input")
+        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_part_1(self):
         self.assertEqual(492982, part_1(self.source))

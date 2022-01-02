@@ -2,11 +2,9 @@
 #  -*- coding: utf-8 -*-
 from unittest import TestCase, main
 
-import numpy as np
-
 from ivonet.alphabet import base_26_encode_string, sum_letter_values_of_word, alphabet, product_letter_values_of_word, \
     base_26_decode_string
-from ivonet.calc import base_10_to_base_x, base_3, normalize_overlap_matrix
+from ivonet.calc import base_10_to_base_x, base_3
 from ivonet.hexadecimal import number_as_word
 from ivonet.iter import consecutive_element_pairing
 from ivonet.roman_numerals import roman
@@ -18,7 +16,7 @@ class TestBase(TestCase):
         self.assertTrue(base_10_to_base_x("102", 3) == "11")
 
     def test_base_3(self):
-        self.assertEqual(base_3("102"), "11")
+        self.assertEqual(base_3(102), "11")
 
 
 class TestRomanConversion(TestCase):
@@ -51,32 +49,6 @@ class TestHexadecimal(TestCase):
         self.assertEqual("ZES", number_as_word(741))
         self.assertEqual("DEZELFDE", number_as_word(3727589342))
         self.assertEqual("BOLACCACIAS", number_as_word(12127591645605))
-
-
-class TestNormalizeOverlapMatrix(TestCase):
-    def test_gw_01(self):
-        a = np.ones(shape=[4, 4]) + 3 * np.eye(4)
-        a[0, 0] = 100
-        a[3, 3] = 25
-        a[0, 3] = 16
-        r = normalize_overlap_matrix(a)
-        e = np.matrix([[1., 0.05, 0.05, 0.32],
-                       [0.05, 1., 0.25, 0.1],
-                       [0.05, 0.25, 1., 0.1],
-                       [0.02, 0.1, 0.1, 1.]])
-        np.testing.assert_array_almost_equal(r, e)
-
-    def test_bw_01(self):
-        """Verify that an error is raised if there is a zero on the direction"""
-        with self.assertRaisesRegex(AssertionError, 'direction'):
-            a = np.reshape(np.arange(16), [4, 4])
-            normalize_overlap_matrix(a)
-
-    def test_bw_02(self):
-        """Verify that an error is raised if the overlap matrix is not square."""
-        with self.assertRaisesRegex(AssertionError, 'square'):
-            a = np.matrix(np.arange(1, 5))
-            normalize_overlap_matrix(a)
 
 
 class UnitTests(TestCase):

@@ -6,6 +6,7 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import os
 import pickle
 import sys
 import unittest
@@ -67,7 +68,7 @@ def parse_scanners(source: list[str]) -> list[Scanner]:
 
 class Scanner:
 
-    def __init__(self, id: int, beacons: list[tuple[int, int, int]]) -> None:
+    def __init__(self, id: int, beacons: list[list[int, int, int]]) -> None:
         self.id = id
         self.orig = beacons.copy()
         self.current = beacons.copy()
@@ -127,7 +128,6 @@ class Scanner:
 
     def manhattan_distance(self, other: Scanner):
         return abs(self.pos[0] - other.pos[0]) + abs(self.pos[1] - other.pos[1]) + abs(self.pos[2] - other.pos[2])
-        # return sum(abs(a - b) for a, b in zip(self.pos, other.pos))
 
     def __repr__(self) -> str:
         return f"Scanner[{self.id}]"
@@ -162,7 +162,7 @@ def part_1(source):
     matched = [start_scanner, ]
 
     try:
-        with open('day_19_matched.pickle', 'rb') as fi:
+        with open(f"{os.path.dirname(__file__)}/day_19_matched.pickle", 'rb') as fi:
             matched = pickle.load(fi)
     except IOError:
         while len(scanners) != 0:
@@ -179,7 +179,7 @@ def part_1(source):
         beacons = beacons.union(scanner.fixed_beacons)
     part_1 = len(beacons)
 
-    with open("day_19_matched.pickle", "wb") as fo:
+    with open(f"{os.path.dirname(__file__)}/day_19_matched.pickle", "wb") as fo:
         pickle.dump(matched, fo, protocol=pickle.HIGHEST_PROTOCOL)
 
     return part_1
@@ -194,7 +194,7 @@ def part_2(source):
     matched = [start_scanner, ]
 
     try:
-        with open('day_19_matched.pickle', 'rb') as fi:
+        with open(f"{os.path.dirname(__file__)}/day_19_matched.pickle", 'rb') as fi:
             matched = pickle.load(fi)
     except IOError:
         while len(scanners) != 0:
@@ -206,7 +206,7 @@ def part_2(source):
                         scanners.remove(scanner)
                         break
 
-    with open("day_19_matched.pickle", "wb") as fo:
+    with open(f"{os.path.dirname(__file__)}/day_19_matched.pickle", "wb") as fo:
         pickle.dump(matched, fo, protocol=pickle.HIGHEST_PROTOCOL)
 
     max_dist = max(a.manhattan_distance(b) for a, b in permutations(matched, 2))
@@ -218,9 +218,9 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        day = ints(Path(__file__).name)[0]
-        self.source = read_rows(f"day_{day}.input")
-        self.test_source_2 = read_rows(f"day_{day}_2.input")
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
+        self.test_source_2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_2.input")))
 
     def test_rotation(self):
         """All the orientations in this set of scanners should be

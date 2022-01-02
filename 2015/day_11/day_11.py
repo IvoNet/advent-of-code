@@ -98,7 +98,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(f"day_{day.zfill(2)}.input")
+        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = """hijklmmn"""
         self.test_source_1 = """abbceffg"""
         self.test_source_2 = """abbcegjk"""

@@ -6,10 +6,12 @@ __license__ = "Apache 2.0"
 
 import sys
 import unittest
+from pathlib import Path
 
 from ivonet.calc import prod
 from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors, neighbor_values
+from ivonet.iter import ints
 
 BOUNDARY = 9
 
@@ -67,8 +69,12 @@ def part_2(matrix):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_int_matrix("day_09.input")
-    test_source = read_int_matrix("""2199943210
+
+    def setUp(self) -> None:
+        print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_int_matrix(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
+        self.test_source = read_int_matrix("""2199943210
 3987894921
 9856789892
 8767896789

@@ -72,8 +72,9 @@ def part_2(source, steps=100):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
+        print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.test_source = read_rows(""".#.#.#
 ...##.
 #....#

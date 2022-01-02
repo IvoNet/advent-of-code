@@ -31,7 +31,7 @@ def part_2(data):
     c = part_1(data, right=5, down=1)
     d = part_1(data, right=7, down=1)
     e = part_1(data, right=1, down=2)
-    # print(a, b, c, d, e)
+    # _(a, b, c, d, e)
     return a * b * c * d * e
 
 
@@ -39,7 +39,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_part_1(self):
         self.assertEqual(289, part_1(self.source))

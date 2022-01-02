@@ -49,9 +49,8 @@ def valid(potential):
 def is_valid(potential):
     """More verbose but also more precise then the valid method as it tests 50% less than the permutations
     """
-    return (potential[0] + potential[1] > potential[2]) \
-           and (potential[1] + potential[2] > potential[0]) \
-           and (potential[2] + potential[0] > potential[1])
+    return (potential[0] + potential[1] > potential[2]) and (potential[1] + potential[2] > potential[0]) and (
+            potential[2] + potential[0] > potential[1])
 
 
 def part_1(source, valid_check=is_valid):
@@ -78,7 +77,7 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_part_1(self):
         self.assertEqual(983, part_1(self.source, valid_check=valid))

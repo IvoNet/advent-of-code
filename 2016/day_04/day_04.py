@@ -75,7 +75,7 @@ class UnitTests(unittest.TestCase):
     def setUp(self) -> None:
         print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"day_{day.zfill(2)}.input")
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_example_data_1_part_1(self):
         self.assertEqual(123, part_1(read_rows("aaaaa-bbb-z-y-x-123[abxyz]")))

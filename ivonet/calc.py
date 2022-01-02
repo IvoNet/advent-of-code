@@ -12,8 +12,6 @@ import types
 from functools import reduce
 from math import sqrt
 
-import numpy as np
-
 
 def prod(*iterable) -> float:
     """Like sum() but then for the product of an iterable
@@ -124,21 +122,6 @@ def binary_8_bits(value) -> list:
         bits.append("{0:b}".format(ord(x)).zfill(8))
     return bits
 
-
-def normalize_overlap_matrix(mtrx):
-    """
-    Normalizes a numpy matrix used for overlap matrices,
-    by dividing every element A_ij by sqrt(A_ii)*sqrt(A_jj)
-    """
-    assert isinstance(mtrx, np.ndarray), 'Input shall be a numpy array'
-    assert np.isreal(mtrx).all(), 'Numpy array shall contain real numbers'
-    assert mtrx.shape[0] == mtrx.shape[1], 'Overlap matrix shall be square'
-    assert (np.diag(mtrx) != 0).all(), 'Overlap matrix shall not have 0 on its direction'
-
-    b = np.sqrt(np.diag(mtrx))
-    result = ((mtrx / b).T / b).T
-
-    return result
 
 
 if __name__ == '__main__':
