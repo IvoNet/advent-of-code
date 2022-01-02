@@ -13,10 +13,14 @@ import pkgutil
 import unittest
 from pathlib import Path
 
-FOLDERS = [str(x) for x in range(2015, 2030)]
+DEBUG = True
 
-# Add *all* subdirectories to this module's path
-# __path__ = [x[0] for x in os.walk(os.path.dirname(__file__))]
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 EXCLUDE = [
     ".pytest_cache",
@@ -49,11 +53,11 @@ def load_tests(loader, suite, pattern):
             continue
         mod = imp.find_module(modname).load_module(modname)
         for test in loader.loadTestsFromModule(mod):
-            print(f"Found Tests in {mod}: {test._tests}")
+            _(f"Found Tests in {mod}: {test._tests}")
             suite.addTests(test)
             total += len(test._tests)
     print("=" * 80)
-    print(f"Found {total} tests")
+    print(f"Running {total} tests")
     print("=" * 80)
     return suite
 

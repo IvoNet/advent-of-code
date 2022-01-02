@@ -10,11 +10,19 @@ from pathlib import Path
 
 from ivonet.files import read_int_matrix
 from ivonet.grid import neighbors
-from ivonet.iter import max_2d, print_2d, ints
+from ivonet.iter import max_2d, ints
 
 PREVENT_ENDLESS_LOOP = 1000
 
 sys.dont_write_bytecode = True
+
+DEBUG = True
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
 
 
 def step_full_matrix(matrix):
@@ -68,8 +76,8 @@ def part_1(matrix):
     flashes = 0
     for _ in range(100):
         flashes += flash_it(matrix)
-    print("Flashes:", flashes)
-    print_2d(matrix)
+    _("Flashes:", flashes)
+    # print_2d(matrix)
     return flashes
 
 
@@ -79,7 +87,7 @@ def part_2(matrix):
         step += 1
         flash_it(matrix)
         if max_2d(matrix) == 0:
-            print("Steps:", step)
+            _("Steps:", step)
             return step
     raise ValueError("Too many iterations")
 
