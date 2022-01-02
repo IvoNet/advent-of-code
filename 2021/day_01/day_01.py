@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from typing import List
 
-from ivonet.files import read_ints, read_data
+from ivonet.files import read_ints
 from ivonet.iter import consecutive_element_pairing, ints
 
 
@@ -51,7 +51,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
+        self.source = read_ints(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")), delimiter="\n")
         self.test_source = read_ints("""199
 200
 208

@@ -4,10 +4,21 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import os
 import unittest
 from collections import defaultdict
+from pathlib import Path
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
+
+DEBUG = True
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
 
 
 def count_crossing_lines(grid: defaultdict) -> int:
@@ -61,7 +72,13 @@ def part_2(data: list[str], diagonal=True):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_05.input")
+
+    def setUp(self) -> None:
+        if DEBUG:
+            print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_rows("""""")
 
     def test_example_data(self):
         source = """0,9 -> 5,9

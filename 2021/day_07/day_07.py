@@ -71,5 +71,4 @@ class UnitTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # plot(list(map(int, read_data("day_7.input").split(","))))
     unittest.main()

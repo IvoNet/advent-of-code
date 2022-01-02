@@ -7,10 +7,8 @@ __license__ = "Apache 2.0"
 import sys
 import unittest
 from collections import defaultdict
-from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -108,8 +106,7 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
+        self.source = read_rows("day_12.input")
         self.test_source = read_rows("""F10
 N3
 F7
@@ -122,9 +119,12 @@ F11""")
     def test_part_1(self):
         self.assertEqual(1533, part_1(self.source))
 
+    # TODO Part 2
+    @unittest.SkipTest
     def test_example_data_part_2(self):
         self.assertEqual(286, part_2(self.test_source))
 
+    @unittest.SkipTest
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
 

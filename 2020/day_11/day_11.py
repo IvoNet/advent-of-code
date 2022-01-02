@@ -16,6 +16,14 @@ OCCUPIED_SEAT = '#'
 EMPTY_SEAT = 'L'
 GROUND = "."
 
+DEBUG = False
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 def parse(data):
     matrix = {}
@@ -26,13 +34,14 @@ def parse(data):
 
 
 def print_matrix(matrix, grid=(99, 90), end=""):
-    for y in range(grid[1]):
-        for x in range(grid[0]):
-            try:
-                print(matrix[(x, y)], end=end)
-            except KeyError:
-                print(f"key error x={x}, y={y}")
-        print()
+    if DEBUG:
+        for y in range(grid[1]):
+            for x in range(grid[0]):
+                try:
+                    print(matrix[(x, y)], end=end)
+                except KeyError:
+                    print(f"key error x={x}, y={y}")
+            print()
 
 
 def dict_compare(d1, d2):
@@ -70,7 +79,7 @@ def part_1(data):
                 temp_matrix[coord] = EMPTY_SEAT
         if temp_matrix == matrix:
             running = False
-            print(f"Iteration: {idx}")
+            _(f"Iteration: {idx}")
             print_matrix(matrix, grid)
         matrix = temp_matrix
     return sum(1 for x in matrix.values() if x == OCCUPIED_SEAT)
@@ -107,9 +116,8 @@ def part_2(data):
                 temp_matrix[coord] = EMPTY_SEAT
         if temp_matrix == matrix:
             running = False
-            print(f"Iteration: {idx}")
+            _(f"Iteration: {idx}")
             print_matrix(matrix, grid)
-            # print(dict_compare(matrix, temp_matrix))
         matrix = temp_matrix
     return sum(1 for x in matrix.values() if x == OCCUPIED_SEAT)
 
