@@ -169,7 +169,7 @@ def part_1(source):
             for fixed in matched:
                 for scanner in scanners:
                     if scanner.find_overlap(fixed):
-                        print("Overlap found: ", scanner)
+                        _("Overlap found: ", scanner)
                         matched.append(scanner)
                         scanners.remove(scanner)
                         break
@@ -201,7 +201,7 @@ def part_2(source):
             for fixed in matched:
                 for scanner in scanners:
                     if scanner.find_overlap(fixed):
-                        print("Overlap found: ", scanner)
+                        _("Overlap found: ", scanner)
                         matched.append(scanner)
                         scanners.remove(scanner)
                         break
@@ -210,7 +210,7 @@ def part_2(source):
         pickle.dump(matched, fo, protocol=pickle.HIGHEST_PROTOCOL)
 
     max_dist = max(a.manhattan_distance(b) for a, b in permutations(matched, 2))
-    print(max_dist)
+    _(max_dist)
 
     return max_dist
 

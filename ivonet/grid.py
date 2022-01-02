@@ -251,7 +251,7 @@ def west(grid: list[list[any]], coord: tuple[int, int], value: bool = False):
     [(3, 2), (3, 1), (3, 0)]
     >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], (2,4)))
     [(2, 3), (2, 2), (2, 1), (2, 0)]
-    >>> list(west(["abcde", "abcde", "abcde", "abcde",], (2,2), value=True))
+    >>> list(west([list("abcde"), list("abcde"), list("abcde"), list("abcde"),], (2,2), value=True))
     [((2, 1), 'b'), ((2, 0), 'a')]
     """
     for x in direction(grid, coord, to=(0, -1)):
@@ -279,8 +279,8 @@ def directions(grid: list[list[any]], coord: tuple[int, int], value: bool = Fals
 
 class Matrix(defaultdict):
 
-    def __init__(self):
-        super(Matrix, self).__init__(int)
+    def __init__(self) -> None:
+        super().__init__(int)
         self.max_w = 0
         self.max_h = 0
 

@@ -4,13 +4,25 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import os
 import sys
 import unittest
 from collections import defaultdict
+from pathlib import Path
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
+
+DEBUG = False
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 DIR = {
     "N": {
@@ -82,7 +94,6 @@ def part_1(source):
 
 
 def part_2(source):
-    d = "E"
     ship = defaultdict(int)
     waypoint = defaultdict(int)
     waypoint["E"] = 10
@@ -106,7 +117,10 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.source = read_rows("day_12.input")
+        if DEBUG:
+            print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source = read_rows("""F10
 N3
 F7
