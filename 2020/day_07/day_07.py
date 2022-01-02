@@ -15,6 +15,14 @@ from ivonet.iter import ints
 
 SHINY_GOLD = "shiny gold"
 
+DEBUG = True
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 def parse(data: List) -> dict:
     tree = defaultdict(set)

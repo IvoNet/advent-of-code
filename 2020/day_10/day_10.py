@@ -4,12 +4,23 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import os
 import unittest
 from collections import defaultdict
+from pathlib import Path
 
 import numpy as np
 
 from ivonet.files import read_rows
+from ivonet.iter import ints
+
+DEBUG = False
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
 
 
 def part_1(data):
@@ -51,20 +62,23 @@ def part_2(data):
     in the cache.
     """
     adapters = sorted(map(int, data))
-    print(adapters)
+    _(adapters)
     highest_adapter = adapters[-1]
     cache = defaultdict(int)
     cache[0] = 1
     for adapter in adapters:
-        # cache[adapter] = sum([cache[x] for x in range(adapter - 3, adapter)])
         cache[adapter] = cache[adapter - 1] + cache[adapter - 2] + cache[adapter - 3]
-        print(adapter, cache)
+        _(adapter, cache)
     return cache[highest_adapter]
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_10.input")
-    test_source = """28
+    def setUp(self) -> None:
+        if DEBUG:
+            print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_rows("""28
 33
 18
 42
@@ -94,7 +108,7 @@ class UnitTests(unittest.TestCase):
 2
 34
 10
-3""".split("\n")
+3""")
 
     def test_example_data_part_1(self):
         self.assertEqual(220, part_1(self.test_source))

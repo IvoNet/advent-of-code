@@ -53,12 +53,12 @@ def beyond_area(area: tuple[tuple[int, int], tuple[int, int]], point: tuple[int,
 
 
 def trace(area, position, trajectory):
-    print(f"start[{position}], trajectory[{trajectory}]")
+    _(f"start[{position}], trajectory[{trajectory}]")
     if area_contains(area, position):
-        print("Hit!")
+        _("Hit!")
         return
     if beyond_area(area, position):
-        print("Fail!")
+        _("Fail!")
         return
     position, trajectory = step(position, trajectory)
     return trace(area, position, trajectory)

@@ -41,15 +41,19 @@ for x in EXCLUDE:
             __path__.remove(f)
 
 
-def myself():
-    return Path(__file__).name[:-3]
+def exclude():
+    return [
+        Path(__file__).name[:-3],
+        "template",
+        "aoc_input"
+    ]
 
 
 def load_tests(loader, suite, pattern):
     """https://stackoverflow.com/questions/29713541/recursive-unittest-discover"""
     total = 0
     for imp, modname, _ in pkgutil.walk_packages(__path__):
-        if modname == myself():
+        if modname in exclude():
             continue
         mod = imp.find_module(modname).load_module(modname)
         for test in loader.loadTestsFromModule(mod):

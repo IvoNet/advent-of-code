@@ -225,7 +225,7 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         day = str(ints(Path(__file__).name)[0])
-        self.source = parse(read_rows(f"day_{day.zfill(2)}.input"))
+        self.source = parse(read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input"))))
         self.test_source = parse(read_rows("""Player 1 starting position: 4
 Player 2 starting position: 8"""))
 
