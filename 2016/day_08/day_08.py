@@ -16,7 +16,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -25,7 +25,53 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Tcds:
+    """tiny-code-displaying-screen"""
+
+    def __init__(self) -> None:
+        self.display = [
+            list("00000000000000000000000000000000000000000000000000"),
+            list("00000000000000000000000000000000000000000000000000"),
+            list("00000000000000000000000000000000000000000000000000")
+        ]
+
+    def flip(self):
+        self.display = list(zip(*self.display))
+
+    def rect(self, width, height):
+        for h in range(height):
+            for w in range(width):
+                self.display[h][w] = "1"
+
+    def rotate_col(self, column, by):
+        self.flip()
+        col = self.rotate(self.display[column], by)
+        del self.display[column]
+        self.display.insert(column, col)
+        self.flip()
+
+    def rotate_row(self, row, by):
+        r = self.rotate(self.display[row], by)
+        del self.display[row]
+        self.display.insert(row, r)
+
+    def rotate(self, li, x):
+        return li[-x % len(li):] + li[:-x % len(li)]
+
+    def __str__(self) -> str:
+        ret = ""
+        for row in self.display:
+            ret += "".join(row)
+            ret += "\n"
+        return ret
+
+
 def part_1(source):
+    d = Tcds()
+    d.rect(3, 2)
+    # d.rotate_row(0, 6)
+    d.rotate_col(1, 1)
+    print(d)
     return None
 
 
