@@ -4,15 +4,26 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import os
 import sys
 import unittest
+from pathlib import Path
 from queue import LifoQueue
 
 from ivonet.files import read_rows
-from ivonet.iter import list_middle
+from ivonet.iter import list_middle, ints
 from ivonet.str import OpenCloseTags
 
 sys.dont_write_bytecode = True
+
+DEBUG = False
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
 
 POINTS_P1 = {
     ')': 3,
@@ -95,8 +106,13 @@ def part_1_2(data):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_10.input")
-    test_source = read_rows("""[({(<(())[]>[[{[]{<()<>>
+
+    def setUp(self) -> None:
+        if DEBUG:
+            print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_rows("""[({(<(())[]>[[{[]{<()<>>
 [(()[<>])]({[<{<<[]>>(
 {([(<{}[<>[]}>{[]{[(<()>
 (((({<>}<{<{<>}{[]{[]{}
