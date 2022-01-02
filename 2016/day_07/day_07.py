@@ -17,7 +17,7 @@ from ivonet.iter import ints, consecutive_element_pairing
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -48,6 +48,20 @@ class Ip:
                     return True
         return False
 
+    def has_ssl(self):
+        aba = []
+        for word in self.parts:
+            for a, b, c in consecutive_element_pairing(word, 3, list):
+                if a != b and a == c:
+                    aba.append((a, b, c))
+        for word in self.brackets:
+            for a, b, c in consecutive_element_pairing(word, 3, list):
+                if a != b and a == c:
+                    for d, e, f in aba:
+                        if d == b and f == b and e == a == c:
+                            return True
+        return False
+
 
 def part_1(source):
     total = 0
@@ -57,7 +71,10 @@ def part_1(source):
 
 
 def part_2(source):
-    return 0
+    total = 0
+    for ip in source:
+        total += 1 if Ip(ip).has_ssl() else 0
+    return total
 
 
 class UnitTests(unittest.TestCase):
@@ -82,11 +99,20 @@ class UnitTests(unittest.TestCase):
     def test_part_1(self):
         self.assertEqual(115, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+    def test_ssl_1(self):
+        self.assertTrue(Ip("aba[bab]xyz").has_ssl())
+
+    def test_ssl_2(self):
+        self.assertFalse(Ip("xyx[xyx]xyx").has_ssl())
+
+    def test_ssl_3(self):
+        self.assertTrue(Ip("aaa[kek]eke").has_ssl())
+
+    def test_ssl_4(self):
+        self.assertTrue(Ip("zazbz[bzb]cdb").has_ssl())
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(231, part_2(self.source))
 
 
 if __name__ == '__main__':
