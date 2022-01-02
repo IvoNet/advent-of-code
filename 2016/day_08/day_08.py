@@ -32,28 +32,33 @@ class Tcds:
         self.display = [
             list("00000000000000000000000000000000000000000000000000"),
             list("00000000000000000000000000000000000000000000000000"),
-            list("00000000000000000000000000000000000000000000000000")
+            list("00000000000000000000000000000000000000000000000000"),
+            list("00000000000000000000000000000000000000000000000000"),
+            list("00000000000000000000000000000000000000000000000000"),
+            list("00000000000000000000000000000000000000000000000000"),
         ]
 
     def flip(self):
-        self.display = list(zip(*self.display))
+        self.display = list(map(list, zip(*self.display)))
 
     def rect(self, width, height):
-        for h in range(height):
-            for w in range(width):
+        _(width, height)
+        ww = width if width <= len(self.display[0]) else len(self.display[0])
+        hh = height if height <= len(self.display) else len(self.display)
+        for h in range(hh):
+            for w in range(ww):
                 self.display[h][w] = "1"
 
     def rotate_col(self, column, by):
         self.flip()
         col = self.rotate(self.display[column], by)
-        del self.display[column]
-        self.display.insert(column, col)
+        self.display[column] = col
         self.flip()
 
     def rotate_row(self, row, by):
-        r = self.rotate(self.display[row], by)
-        del self.display[row]
-        self.display.insert(row, r)
+        # _(row, by)
+        r = self.rotate(self.display[row % len(self.display)], by)
+        self.display[row % len(self.display)] = r
 
     def rotate(self, li, x):
         return li[-x % len(li):] + li[:-x % len(li)]
@@ -63,16 +68,32 @@ class Tcds:
         for row in self.display:
             ret += "".join(row)
             ret += "\n"
+        ret += f"Lit: {self.lit()}"
         return ret
+
+    def lit(self):
+        total = 0
+        for row in self.display:
+            for c in row:
+                total += 1 if c == "1" else 0
+        return total
 
 
 def part_1(source):
     d = Tcds()
-    d.rect(3, 2)
-    # d.rotate_row(0, 6)
-    d.rotate_col(1, 1)
-    print(d)
-    return None
+    for instruction in source:
+        _(d)
+        left, right = ints(instruction)
+        if "rect" in instruction:
+            d.rect(left, right)
+        elif "rotate row" in instruction:
+            d.rotate_row(left, right)
+        elif "rotate column" in instruction:
+            d.rotate_col(left, right)
+        else:
+            raise ValueError("Should not be here")
+    _(d)
+    return d.lit()
 
 
 def part_2(source):
@@ -85,16 +106,9 @@ class UnitTests(unittest.TestCase):
         print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
-        self.test_source = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
