@@ -90,7 +90,7 @@ class Polymer(object):
         return [x for x in self.result.items() if x[1] > 0]
 
     def __initialize(self) -> None:
-        self.pair = consecutive_element_pairing(self.template, consecutive_element=2,
+        self.pair = consecutive_element_pairing(self.template, elements=2,
                                                 map_to_func=lambda x: "".join(x))
         for line in self.source[2:]:
             key, value = words(line)

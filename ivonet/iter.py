@@ -200,8 +200,8 @@ def invert_dict(dct: dict, single=True, verbose=True):
 
 
 def consecutive_element_pairing(data: list,
-                                consecutive_element: int = 3,
-                                map_to_func: callable = sum) -> list[any]:
+                                elements: int = 3,
+                                map_to_func: callable = list) -> list[any]:
     """
     Return a list with consecutively paired items given to a function that can handle an iterable
     See also: https://stackoverflow.com/questions/70186132/generic-function-for-consequtive-element-paring-by-n-given-to-a-function-with-zi
@@ -210,15 +210,13 @@ def consecutive_element_pairing(data: list,
 
 
     :param data: the list of integers to process
-    :param consecutive_element: how many to group consecutively
+    :param elements: how many to group consecutively
     :param map_to_func: the function to give the groups to
     :return: the new list of consecutive grouped functioned items
     """
-    if len(data) < consecutive_element:
+    if len(data) < elements:
         return []
-    return list(
-        map(map_to_func,
-            zip(*(data[i:len(data) - (consecutive_element - i) + 1] for i in range(consecutive_element)))))
+    return list(map(map_to_func, zip(*(data[i:len(data) - (elements - i) + 1] for i in range(elements)))))
 
 
 def combinations(a, n):

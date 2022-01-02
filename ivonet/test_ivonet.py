@@ -81,14 +81,14 @@ class TestNormalizeOverlapMatrix(TestCase):
 
 class UnitTests(TestCase):
     def test_consecutive_element_paring(self):
-        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=7, map_to_func=list), [])
-        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3, map_to_func=list),
+        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], elements=7, map_to_func=list), [])
+        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], elements=3, map_to_func=list),
                          [[1, 2, 3], [2, 3, 4], [3, 4, 5], [4, 5, 6]])
         # first pair to the list ^^^ then sum the the separate sub lists and make that into a list
-        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3, map_to_func=sum),
+        self.assertEqual(consecutive_element_pairing([1, 2, 3, 4, 5, 6], elements=3, map_to_func=sum),
                          [6, 9, 12, 15])
         self.assertEqual(
-            consecutive_element_pairing([1, 2, 3, 4, 5, 6], consecutive_element=3,
+            consecutive_element_pairing([1, 2, 3, 4, 5, 6], elements=3,
                                         map_to_func=lambda z: "".join([str(x) for x in z])),
             ['123', '234', '345', '456'])
 

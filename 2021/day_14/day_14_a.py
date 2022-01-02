@@ -55,7 +55,7 @@ class Polymer:
         self.template = source[0]
         self.inserts = dict([words(x) for x in source[2:] if x])
         self.pairs = consecutive_element_pairing(self.template,
-                                                 consecutive_element=2,
+                                                 elements=2,
                                                  map_to_func=lambda x: "".join(x))
         self.cache = {}
         self.occurrences = Counter()

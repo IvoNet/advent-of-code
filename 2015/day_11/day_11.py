@@ -33,7 +33,7 @@ class Password:
         self.alphabet = list(alphabet(upper=False))
         self.letters = copy(self.alphabet)
         self.not_allowed = "iol"
-        self.threes = consecutive_element_pairing(self.alphabet, consecutive_element=3,
+        self.threes = consecutive_element_pairing(self.alphabet, elements=3,
                                                   map_to_func=lambda x: "".join(x))
         for na in self.not_allowed:
             self.letters.remove(na)

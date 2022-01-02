@@ -40,11 +40,11 @@ class Player(NamedTuple):
 
 
 class State(NamedTuple):
-    players: Tuple[Player, Player]
+    players: tuple[Player, Player]
     next_player: 0
 
 
-def play(player: player, roll: int) -> Player:
+def play(player: Player, roll: int) -> Player:
     npos = (player.position - 1 + roll) % 10 + 1
     nscore = player.score + npos
     return Player(npos, nscore)
@@ -182,7 +182,7 @@ def part_2(players):
     4 outcomes
 
     this is the same as:
-    - product(range(1, 4), repeat=3)
+    - product(range(1, 4), elements=3)
 
     while playing we need a way to keep track of what has already been played.
     a cache so to speak as otherwise the brute force is going to be nuts!
