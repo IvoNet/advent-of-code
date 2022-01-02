@@ -20,7 +20,7 @@ DEBUG = True
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n"):
+def p(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
 
@@ -76,7 +76,7 @@ def part_1(matrix):
     flashes = 0
     for _ in range(100):
         flashes += flash_it(matrix)
-    _("Flashes:", flashes)
+    p("Flashes:", flashes)
     # print_2d(matrix)
     return flashes
 
@@ -87,7 +87,7 @@ def part_2(matrix):
         step += 1
         flash_it(matrix)
         if max_2d(matrix) == 0:
-            _("Steps:", step)
+            p("Steps:", step)
             return step
     raise ValueError("Too many iterations")
 

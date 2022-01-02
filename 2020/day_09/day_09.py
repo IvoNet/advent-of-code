@@ -4,11 +4,13 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
+import os
 import unittest
 from itertools import permutations
+from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import consecutive_element_pairing
+from ivonet.iter import consecutive_element_pairing, ints
 
 MINIMAL_PAIRING_LEN: int = 2
 
@@ -52,8 +54,13 @@ def part_2(data, preamble=25):
 
 
 class UnitTests(unittest.TestCase):
-    source = read_rows("day_09.input")
-    test_source = """35
+
+    def setUp(self) -> None:
+        if DEBUG:
+            print()
+        day = str(ints(Path(__file__).name)[0])
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_rows("""35
 20
 15
 25
@@ -72,7 +79,7 @@ class UnitTests(unittest.TestCase):
 299
 277
 309
-576""".split("\n")
+576""")
 
     def test_example_data_part_1(self):
         self.assertEqual(127, part_1(self.test_source, 5))

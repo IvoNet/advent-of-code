@@ -15,7 +15,7 @@ from ivonet.iter import ints
 
 SHINY_GOLD = "shiny gold"
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode

@@ -13,7 +13,7 @@ import pkgutil
 import unittest
 from pathlib import Path
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -52,7 +52,7 @@ def exclude():
 def load_tests(loader, suite, pattern):
     """https://stackoverflow.com/questions/29713541/recursive-unittest-discover"""
     total = 0
-    for imp, modname, _ in pkgutil.walk_packages(__path__):
+    for imp, modname, b in pkgutil.walk_packages(__path__):
         if modname in exclude():
             continue
         mod = imp.find_module(modname).load_module(modname)
@@ -67,4 +67,4 @@ def load_tests(loader, suite, pattern):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=3)
+    unittest.main(verbosity=3, failfast=False)

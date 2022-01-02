@@ -17,6 +17,15 @@ from ivonet.iter import ints, chunkify
 
 sys.dont_write_bytecode = True
 
+DEBUG = False
+
+
+# noinspection DuplicatedCode
+def _(*args, end="\n"):
+    if DEBUG:
+        print(" ".join(str(x) for x in args), end=end)
+
+
 TRANSLATE = {
     "0": "0000",
     "1": "0001",
@@ -226,8 +235,8 @@ def part_2(source):
     packet, data = bits.go()
     assert all(c == "0" for c in data)
     result = calculate(packet)
-    print("\n\n")
-    print(visualize([packet]), " = ", result)
+    _("\n\n")
+    _(visualize([packet]), " = ", result)
     return result
 
 
