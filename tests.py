@@ -59,4 +59,4 @@ def load_tests(loader, suite, pattern):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=3)
