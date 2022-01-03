@@ -28,7 +28,7 @@ def _(*args, end="\n"):
 
 
 class Decoder:
-
+    "Part 1"
     def __init__(self, source) -> None:
         self.source = source
         self.result = ""
@@ -50,32 +50,19 @@ class Decoder:
         return self.result
 
 
-class Decompressor:
-
-    def __init__(self, source) -> None:
-        self.source = source
-        self.result = ""
-        self.parse()
-
-    def parse(self):
-        while True:
-            match = re.search("\)([0-9]+)x([0-9]+)\(", self.source)
-            _(match)
-            if not match:
-                self.source = self.source[::-1]
-                break
-            b, e = match.span()
-            t, l = [int(x) for x in match.groups()]
-            result = self.source[:b - l]
-            _(result)
-            result += self.source[b - l:b] * t
-            _(result)
-            self.source = result + self.source[e:]
-            _(self.source)
-
-    def __str__(self) -> str:
-        return self.source
-
+def decompress(source):
+    i = 0
+    while True:
+        result = ""
+        match = re.search("\(([0-9]+)x([0-9]+)\)", source)
+        if not match:
+            return source
+        begin, end = match.span()
+        length, times = [int(x) for x in match.groups()]
+        result += source[:begin]
+        result += decompress(source[end:end + length]) * times
+        source = result + source[end + length:]
+    return source
 
 def part_1(source):
     d = Decoder(source)
@@ -84,7 +71,7 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    return len(decompress(source))
 
 
 class UnitTests(unittest.TestCase):
@@ -107,8 +94,14 @@ class UnitTests(unittest.TestCase):
     def test_part_1(self):
         self.assertEqual(102239, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual("XABCABCABCABCABCABCY", Decompressor("X(8x2)(3x3)ABCY").source)
+    def test_example_1_part_2(self):
+        self.assertEqual("XABCABCABCABCABCABCY", decompress("X(8x2)(3x3)ABCY"))
+
+    def test_example_2_part_2(self):
+        self.assertEqual(241920, part_2("(27x12)(20x12)(13x14)(7x10)(1x12)A"))
+
+    def test_example_3_part_2(self):
+        self.assertEqual(445, part_2("(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN"))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
