@@ -233,6 +233,13 @@ def permutations(a):
     return combinations(a, len(a))
 
 
+def rotate(li: list, by):
+    """Rotates a list by however much you want.
+    rotates means wraparound
+    """
+    return li[-by % len(li):] + li[:-by % len(li)]
+
+
 def four_way_split(n: int, first: int = 1, inclusive: bool = False) -> Generator:
     """Yields a new 4 way split of the number provided as n"""
     addition = 0
@@ -248,6 +255,11 @@ def four_way_split(n: int, first: int = 1, inclusive: bool = False) -> Generator
                             continue
                         for a, b, c, d in permutations((i, j, k, l)):
                             yield a, b, c, d
+
+
+def zip_list(iterable):
+    """Zip with list output instead of tuple"""
+    return list(map(list, zip(*iterable)))
 
 
 def pretty(iterable, sort_keys=True, indent=2):

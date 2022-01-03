@@ -12,11 +12,11 @@ import unittest
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints
+from ivonet.iter import ints, rotate, zip_list
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -38,11 +38,14 @@ class Tcds:
             list("00000000000000000000000000000000000000000000000000"),
         ]
 
-    def flip(self):
-        self.display = list(map(list, zip(*self.display)))
+    def __flip(self):
+        """flips the list of list so that former rows are now cols and vise versa
+        This makes manipulating a column easier as it will be contained in its own
+        list. Useful for the col rotations function
+        """
+        self.display = zip_list(self.display)
 
     def rect(self, width, height):
-        _(width, height)
         ww = width if width <= len(self.display[0]) else len(self.display[0])
         hh = height if height <= len(self.display) else len(self.display)
         for h in range(hh):
@@ -50,26 +53,24 @@ class Tcds:
                 self.display[h][w] = "1"
 
     def rotate_col(self, column, by):
-        self.flip()
-        col = self.rotate(self.display[column], by)
+        self.__flip()
+        col = rotate(self.display[column], by)
         self.display[column] = col
-        self.flip()
+        self.__flip()
 
     def rotate_row(self, row, by):
-        # _(row, by)
-        r = self.rotate(self.display[row % len(self.display)], by)
+        r = rotate(self.display[row % len(self.display)], by)
         self.display[row % len(self.display)] = r
-
-    def rotate(self, li, x):
-        return li[-x % len(li):] + li[:-x % len(li)]
 
     def __str__(self) -> str:
         ret = ""
         for row in self.display:
             ret += "".join(row)
             ret += "\n"
-        ret += f"Lit: {self.lit()}"
         return ret
+
+    def letters(self):
+        return str(self).replace("0", " ").replace("1", "#")
 
     def lit(self):
         total = 0
@@ -80,24 +81,24 @@ class Tcds:
 
 
 def part_1(source):
-    d = Tcds()
+    tcds = Tcds()
     for instruction in source:
-        _(d)
         left, right = ints(instruction)
         if "rect" in instruction:
-            d.rect(left, right)
+            tcds.rect(left, right)
         elif "rotate row" in instruction:
-            d.rotate_row(left, right)
+            tcds.rotate_row(left, right)
         elif "rotate column" in instruction:
-            d.rotate_col(left, right)
+            tcds.rotate_col(left, right)
         else:
             raise ValueError("Should not be here")
-    _(d)
-    return d.lit()
+    return tcds
 
 
 def part_2(source):
-    return None
+    letters = part_1(source).letters()
+    _(letters)
+    return letters
 
 
 class UnitTests(unittest.TestCase):
@@ -108,10 +109,16 @@ class UnitTests(unittest.TestCase):
         self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(116, part_1(self.source).lit())
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("""#  # ###   ##    ## #### #    ###   ##  #### #### 
+#  # #  # #  #    # #    #    #  # #  # #       # 
+#  # #  # #  #    # ###  #    ###  #    ###    #  
+#  # ###  #  #    # #    #    #  # #    #     #   
+#  # #    #  # #  # #    #    #  # #  # #    #    
+ ##  #     ##   ##  #    #### ###   ##  #### #### 
+""", part_2(self.source))
 
 
 if __name__ == '__main__':
