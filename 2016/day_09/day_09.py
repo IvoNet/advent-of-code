@@ -27,30 +27,22 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Decoder:
-    "Part 1"
-    def __init__(self, source) -> None:
-        self.source = source
-        self.result = ""
-        self.parse()
-
-    def parse(self):
-        while True:
-            match = re.search("\(([0-9]+)x([0-9]+)\)", self.source)
-            if not match:
-                self.result += self.source
-                break
-            b, e = match.span()
-            l, t = [int(x) for x in match.groups()]
-            self.result += self.source[:b]
-            self.result += self.source[e:e + l] * t
-            self.source = self.source[e + l:]
-
-    def __str__(self) -> str:
-        return self.result
+def decompress_v1(source):
+    result = ""
+    while True:
+        match = re.search("\(([0-9]+)x([0-9]+)\)", source)
+        if not match:
+            result += source
+            return result
+        begin, end = match.span()
+        length, times = [int(x) for x in match.groups()]
+        result += source[:begin]
+        result += source[end:end + length] * times
+        source = source[end + length:]
 
 
-def decompress(source):
+def decompress_v2(source):
+    """part 2"""
     result = 0
     while True:
         match = re.search("\(([0-9]+)x([0-9]+)\)", source)
@@ -62,10 +54,26 @@ def decompress(source):
         result += decompress(source[end:end + length]) * times
         source = source[end + length:]
 
+
+def decompress(source, version=2):
+    """part 2"""
+    result = 0
+    while True:
+        match = re.search("\(([0-9]+)x([0-9]+)\)", source)
+        if not match:
+            return result + len(source)
+        begin, end = match.span()
+        length, times = [int(x) for x in match.groups()]
+        result += len(source[:begin])
+        if version == 1:
+            result += len(source[end:end + length]) * times
+        else:
+            result += decompress(source[end:end + length]) * times
+        source = source[end + length:]
+
+
 def part_1(source):
-    d = Decoder(source)
-    _(d)
-    return len(d.result)
+    return decompress(source, 1)
 
 
 def part_2(source):
@@ -81,13 +89,13 @@ class UnitTests(unittest.TestCase):
         self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
 
     def test_example_1_part_1(self):
-        self.assertEqual("ABBBBBC", Decoder("A(1x5)BC").result)
+        self.assertEqual("ABBBBBC", decompress_v1("A(1x5)BC"))
 
     def test_example_2_part_1(self):
-        self.assertEqual("XYZXYZXYZ", Decoder("(3x3)XYZ").result)
+        self.assertEqual("XYZXYZXYZ", decompress_v1("(3x3)XYZ"))
 
     def test_example_3_part_1(self):
-        self.assertEqual("ABCBCDEFEFG", Decoder("A(2x2)BCD(2x2)EFG").result)
+        self.assertEqual("ABCBCDEFEFG", decompress_v1("A(2x2)BCD(2x2)EFG"))
 
     def test_part_1(self):
         self.assertEqual(102239, part_1(self.source))
