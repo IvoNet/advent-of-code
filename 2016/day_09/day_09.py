@@ -51,27 +51,25 @@ class Decoder:
 
 
 def decompress(source):
-    i = 0
+    result = 0
     while True:
-        result = ""
         match = re.search("\(([0-9]+)x([0-9]+)\)", source)
         if not match:
-            return source
+            return result + len(source)
         begin, end = match.span()
         length, times = [int(x) for x in match.groups()]
-        result += source[:begin]
+        result += len(source[:begin])
         result += decompress(source[end:end + length]) * times
-        source = result + source[end + length:]
-    return source
+        source = source[end + length:]
 
 def part_1(source):
     d = Decoder(source)
     _(d)
-    return len(d.source)
+    return len(d.result)
 
 
 def part_2(source):
-    return len(decompress(source))
+    return decompress(source)
 
 
 class UnitTests(unittest.TestCase):
@@ -95,7 +93,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(102239, part_1(self.source))
 
     def test_example_1_part_2(self):
-        self.assertEqual("XABCABCABCABCABCABCY", decompress("X(8x2)(3x3)ABCY"))
+        self.assertEqual(20, decompress("X(8x2)(3x3)ABCY"))
 
     def test_example_2_part_2(self):
         self.assertEqual(241920, part_2("(27x12)(20x12)(13x14)(7x10)(1x12)A"))
@@ -104,7 +102,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(445, part_2("(25x3)(3x3)ABC(2x3)XY(5x2)PQRSTX(18x9)(3x2)TWO(5x7)SEVEN"))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(10780403063, part_2(self.source))
 
 
 if __name__ == '__main__':
