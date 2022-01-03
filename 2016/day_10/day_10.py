@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, sort_dict_on_values
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -28,43 +28,14 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def process(source):
-    output = defaultdict(list)
-    bots = defaultdict(list)
-    for value, bot in [ints(x) for x in source if "value" in x]:
-        bots[bot].append(value)
-    _(bots)
-    source = [x for x in source if "value" not in x]
-    while len(source) > 0:
-        for bot, values in sort_dict_on_values(bots, key=lambda x: len(x[1]), reverse=True).items():
-            if len(values) < 2:
-                continue
-            instruction = [x for x in source if x.startswith(f"bot {bot}")]
-            source = [x for x in source if not x.startswith(f"bot {bot}")]
-            assert len(instruction) == 1
-            instruction = instruction[0]
-            bot, low, high = ints(instruction)
-            items = instruction.split()
-            assert items[5] in ["bot", "output"]
-            assert items[-2] in ["bot", "output"]
-            if items[5] == "bot":
-                bots[low].append(min(values))
-            elif items[5] == "output":
-                output[low].append(min(values))
-            if items[-2] == "bot":
-                bots[high].append(max(values))
-            elif items[-2] == "output":
-                output[high].append(max(values))
-            bots[bot] = []
-            _(instruction)
-            _("!!", bots)
-            _(source)
-            _(output)
+class SubInstruction(NamedTuple):
+    type: str
+    bot: int
 
 
 class Instructions(NamedTuple):
-    low: tuple
-    high: tuple
+    low: SubInstruction
+    high: SubInstruction
 
 
 class Factory:
@@ -76,8 +47,12 @@ class Factory:
         self.outputs = {}
         self.bots = defaultdict(list)
         self.__initialize()
+        _(self.stack)
 
     def __initialize(self):
+        """Parse the source into usable data
+
+        """
         for items in [x.split() for x in self.source]:
             if items[0] == "value":
                 bot = int(items[-1])
@@ -86,31 +61,32 @@ class Factory:
                     self.stack.append(bot)
             else:
                 bot = int(items[1])
-                low = (items[5], int(items[6]))
-                high = (items[-2], int(items[-1]))
+                low = SubInstruction(items[5], int(items[6]))
+                high = SubInstruction(items[-2], int(items[-1]))
                 self.instructions[bot] = Instructions(low, high)
 
-    def go(self, version=1):
+    def go(self, version=1) -> int:
         while self.stack:
+            _(self.stack)
             bot = self.stack.pop()
+            _(bot)
             instruction = self.instructions[bot]
             low = min(self.bots[bot])
             high = max(self.bots[bot])
-            _(low, high)
             if version == 1 and high == 61 and low == 17:
                 return bot
-            if instruction.low[0] == "bot":
-                self.bots[instruction.low[1]].append(low)
-                if len(self.bots[instruction.low[1]]) == 2:
-                    self.stack.append(instruction.low[1])
+            if instruction.low.type == "bot":
+                self.bots[instruction.low.bot].append(low)
+                if len(self.bots[instruction.low.bot]) == 2:
+                    self.stack.append(instruction.low.bot)
             else:
-                self.outputs[instruction.low[1]] = low
-            if instruction.high[0] == "bot":
-                self.bots[instruction.high[1]].append(high)
-                if len(self.bots[instruction.high[1]]) == 2:
-                    self.stack.append(instruction.high[1])
+                self.outputs[instruction.low.bot] = low
+            if instruction.high.type == "bot":
+                self.bots[instruction.high.bot].append(high)
+                if len(self.bots[instruction.high.bot]) == 2:
+                    self.stack.append(instruction.high.bot)
             else:
-                self.outputs[instruction.high[1]] = low
+                self.outputs[instruction.high.bot] = low
             self.bots[bot] = []
             if version == 2 and 0 in self.outputs and 1 in self.outputs and 2 in self.outputs:
                 return self.outputs[0] * self.outputs[1] * self.outputs[2]
