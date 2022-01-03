@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from ivonet.files import read_rows
+from ivonet.grid import create_grid
 from ivonet.iter import ints, rotate, zip_list
 
 sys.dont_write_bytecode = True
@@ -28,15 +29,8 @@ def _(*args, end="\n"):
 class Tcds:
     """tiny-code-displaying-screen"""
 
-    def __init__(self) -> None:
-        self.display = [
-            list("00000000000000000000000000000000000000000000000000"),
-            list("00000000000000000000000000000000000000000000000000"),
-            list("00000000000000000000000000000000000000000000000000"),
-            list("00000000000000000000000000000000000000000000000000"),
-            list("00000000000000000000000000000000000000000000000000"),
-            list("00000000000000000000000000000000000000000000000000"),
-        ]
+    def __init__(self, height=6, width=50) -> None:
+        self.display = create_grid(width, height)
 
     def __flip(self):
         """flips the list of list so that former rows are now cols and vise versa
@@ -73,11 +67,7 @@ class Tcds:
         return str(self).replace("0", " ").replace("1", "#")
 
     def lit(self):
-        total = 0
-        for row in self.display:
-            for c in row:
-                total += 1 if c == "1" else 0
-        return total
+        return sum(1 for row in self.display for x in row if x == "1")
 
 
 def part_1(source):

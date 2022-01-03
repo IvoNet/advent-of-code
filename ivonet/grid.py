@@ -329,6 +329,13 @@ class Matrix(defaultdict):
         print("-" * 50)
 
 
+def create_grid(width, height, initial="0"):
+    """Initializes a list in list of the given width (cols) and height (rows)
+    initialized with the `initial` value
+    """
+    return [[initial] * width] * height
+
+
 def fold_horizontal(matrix: defaultdict, fold_index):
     """Fold a 2d matrix represented as a dictionary with coordinats as key
     and int as value
