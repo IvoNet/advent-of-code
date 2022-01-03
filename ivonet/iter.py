@@ -146,7 +146,7 @@ def list_middle(inlist: list[int]) -> any:
     return sorted(inlist)[len(inlist) // 2]
 
 
-def sort_dict_on_values(dct: dict, reverse: bool = False) -> dict:
+def sort_dict_on_values(dct: dict, reverse: bool = False, key=lambda x: x[1]) -> dict:
     """Sort a dict in its values but stay the same dict
 
     >>> sort_dict_on_values({1: 2, 3: 4, 4: 3, 2: 1, 0: 0})
@@ -154,7 +154,7 @@ def sort_dict_on_values(dct: dict, reverse: bool = False) -> dict:
     >>> sort_dict_on_values({'one':1,'three':3,'five':5,'two':2,'four':4})
     {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5}
     """
-    return {k: v for k, v in sorted(dct.items(), key=lambda item: item[1], reverse=reverse)}
+    return {k: v for k, v in sorted(dct.items(), key=key, reverse=reverse)}
 
 
 def make_hashable(iterable):
