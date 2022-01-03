@@ -27,36 +27,7 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def decompress_v1(source):
-    result = ""
-    while True:
-        match = re.search("\(([0-9]+)x([0-9]+)\)", source)
-        if not match:
-            result += source
-            return result
-        begin, end = match.span()
-        length, times = [int(x) for x in match.groups()]
-        result += source[:begin]
-        result += source[end:end + length] * times
-        source = source[end + length:]
-
-
-def decompress_v2(source):
-    """part 2"""
-    result = 0
-    while True:
-        match = re.search("\(([0-9]+)x([0-9]+)\)", source)
-        if not match:
-            return result + len(source)
-        begin, end = match.span()
-        length, times = [int(x) for x in match.groups()]
-        result += len(source[:begin])
-        result += decompress(source[end:end + length]) * times
-        source = source[end + length:]
-
-
 def decompress(source, version=2):
-    """part 2"""
     result = 0
     while True:
         match = re.search("\(([0-9]+)x([0-9]+)\)", source)
@@ -73,11 +44,11 @@ def decompress(source, version=2):
 
 
 def part_1(source):
-    return decompress(source, 1)
+    return decompress(source, version=1)
 
 
 def part_2(source):
-    return decompress(source)
+    return decompress(source, version=2)
 
 
 class UnitTests(unittest.TestCase):
@@ -89,19 +60,19 @@ class UnitTests(unittest.TestCase):
         self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
 
     def test_example_1_part_1(self):
-        self.assertEqual("ABBBBBC", decompress_v1("A(1x5)BC"))
+        self.assertEqual(7, part_1("A(1x5)BC"))
 
     def test_example_2_part_1(self):
-        self.assertEqual("XYZXYZXYZ", decompress_v1("(3x3)XYZ"))
+        self.assertEqual(9, part_1("(3x3)XYZ"))
 
     def test_example_3_part_1(self):
-        self.assertEqual("ABCBCDEFEFG", decompress_v1("A(2x2)BCD(2x2)EFG"))
+        self.assertEqual(11, part_1("A(2x2)BCD(2x2)EFG"))
 
     def test_part_1(self):
         self.assertEqual(102239, part_1(self.source))
 
     def test_example_1_part_2(self):
-        self.assertEqual(20, decompress("X(8x2)(3x3)ABCY"))
+        self.assertEqual(20, decompress("X(8x2)(3x3)ABCY", version=2))
 
     def test_example_2_part_2(self):
         self.assertEqual(241920, part_2("(27x12)(20x12)(13x14)(7x10)(1x12)A"))
