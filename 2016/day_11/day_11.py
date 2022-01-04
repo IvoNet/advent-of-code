@@ -12,6 +12,8 @@ import unittest
 from copy import deepcopy
 from itertools import combinations
 
+from ivonet.search import bfs, node_to_path
+
 sys.dont_write_bytecode = True
 
 DEBUG = True
@@ -42,26 +44,61 @@ ALLOWED = {
     "RM": 5,
 }
 
-FLOOR_PLAN = {
+PART_1_FLOOR_PLAN = {
     1: ["SG", "SM", "PG", "PM", ],
     2: ["TG", "RG", "RM", "CG", "CM"],
     3: ["TM"],
     4: [],
 }
-MAX_NUM: int = 5
+
+
+def display_solution(path: List[State]):
+    if len(path) == 0:  # sanity check
+        return
+    old_state: State = path[0]
+    print(old_state)
+    for current_state in path[1:]:
+        if current_state.boat:
+            print("{} missionaries and {} cannibals moved from the east bank to the west bank.\n"
+                  .format(old_state.em - current_state.em, old_state.ec - current_state.ec))
+        else:
+            print("{} missionaries and {} cannibals moved from the west bank to the east bank.\n"
+                  .format(old_state.wm - current_state.wm, old_state.wc - current_state.wc))
+        print(current_state)
+        old_state = current_state
+
+
+class Item(object):
+    def __init__(self, element): self.element = element
+
+    def __repr__(self): return '{}<{}>'.format(self.__class__.__name__, self.element)
+
+    def __hash__(self): return hash(repr(self))
+
+    def __eq__(self, other): return repr(self) == repr(other)
+
+    def __lt__(self, other): return repr(self) < repr(other)
+
+
+class Generator(Thing):
+    ...
+
+
+class Microchip(Thing):
+    ...
 
 
 class State(object):
 
     def __init__(self, floorplan: dict[[int], list[str]], elevator: int = 1) -> None:
-        self.floorplan: dict[[int], list[str]] = floorplan
+        self.floorplan: dict[[int], list[str]] = deepcopy(floorplan)
         self.elevator: int = elevator
 
     def goal_test(self) -> bool:
         """The goal has been reached when:
         - all generators and their microchips are on the forth floor
         """
-        return self.is_legal and len(self.floorplan[4]) == 10 and self.elevator == 4
+        return len(self.floorplan[4]) == 10 and self.elevator == 4 and self.is_legal
 
     def has_generators(self, floor) -> bool:
         return len([x for x in self.floorplan[floor] if x.endswith("G")]) > 0
@@ -89,33 +126,26 @@ class State(object):
     def successors(self) -> list[State]:
         """create all new states from current state"""
         sucs: list[State] = []
-        if self.elevator == 1:  # can move up only
-            for i in [1, 2]:
-                for item in [list(x) for x in combinations(self.floorplan[self.elevator], i)]:
-                    _(item)
-                    fp = deepcopy(self.floorplan)
-                    [fp[self.elevator].remove(x) for x in item]
-                    fp[self.elevator + 1].extend(item)
-                    sucs.append(State(fp, self.elevator + 1))
-        elif self.elevator in [2, 3]:  # can move up and down
-            for i in [1, 2]:
-                for item in [list(x) for x in combinations(self.floorplan[self.elevator], i)]:
-                    _(item)
-                    fp = deepcopy(self.floorplan)
-                    [fp[self.elevator].remove(x) for x in item]
+        for i in [1, 2]:
+            for item in [list(x) for x in combinations(self.floorplan[self.elevator], i)]:
+                _(item)
+                fp = deepcopy(self.floorplan)
+                [fp[self.elevator].remove(x) for x in item]
+                if self.elevator + 1 <= 4:
                     fp_up = deepcopy(fp)
-                    fp_down = deepcopy(fp)
                     fp_up[self.elevator + 1].extend(item)
                     sucs.append(State(fp_up, self.elevator + 1))
+                if self.elevator - 1 >= 1:
+                    fp_down = deepcopy(fp)
                     fp_down[self.elevator - 1].extend(item)
                     sucs.append(State(fp_down, self.elevator - 1))
-        return [x for x in sucs if x.is_legal]
-        # return list(set([x for x in sucs if x.is_legal]))
+        # return [x for x in sucs if x.is_legal]
+        return list(set([x for x in sucs if x.is_legal]))
 
     def __str__(self) -> str:
         ret = ""
         for floor in self.floorplan:
-            ret += f"Floor {floor} has the following items {sorted(self.floorplan[floor])}.\n"
+            ret += f"Floor {floor} has {sorted(self.floorplan[floor])}.\n"
         ret += f"The elevator is on floor {self.elevator}.\n"
         return ret
 
@@ -123,16 +153,16 @@ class State(object):
         return self.__str__()
 
     def __eq__(self, other):
-        if type(other) is not State:
-            return False
-        return self.floorplan == other.floorplan and self.elevator == other.elevator
+        return hash(self) == hash(other)
 
     def __hash__(self):
         return hash(repr(self))
 
 
 def part_1():
-    return None
+    start = State(PART_1_FLOOR_PLAN, elevator=1)
+    solution = bfs(start, State.goal_test, State.successors)
+    return len(node_to_path(solution))
 
 
 def part_2():
@@ -206,14 +236,9 @@ class UnitTests(unittest.TestCase):
             3: ["TM"],
             4: [],
         }
-        expected = {
-            1: [],
-            2: ["TG", "RG", "RM", "CG", "CM", "SG", "SM", "PG", "PM", ],
-            3: ["TM"],
-            4: [],
-        }
-
-        self.assertEquals([State(expected, 2)], State(floor_plan, 1).successors())
+        successors = State(floor_plan, 1).successors()
+        _(successors)
+        self.assertEquals(2, len(successors))
 
     def test_successors_floor_2(self):
         floor_plan = {

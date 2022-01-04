@@ -8,8 +8,9 @@ __doc__ = """
 
 """
 
+from collections import deque
 from heapq import heappush, heappop
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Deque
 
 T = TypeVar('T')
 
