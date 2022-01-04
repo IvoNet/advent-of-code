@@ -30,27 +30,6 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-ALLOWED = {
-    "SG": 1,
-    "SM": 1,
-    "PG": 2,
-    "PM": 2,
-    "TG": 3,
-    "TM": 3,
-    "CG": 4,
-    "CM": 4,
-    "RG": 5,
-    "RM": 5,
-}
-
-PART_1_FLOOR_PLAN = {
-    1: ["SG", "SM", "PG", "PM", ],
-    2: ["TG", "RG", "RM", "CG", "CM"],
-    3: ["TM"],
-    4: [],
-}
-
-
 class Item(object):
     def __init__(self, element):
         self.element = element
@@ -78,22 +57,17 @@ class Microchip(Item):
 
 class State(object):
 
-    def __init__(self, floorplan: list[set], elevator: int = 0) -> None:
+    def __init__(self, floorplan: list[set], elevator: int = 0, name_cache={}) -> None:
         self.floorplan: list[set] = deepcopy(floorplan)
         self.elevator: int = elevator
         self._hash = hash(repr(self))
+        self.name_cache = name_cache
 
     def goal_test(self) -> bool:
         """The goal has been reached when:
         - all generators and their microchips are on the forth floor
         """
         return not any(self.floorplan[:-1])
-
-    def has_generators(self, floor) -> bool:
-        return len([x for x in self.floorplan[floor] if x.endswith("G")]) > 0
-
-    def has_correct_generator(self, microchip, floor) -> bool:
-        return f"{microchip[0]}G" in self.floorplan[floor]
 
     @property
     def is_legal(self) -> bool:
@@ -120,15 +94,14 @@ class State(object):
         for delta in [-1, 1]:
             for count in [1, 2]:
                 for items in [list(x) for x in combinations(self.floorplan[self.elevator], count)]:
-                    _(items)
-                    if not (0 <= self.elevator + delta < len(self.floorplan)):
-                        continue
+                    elevator = self.elevator + delta
+                    if not (0 <= elevator < len(self.floorplan)):
+                        break
                     new_floor_plan = deepcopy(self.floorplan)
                     for item in items:
-                        _(self, items)
                         new_floor_plan[self.elevator].remove(item)
-                        new_floor_plan[self.elevator + delta].add(item)
-                    sucs.append(State(new_floor_plan, elevator=self.elevator + delta))
+                        new_floor_plan[elevator].add(item)
+                    sucs.append(State(new_floor_plan, elevator=elevator))
         return [x for x in sucs if x.is_legal]
 
     def __str__(self) -> str:
@@ -140,13 +113,79 @@ class State(object):
         return "\n".join(reversed(ret))
 
     def __repr__(self) -> str:
+        """All Pairs are interchangeble
+
+        F3 .  .  .  .  .                    F3 .  .  .  .  .
+        F2 .  .  .  LG LC                   F2 .  .  .  HG HC
+        F1 .  .  HC .  .     equivalent to  F1 .  .  LC .  .
+        F0 E  HG .  .  .                    F0 E  LG .  .  .
+
+        """
         ret = []
-        for items in self.floorplan:
-            if items:
-                ret.append(" ".join(repr(item) for item in sorted(items)))
+        ret.append(self.__class__.__name__)
+        ret.append("<")
+        ret.append(str(self.elevator))
+        for floor in self.floorplan:
+            if floor:
+                generators = {x for x in floor if isinstance(x, Generator)}
+                chips = {x for x in floor if isinstance(x, Microchip)}
+                pairs = [(x, y) for x in chips for y in generators if x.element == y.element]
+                items = []
+                for chip, generator in pairs:
+                    items.append("P")
+                    generators.remove(generator)
+                    chips.remove(chip)
+                for generator in generators:
+                    items.append("G")
+                for chip in chips:
+                    items.append("C")
+                ret.append(" ".join(items))
             else:
-                ret.append("-")
-        return f"State<{self.elevator} {', '.join(ret)}>"
+                ret.append('<empty>')
+        ret.append(">")
+        return f"{self.__class__.__name__}<{self.elevator}, {', '.join(ret)}>"
+
+    # def __repr__(self) -> str:
+    #     """Works but is very slow as the ordering and names are seen as different things
+    #     runs on my computer in about 379 seconds
+    #     """
+    #     ret = []
+    #     for items in self.floorplan:
+    #         if items:
+    #             ret.append(" ".join(repr(item) for item in sorted(items)))
+    #         else:
+    #             ret.append("<empty>")
+    #     return f"State<{self.elevator} {', '.join(ret)}>"
+
+    # def __repr__(self):
+    #     '''Simple output for repr that doesn't include steps (since this is used by hash).
+    #     idea gotten from here:
+    #     https://blog.jverkamp.com/2016/12/11/aoc-2016-day-11-radiation-avoider/
+    #     This one runs in about 90 seconds on my compyter
+    #     '''
+    #
+    #     # Optimization: Parts are interchangeable, rewrite them by order
+    #     # This will assign an index the first time it sees a name and use that any more
+    #     # So parts will always be ordered from lowest to highest, ties broken alphabetically
+    #     def ordered_rewrite(m, cache={}):
+    #         klazz, name = m.groups()
+    #
+    #         if name not in cache:
+    #             cache[name] = str(len(cache))
+    #
+    #         return '{}{}'.format(klazz[0], cache[name])
+    #
+    #     ret = []
+    #     for items in self.floorplan:
+    #         if items:
+    #             ret.append(' '.join(repr(item) for item in sorted(items)))
+    #         else:
+    #             ret.append('<empty>')
+    #
+    #     return re.sub(r'(Microchip|Generator)<([^<>]+)>',
+    #                   ordered_rewrite,
+    #                   'State<{}, {}>'.format(self.elevator, ', '.join(ret)),
+    #                   )
 
     def __eq__(self, other):
         return hash(self) == hash(other)
@@ -184,7 +223,6 @@ def display_solution(path: List[State]):
 
 def part_1(source):
     start = parse(source)
-    _(start)
     solution = bfs(start, State.goal_test, State.successors)
     pad = node_to_path(solution)
     display_solution(pad)
@@ -192,7 +230,15 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    start: State = parse(source)
+    start.floorplan[0].add(Generator("elerium"))
+    start.floorplan[0].add(Microchip("elerium"))
+    start.floorplan[0].add(Generator("dilithium"))
+    start.floorplan[0].add(Microchip("dilithium"))
+    solution = bfs(start, State.goal_test, State.successors)
+    pad = node_to_path(solution)
+    display_solution(pad)
+    return len(pad) - 1
 
 
 class UnitTests(unittest.TestCase):
@@ -207,8 +253,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(37, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
-
+        self.assertEqual(61, part_2(self.source))
 
 if __name__ == '__main__':
     unittest.main()
