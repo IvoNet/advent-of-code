@@ -111,6 +111,11 @@ def node_to_path(node: Node[T]) -> List[T]:
 
 
 def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
+    """Breath first search
+
+    See for a nice implementation with performance optimizations and a non standard successors function
+    - Year 2016 day 11
+    """
     # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
     frontier.push(Node(initial, None))
