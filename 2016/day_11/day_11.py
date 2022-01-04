@@ -14,6 +14,7 @@ import unittest
 from copy import deepcopy
 from itertools import combinations
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -30,11 +31,9 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Item(object):
+class Item(NamedTuple):
     """Item that is comparable and hashable and can represent itself"""
-
-    def __init__(self, element):
-        self.element = element
+    element: str
 
     @property
     def short(self):
@@ -55,10 +54,12 @@ class Item(object):
 
 
 class Generator(Item):
+    """Specialized Item"""
     ...
 
 
 class Microchip(Item):
+    """Specialized Item"""
     ...
 
 
@@ -72,6 +73,7 @@ class State(object):
     def goal_test(self) -> bool:
         """The goal has been reached when:
         - all generators and their microchips are on the forth floor
+        - or better said if none of the other floors still have items
         """
         return not any(self.floorplan[:-1])
 
