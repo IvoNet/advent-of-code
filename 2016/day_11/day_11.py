@@ -21,7 +21,7 @@ from ivonet.search import bfs, node_to_path
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -29,12 +29,6 @@ def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
 
-
-FLOOR_PLAN_BAK = [
-    (1, "SG"), (1, "SM"), (1, "PG"), (1, "PM"),
-    (2, "TG"), (2, "RG"), (2, "RM"), (2, "CG"), (2, "CM"),
-    (3, "TM")
-]
 
 ALLOWED = {
     "SG": 1,
@@ -55,22 +49,6 @@ PART_1_FLOOR_PLAN = {
     3: ["TM"],
     4: [],
 }
-
-
-def display_solution(path: List[State]):
-    if len(path) == 0:  # sanity check
-        return
-    old_state: State = path[0]
-    print(old_state)
-    for current_state in path[1:]:
-        if current_state.boat:
-            print("{} missionaries and {} cannibals moved from the east bank to the west bank.\n"
-                  .format(old_state.em - current_state.em, old_state.ec - current_state.ec))
-        else:
-            print("{} missionaries and {} cannibals moved from the west bank to the east bank.\n"
-                  .format(old_state.wm - current_state.wm, old_state.wc - current_state.wc))
-        print(current_state)
-        old_state = current_state
 
 
 class Item(object):
@@ -193,11 +171,23 @@ def parse(source):
     return State(floors)
 
 
+def display_solution(path: List[State]):
+    if len(path) == 0:  # sanity check
+        return
+    old_state: State = path[0]
+    print(old_state)
+    for current_state in path[1:]:
+        print(f"Elevator moved from flor {old_state.elevator + 1} to floor {current_state.elevator + 1}\n")
+        print(current_state)
+        old_state = current_state
+
+
 def part_1(source):
     start = parse(source)
     _(start)
     solution = bfs(start, State.goal_test, State.successors)
-    return len(node_to_path(solution))
+    display_solution(solution)
+    return len(node_to_path(solution)) - 1
 
 
 def part_2(source):
@@ -212,84 +202,8 @@ class UnitTests(unittest.TestCase):
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
 
-    def test_state_1(self):
-        floor_plan = {
-            1: ["SG", "SM", "PG", "PM", ],
-            2: ["TG", "RG", "RM", "CG", "CM"],
-            3: ["TM"],
-            4: [],
-        }
-        self.assertTrue(State(floor_plan, 1).is_legal)
-
-    def test_state_2(self):
-        floor_plan = {
-            1: ["PG", "PM", ],
-            2: ["SG", "SM", "TG", "RG", "RM", "CG", "CM"],
-            3: ["TM"],
-            4: [],
-        }
-        self.assertTrue(State(floor_plan, 2).is_legal)
-
-    def test_state_3(self):
-        floor_plan = {
-            1: ["PG", "PM", ],
-            2: ["SG", "SM", "TG", "RG", "RM", "CG"],
-            3: ["TM", "CM"],
-            4: [],
-        }
-        self.assertTrue(State(floor_plan, 3).is_legal)
-
-    def test_state_4(self):
-        floor_plan = {
-            1: ["SG", "PG", "PM", ],
-            2: ["TG", "RG", "RM", "CG", "CM", "SM"],
-            3: ["TM"],
-            4: [],
-        }
-        self.assertFalse(State(floor_plan, 2).is_legal)
-
-    def test_goal_1(self):
-        floor_plan = {
-            1: ["SG", "PG", "PM", ],
-            2: ["TG", "RG", "RM", "CG", "CM", "SM"],
-            3: ["TM"],
-            4: [],
-        }
-        self.assertFalse(State(floor_plan, 2).goal_test())
-
-    def test_goal_2(self):
-        floor_plan = {
-            1: [],
-            2: [],
-            3: [],
-            4: ["SG", "PG", "PM", "TG", "RG", "RM", "CG", "CM", "SM", "TM"],
-        }
-        self.assertTrue(State(floor_plan, 4).goal_test())
-
-    def test_successors_floor_1(self):
-        floor_plan = {
-            1: ["PG", "PM", ],
-            2: ["TG", "RG", "RM", "CG", "CM", "SG", "SM", ],
-            3: ["TM"],
-            4: [],
-        }
-        successors = State(floor_plan, 1).successors()
-        _(successors)
-        self.assertEquals(2, len(successors))
-
-    def test_successors_floor_2(self):
-        floor_plan = {
-            1: [],
-            2: ["TG", "RG", "RM", "CG", "CM", "SG", "SM", "PG", "PM", ],
-            3: ["TM"],
-            4: [],
-        }
-        successors = State(floor_plan, 2).successors()
-        _(successors)
-        self.assertEquals(26, len(successors))
-
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(37, part_1(self.source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
