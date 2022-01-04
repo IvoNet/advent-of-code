@@ -177,7 +177,7 @@ def display_solution(path: List[State]):
     old_state: State = path[0]
     print(old_state)
     for current_state in path[1:]:
-        print(f"Elevator moved from flor {old_state.elevator + 1} to floor {current_state.elevator + 1}\n")
+        print(f"Elevator moved from floor {old_state.elevator + 1} to floor {current_state.elevator + 1}\n")
         print(current_state)
         old_state = current_state
 
@@ -186,8 +186,9 @@ def part_1(source):
     start = parse(source)
     _(start)
     solution = bfs(start, State.goal_test, State.successors)
-    display_solution(solution)
-    return len(node_to_path(solution)) - 1
+    pad = node_to_path(solution)
+    display_solution(pad)
+    return len(pad) - 1
 
 
 def part_2(source):
