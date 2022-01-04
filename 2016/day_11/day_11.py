@@ -32,8 +32,14 @@ def _(*args, end="\n"):
 
 class Item(object):
     """Item that is comparable and hashable and can represent itself"""
+
     def __init__(self, element):
         self.element = element
+
+    @property
+    def short(self):
+        """Added to deliver the shortest representation of myself when the element does not matter"""
+        return self.__class__.__name__[0]
 
     def __repr__(self):
         return '{}<{}>'.format(self.__class__.__name__, self.element)
@@ -89,14 +95,16 @@ class State(object):
         return True
 
     def successors(self) -> list[State]:
-        """create all new states from current state"""
+        """create all new states from current state
+        First just create all of them and then return all states that are legal
+        """
         sucs: list[State] = []
         for delta in [-1, 1]:
             elevator = self.elevator + delta
             if not (0 <= elevator < len(self.floorplan)):
                 continue
             for count in [2, 1]:
-                for items in [list(x) for x in combinations(self.floorplan[self.elevator], count)]:
+                for items in combinations(self.floorplan[self.elevator], count):
                     new_floor_plan = deepcopy(self.floorplan)
                     for item in items:
                         new_floor_plan[self.elevator].remove(item)
@@ -105,6 +113,7 @@ class State(object):
         return [x for x in sucs if x.is_legal]
 
     def __str__(self) -> str:
+        """A nice representation of a state for printing."""
         ret = []
         for i, floor in enumerate(self.floorplan):
             level = ('[{}]' if self.elevator == i else ' {} ').format(i + 1)
@@ -123,27 +132,16 @@ class State(object):
         So we need to make sure that the "visited" cache in the bfs function sees these states
         as the same. That is why we implement this in the __repr__ function as that is what we
         base our hash on.
+
+        This holds as long as the state is legal and all states must be legal to be tried.
         """
         ret = []
         for floor in self.floorplan:
             if floor:
-                generators = {x for x in floor if isinstance(x, Generator)}
-                chips = {x for x in floor if isinstance(x, Microchip)}
-                pairs = [(x, y) for x in chips for y in generators if x.element == y.element]
-                items = []
-                for chip, generator in pairs:
-                    items.append("P")
-                    generators.remove(generator)
-                    chips.remove(chip)
-                for generator in generators:
-                    items.append("G")
-                for chip in chips:
-                    items.append("C")
-                ret.append(" ".join(items))
+                ret.append("".join(x.short for x in sorted(floor)))
             else:
                 ret.append('\xD8')
-        ret.append(">")
-        return f"{self.__class__.__name__}<{self.elevator}, {', '.join(ret)}>"
+        return f"{self.__class__.__name__}<{self.elevator}, {','.join(ret)}>"
 
     def __eq__(self, other):
         return hash(self) == hash(other)
@@ -214,6 +212,7 @@ class UnitTests(unittest.TestCase):
 
     def test_part_2(self):
         self.assertEqual(61, part_2(self.source))
+
 
 if __name__ == '__main__':
     unittest.main()
