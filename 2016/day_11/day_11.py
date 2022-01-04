@@ -31,6 +31,7 @@ def _(*args, end="\n"):
 
 
 class Item(object):
+    """Item that is comparable and hashable and can represent itself"""
     def __init__(self, element):
         self.element = element
 
@@ -57,11 +58,10 @@ class Microchip(Item):
 
 class State(object):
 
-    def __init__(self, floorplan: list[set], elevator: int = 0, name_cache={}) -> None:
-        self.floorplan: list[set] = deepcopy(floorplan)
+    def __init__(self, floorplan: list[set], elevator: int = 0) -> None:
+        self.floorplan: list[set] = floorplan
         self.elevator: int = elevator
         self._hash = hash(repr(self))
-        self.name_cache = name_cache
 
     def goal_test(self) -> bool:
         """The goal has been reached when:
@@ -92,11 +92,11 @@ class State(object):
         """create all new states from current state"""
         sucs: list[State] = []
         for delta in [-1, 1]:
-            for count in [1, 2]:
+            elevator = self.elevator + delta
+            if not (0 <= elevator < len(self.floorplan)):
+                continue
+            for count in [2, 1]:
                 for items in [list(x) for x in combinations(self.floorplan[self.elevator], count)]:
-                    elevator = self.elevator + delta
-                    if not (0 <= elevator < len(self.floorplan)):
-                        break
                     new_floor_plan = deepcopy(self.floorplan)
                     for item in items:
                         new_floor_plan[self.elevator].remove(item)
@@ -120,11 +120,11 @@ class State(object):
         F1 .  .  HC .  .     equivalent to  F1 .  .  LC .  .
         F0 E  HG .  .  .                    F0 E  LG .  .  .
 
+        So we need to make sure that the "visited" cache in the bfs function sees these states
+        as the same. That is why we implement this in the __repr__ function as that is what we
+        base our hash on.
         """
         ret = []
-        ret.append(self.__class__.__name__)
-        ret.append("<")
-        ret.append(str(self.elevator))
         for floor in self.floorplan:
             if floor:
                 generators = {x for x in floor if isinstance(x, Generator)}
@@ -141,51 +141,9 @@ class State(object):
                     items.append("C")
                 ret.append(" ".join(items))
             else:
-                ret.append('<empty>')
+                ret.append('\xD8')
         ret.append(">")
         return f"{self.__class__.__name__}<{self.elevator}, {', '.join(ret)}>"
-
-    # def __repr__(self) -> str:
-    #     """Works but is very slow as the ordering and names are seen as different things
-    #     runs on my computer in about 379 seconds
-    #     """
-    #     ret = []
-    #     for items in self.floorplan:
-    #         if items:
-    #             ret.append(" ".join(repr(item) for item in sorted(items)))
-    #         else:
-    #             ret.append("<empty>")
-    #     return f"State<{self.elevator} {', '.join(ret)}>"
-
-    # def __repr__(self):
-    #     '''Simple output for repr that doesn't include steps (since this is used by hash).
-    #     idea gotten from here:
-    #     https://blog.jverkamp.com/2016/12/11/aoc-2016-day-11-radiation-avoider/
-    #     This one runs in about 90 seconds on my compyter
-    #     '''
-    #
-    #     # Optimization: Parts are interchangeable, rewrite them by order
-    #     # This will assign an index the first time it sees a name and use that any more
-    #     # So parts will always be ordered from lowest to highest, ties broken alphabetically
-    #     def ordered_rewrite(m, cache={}):
-    #         klazz, name = m.groups()
-    #
-    #         if name not in cache:
-    #             cache[name] = str(len(cache))
-    #
-    #         return '{}{}'.format(klazz[0], cache[name])
-    #
-    #     ret = []
-    #     for items in self.floorplan:
-    #         if items:
-    #             ret.append(' '.join(repr(item) for item in sorted(items)))
-    #         else:
-    #             ret.append('<empty>')
-    #
-    #     return re.sub(r'(Microchip|Generator)<([^<>]+)>',
-    #                   ordered_rewrite,
-    #                   'State<{}, {}>'.format(self.elevator, ', '.join(ret)),
-    #                   )
 
     def __eq__(self, other):
         return hash(self) == hash(other)
@@ -225,8 +183,9 @@ def part_1(source):
     start = parse(source)
     solution = bfs(start, State.goal_test, State.successors)
     pad = node_to_path(solution)
-    display_solution(pad)
-    return len(pad) - 1
+    if DEBUG:
+        display_solution(pad)
+    return len(pad) - 1  # do not count the start state
 
 
 def part_2(source):
@@ -237,8 +196,9 @@ def part_2(source):
     start.floorplan[0].add(Microchip("dilithium"))
     solution = bfs(start, State.goal_test, State.successors)
     pad = node_to_path(solution)
-    display_solution(pad)
-    return len(pad) - 1
+    if DEBUG:
+        display_solution(pad)
+    return len(pad) - 1  # do not count the start state
 
 
 class UnitTests(unittest.TestCase):
