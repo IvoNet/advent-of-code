@@ -27,6 +27,7 @@ def _(*args, end="\n"):
 
 
 def part_1(source):
+    # see 12 of 2015
     return None
 
 
