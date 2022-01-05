@@ -138,7 +138,8 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], Li
     return None  # went through everything and never found goal
 
 
-def astar(initial: T, goal_test: Callable[[T], bool],
+def astar(initial: T,
+          goal_test: Callable[[T], bool],
           successors: Callable[[T], List[T]],
           heuristic: Callable[[T], float],
           cost: Callable[[T], int]) -> Optional[Node[T]]:
