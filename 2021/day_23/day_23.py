@@ -10,33 +10,6 @@ __doc__ = """
 Note that my submitted solution I did by hand and this version came a couple of weeks later :-)
 Took me a very long time to figure this one out and e bit of light reading into search patterns
 
-             1
-  0123456789012
- 0#############
- 1#..X.X.X.X..#  <- hallway 11 long
- 2###C#B#D#D###
- 3  #B#C#A#A#
- 4  #########
-     ^ ^ ^ ^
-col: A B C D  (side rooms)
-Rules:
-- # is a wall
-- . is empty space
-    - Eleven open spaces
-- X is empty space where you can not stop
-- A's need to go into the A lane
-- B's / C's / D's need to go ....
-- Lanes -> No Stop
-    A -> 2
-    B -> 4
-    C -> 6
-    D -> 8
-- Cost 1 move:
-   A -> 1
-   B -> 10
-   C -> 100
-   D -> 1000
-
 Grid -> Astar?
 #############
 #..X.X.X.X..#
@@ -48,7 +21,7 @@ Good idea but I had no idea on how to represent this grid and ask for successors
 so after long thinking I came up with a one dimentional grid
 
 "...........ABCDABCD"
-This made calculating easier (not much)
+This made calculating easier (not much :-))
 
 Going for a* function...
 Astar needs:
@@ -150,8 +123,9 @@ def manhatten_distances(goal) -> callable:
     - I made a dictionary with all the possible distances between two points and that in actual fact
       twice as the position does not matter
     - all the possibilities can be found by finding the product of all the possible distances.
-      these are the hallway and siderooms.
-    - a distance is always positive so first find the distance to the corresponding sideroom from the left
+      these are betweeen the hallway and siderooms.
+      We never walk from a room to a room. There is always a hallway passage
+    - a distance is always positive
     So how to calculate this:
     - starting out with the product of all hallway positions with the siderooms
       so product of (hallway, sideroom) combinations
@@ -160,7 +134,7 @@ def manhatten_distances(goal) -> callable:
       * 11 belongs to sideroom A and it has door 2.
       * distance between hallway items is the absolute value of door minus the hallway value abs(2 - 9) = 7
       * now we need to know how much extra we need to add to this distance.
-        there are 4 rooms with a depth. so either 1 or 2 extra steps
+        there are 4 rooms with a depth. so either 1 or 2 extra steps (3 or 4 in part 2, but formula holds steady)
         e.g. sideroom A has positions 11 and 15 in the one dimentional state. 11 needs to add 1 extra step and 15 two
              sideroom B has positions 12 and 16 in the one dimentional state. 12 needs to add 1 extra step and 16 two
              sideroom C has positions 13 and 17 in the one dimentional state. 13 needs to add 1 extra step and 17 two
@@ -205,7 +179,7 @@ def gen_side_room_target(goal):
 
 
 def hallway_blocked(loc, state) -> bool:
-    """See if the hallway is blocked for the amphipod at loc in state to the
+    """See if the hallway is blocked for the amphipod at state[loc] to the
     sideroom it belongs to.
     If blocked we kan not walk...
     This function is only called where state[loc] actually holds a amphipod.
@@ -219,7 +193,7 @@ def hallway_blocked(loc, state) -> bool:
 
 
 def can_enter_room(goal):
-    """Callback function to see if an amphipod at loc in state can enter its sideroom"""
+    """Callback function to see if an amphipod at state[loc] can enter its sideroom"""
     side_room_target, _ = gen_side_room_target(goal)
 
     def can_enter(loc, state) -> int | bool:
@@ -236,7 +210,7 @@ def can_enter_room(goal):
         for i in target:
             if state[i] == ".":
                 ret = i
-            elif state[i] != state[loc]:
+            elif state[i] != amphibod:
                 return False
         if not hallway_blocked(loc, state):
             return ret
@@ -250,7 +224,7 @@ def can_leave_room(goal):
     side_room_target, _ = gen_side_room_target(goal)
 
     def can_leave(room, state) -> int | bool:
-        """Check if an amphipod in from a given sideroom can leave
+        """Check if an amphipod from a given sideroom can leave
         So:
         - if a sideroom has already been solved it can never leave again
         - check for all locations in the room from top to bottom if it contains
@@ -276,7 +250,7 @@ def hallway_positions(goal):
         """Generate all hallway positions a given amphipod at state[loc] can move to
         - we find all positions to the left and right of our door
         - we can only walk from our sideroom to any location in the hallway if the space is empty
-        - generate locations lef and right as long as these conditions are met.
+        - generate locations left and right as long as these conditions are met.
         """
         door = HALL_DOOR[reverse_side_room_target[loc]]
         for r_loc in left[door]:
@@ -291,7 +265,7 @@ def hallway_positions(goal):
     return options
 
 
-def swap(left, right, state):
+def swap(left, right, state) -> str:
     """Swap the left and right positions in the state
     When we descide to move we actially swap two positions we have found to be acceptable
     - this is always an empty spot with an amphipod.
@@ -345,7 +319,7 @@ def astar(initial: T,
           cost: Callable[[T], int]) -> Optional[Node[T]]:
     """The A* (astar)
     is a dfs but you can provide a cost callback function that can direct your search
-    in this adjusted version of the astar the heuristic (distance) function is used in the cost calulation and not
+    in this adjusted (only a small bit) version of the astar the heuristic (distance) function is used in the cost calulation and not
     seperately as a priority thing.
     """
     # frontier is where we've yet to go
@@ -372,27 +346,17 @@ def astar(initial: T,
 
 
 def state_print(state):
-    print(
-        "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #########".format(*list(state)))
+    if len(state) > 20:
+        print(
+            "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #{}#{}#{}#{}#  \n  #{}#{}#{}#{}#\n  #########".format(
+                *list(state)))
+    else:
+        print(
+            "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #########".format(
+                *list(state)))
 
 
-def state_print_2(state):
-    print(
-        "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #{}#{}#{}#{}#  \n  #{}#{}#{}#{}#\n  #########".format(
-            *list(state)))
-
-
-def part_1(source):
-    """a* needs:
-    - initial state
-    - callable to test if goal has been reached
-    - callable to get the list of successors
-    - callable to get the heuristic (distance to the goal)
-    - callable for the cost calculation
-    Thinking in one dimention is way easier so doing that
-    """
-
-    goal = "...........ABCDABCD"
+def part_1(source, goal="...........ABCDABCD"):
     solution = astar(parse(source),
                      is_goal(goal),
                      successors(goal),
@@ -406,17 +370,7 @@ def part_1(source):
 
 
 def part_2(source):
-    goal = "...........ABCDABCDABCDABCD"
-    solution = astar(parse(source),
-                     is_goal(goal),
-                     successors(goal),
-                     manhatten_distances(goal),
-                     cost_calc)
-    if DEBUG:
-        pad = node_to_path(solution)
-        for p in pad:
-            state_print_2(p)
-    return solution.cost
+    return part_1(source, goal="...........ABCDABCDABCDABCD")
 
 
 class UnitTests(unittest.TestCase):
