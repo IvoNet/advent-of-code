@@ -18,7 +18,7 @@ Grid -> Astar?
 #############
 
 Good idea but I had no idea on how to represent this grid and ask for successors
-so after long thinking I came up with a one dimentional grid
+so after long thinking I came up with a one dimensional grid
 
 "...........ABCDABCD"
 This made calculating easier (not much :-))
@@ -37,12 +37,12 @@ import sys
 import unittest
 from itertools import product
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Callable, TypeVar, Optional
 
 from ivonet.collection import PriorityQueue
 from ivonet.files import read_rows
 from ivonet.iter import ints
-from ivonet.search import astar, Node, node_to_path
+from ivonet.search import Node, node_to_path
 
 sys.dont_write_bytecode = True
 
@@ -54,6 +54,8 @@ def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
 
+
+T = TypeVar('T')
 
 HALL_DOOR = {
     "A": 2,
@@ -81,10 +83,12 @@ def gen_left_right():
     """generates the possible left and right movements from a side room
     Note that the left is reversed. Took me forever to find this out!
     but while walking left you walk "the other way around" OMG!
-    So what happends here:
+    So what happens here:
     - the hallway has a range of 10 (inclusive) spots but the door locations are not available for standing on
-    - from the first door location (2) going left would mean positions [0, 1] in the hallway available except walking that way
-      the order should be [1, 0] and walking from the second doorway (pos 4) would have [3, 1, 0] as stop options and so on
+    - from the first door location (2) going left would mean positions [0, 1] in the hallway available except walking
+      that way
+      the order should be [1, 0] and walking from the second doorway (pos 4) would have [3, 1, 0] as stop options and
+      so on
     - going right from the first door would have [3, 5, 7, 9, 10] as viable stopping locations.
       these are already in the correct ordering
     """
@@ -99,6 +103,7 @@ def gen_left_right():
 
 def is_goal(solution: str) -> Callable[[T], bool]:
     """callback to check if the goal has been reached"""
+
     def reached(state) -> bool:
         return solution == state
 
@@ -275,7 +280,7 @@ def swap(left, right, state) -> str:
     return "".join(ret)
 
 
-def successors(goal) -> Callable[[T], tuple[int, int]]:
+def successors_callback(goal) -> Callable[[T], Generator]:
     """Calback function that generates all possible moves from a given state.
     """
     can_enter = can_enter_room(goal)
@@ -314,19 +319,19 @@ def cost_calc(loc, state) -> int:
 
 def astar(initial: T,
           goal_test: Callable[[T], bool],
-          successors: Callable[[T], List[T]],
-          heuristic: Callable[[T], float],
-          cost: Callable[[T], int]) -> Optional[Node[T]]:
+          successors: Callable[[T], Generator],
+          heuristic: Callable[[tuple[int, int]], float],
+          cost: Callable[[int, str], int]) -> Optional[Node[T]]:
     """The A* (astar)
     is a dfs but you can provide a cost callback function that can direct your search
-    in this adjusted (only a small bit) version of the astar the heuristic (distance) function is used in the cost calulation and not
-    seperately as a priority thing.
+    in this adjusted (only a small bit) version of the astar the heuristic (distance) function is used in the cost
+    calculation and not separately as a priority thing.
     """
     # frontier is where we've yet to go
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
     frontier.push(Node(initial, None))
     # explored is where we've been
-    explored: Dict[T, float] = {initial: 0.0}
+    explored: dict[T, float] = {initial: 0.0}
 
     # keep going while there is more to explore
     while not frontier.empty:
@@ -348,18 +353,26 @@ def astar(initial: T,
 def state_print(state):
     if len(state) > 20:
         print(
-            "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #{}#{}#{}#{}#  \n  #{}#{}#{}#{}#\n  #########".format(
-                *list(state)))
+            """#############
+#{}{}{}{}{}{}{}{}{}{}{}#
+###{}#{}#{}#{}###
+  #{}#{}#{}#{}#
+  #{}#{}#{}#{}#  
+  #{}#{}#{}#{}#
+  #########""".format(*list(state)))
     else:
         print(
-            "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #########".format(
-                *list(state)))
+            """#############
+#{}{}{}{}{}{}{}{}{}{}{}#
+###{}#{}#{}#{}###
+  #{}#{}#{}#{}#
+  #########""".format(*list(state)))
 
 
 def part_1(source, goal="...........ABCDABCD"):
     solution = astar(parse(source),
                      is_goal(goal),
-                     successors(goal),
+                     successors_callback(goal),
                      manhatten_distances(goal),
                      cost_calc)
     if DEBUG:
@@ -381,18 +394,8 @@ class UnitTests(unittest.TestCase):
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_2.input")))
-        self.test_source = read_rows("""#############
-#...........#
-###B#C#B#D###
-  #A#D#C#A#
-  #########""")
-        self.test_source2 = read_rows("""#############
-#...........#
-###B#C#B#D###
-  #D#C#B#A#
-  #D#B#A#C#
-  #A#D#C#A#
-  #########""")
+        self.test_source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_test_a.input")))
+        self.test_source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_test_b.input")))
 
     def test_example_data_part_1(self):
         self.assertEqual(12521, part_1(self.test_source))

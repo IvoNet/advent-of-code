@@ -37,7 +37,7 @@ import sys
 import unittest
 from itertools import product
 from pathlib import Path
-from typing import Generator, Optional, Dict
+from typing import Generator, Optional
 
 from ivonet.collection import PriorityQueue
 from ivonet.files import read_rows
@@ -65,24 +65,24 @@ class AmphibodPuzzle:
     def __init__(self, initial, goal) -> None:
         self.goal = goal
         self.initial = initial
-        self.HALL_DOOR = {
+        self.hall_door = {
             "A": 2,
             "B": 4,
             "C": 6,
             "D": 8,
         }
-        self.COST = {"A": 1,
+        self.cost = {"A": 1,
                      "B": 10,
                      "C": 100,
                      "D": 1000
                      }
-        self.HALLWAY = [0, 1, 3, 5, 7, 9, 10]
-        self.ROOMS = "ABCD"
-        self.LEFT, self.RIGHT = self.__gen_left_right()
+        self.hallway = [0, 1, 3, 5, 7, 9, 10]
+        self.rooms = "ABCD"
+        self.left, self.right = self.__gen_left_right_movement_options_from_side_rooms()
         self.side_room_target, self.reverse_side_room_target = self.__gen_side_room_target()
-        self.DISTANCES = self._gen_manhatten_distances()
+        self.distances = self.__gen_manhatten_distances()
 
-    def __gen_left_right(self):
+    def __gen_left_right_movement_options_from_side_rooms(self):
         """generates the possible left and right movements from a side room
         Note that the left is reversed. Took me forever to find this out!
         but while walking left you walk "the other way around" OMG!
@@ -98,16 +98,29 @@ class AmphibodPuzzle:
         hallway = range(11)
         left = {}
         right = {}
-        for k, v in self.HALL_DOOR.items():
-            left[v] = [x for x in hallway[:v] if x not in self.HALL_DOOR.values()][::-1]
-            right[v] = [x for x in hallway[v:] if x not in self.HALL_DOOR.values()]
+        for k, v in self.hall_door.items():
+            left[v] = [x for x in hallway[:v] if x not in self.hall_door.values()][::-1]
+            right[v] = [x for x in hallway[v:] if x not in self.hall_door.values()]
         return left, right
 
-    def is_goal(self, state: str) -> bool:
-        """callback to check if the goal has been reached"""
-        return self.goal == state
+    def __gen_side_room_target(self):
+        """In a one dimensional grid I need to calculate the locations of where A,B,C,D must go
+        so I find the index of these in the goal (finished) state and save them as a dictionary.
 
-    def _gen_manhatten_distances(self):
+        Later I found out that I also needed to be able to lookup the reverse like having an index and
+        finding out which item should go there. As all the locations and stuff are unique
+        I did a reverse dict kinda exercise.
+        """
+        side_room_target = {
+            "A": [i for i, el in enumerate(self.goal) if el == "A"],
+            "B": [i for i, el in enumerate(self.goal) if el == "B"],
+            "C": [i for i, el in enumerate(self.goal) if el == "C"],
+            "D": [i for i, el in enumerate(self.goal) if el == "D"],
+        }
+        reverse_side_room_target = {v: k for k, v in side_room_target.items() for v in v}
+        return side_room_target, reverse_side_room_target
+
+    def __gen_manhatten_distances(self):
         """Distance in this puzzle is not as straight forward as it in an normal grid.
         I still call it a manhatten distance as I am still calculating in "straight lines"
         but a I created a formula for it
@@ -151,28 +164,11 @@ class AmphibodPuzzle:
            (took me forever to figure this out!)
         """
         distances = {}
-        for left, right in product(self.HALLWAY, range(11, len(self.goal))):
-            distances[(left, right)] = abs(self.HALL_DOOR[self.reverse_side_room_target[right]] - left) + (
+        for left, right in product(self.hallway, range(11, len(self.goal))):
+            distances[(left, right)] = abs(self.hall_door[self.reverse_side_room_target[right]] - left) + (
                     right - 7) // 4
             distances[(right, left)] = distances[(left, right)]
         return distances
-
-    def __gen_side_room_target(self):
-        """In a one dimentional grid I need to calculate the locations of where A,B,C,D must go
-        so I find the index of these in the goal (finished) state and save them as a dictionary.
-
-        Later I found out that I also needed to be able to lookup the reverse like having an index and
-        finding out which item should go there. As all the locations and stuff are unique
-        I did a reverse dict kinda exercise.
-        """
-        side_room_target = {
-            "A": [i for i, el in enumerate(self.goal) if el == "A"],
-            "B": [i for i, el in enumerate(self.goal) if el == "B"],
-            "C": [i for i, el in enumerate(self.goal) if el == "C"],
-            "D": [i for i, el in enumerate(self.goal) if el == "D"],
-        }
-        reverse_side_room_target = {v: k for k, v in side_room_target.items() for v in v}
-        return side_room_target, reverse_side_room_target
 
     def hallway_blocked(self, loc, state) -> bool:
         """See if the hallway is blocked for the amphipod at state[loc] to the
@@ -180,7 +176,7 @@ class AmphibodPuzzle:
         If blocked we kan not walk...
         This function is only called where state[loc] actually holds a amphipod.
         """
-        door_loc = self.HALL_DOOR[state[loc]]
+        door_loc = self.hall_door[state[loc]]
         step = 1 if loc < door_loc else -1
         for v in range(loc + step, door_loc + step, step):
             if state[v] != ".":
@@ -193,7 +189,7 @@ class AmphibodPuzzle:
         - find the target side-room
         - see if there is empty space in the side-room and if all the states are of their own type
         - now check if the hallway is free and go...
-        - fail if any of the rulez are not met.
+        - fail if any of the rules are not met.
         """
         ret = False
         amphibod = state[loc]
@@ -228,12 +224,12 @@ class AmphibodPuzzle:
         - we can only walk from our side-room to any location in the hallway if the space is empty
         - generate locations left and right as long as these conditions are met.
         """
-        door = self.HALL_DOOR[self.reverse_side_room_target[loc]]
-        for r_loc in self.LEFT[door]:
+        door = self.hall_door[self.reverse_side_room_target[loc]]
+        for r_loc in self.left[door]:
             if state[r_loc] != ".":
                 break
             yield r_loc
-        for r_loc in self.RIGHT[door]:
+        for r_loc in self.right[door]:
             if state[r_loc] != ".":
                 break
             yield r_loc
@@ -241,7 +237,7 @@ class AmphibodPuzzle:
     @staticmethod
     def swap(left, right, state) -> str:
         """Swap the left and right positions in the state
-        When we descide to move we actially swap two positions we have found to be acceptable
+        When we decide to move we actually swap two positions we have found to be acceptable
         - this is always an empty spot with an amphipod.
         """
         ret = list(state)
@@ -256,23 +252,19 @@ class AmphibodPuzzle:
           find all hallway locations it can leave to
         - do this as long as there is something to yield
         """
-        for left in self.HALLWAY:
+        for left in self.hallway:
             if state[left] == '.':
                 continue
             right = self.can_enter_room(left, state)
             if not right:
                 continue
             yield left, right
-        for room in self.ROOMS:
+        for room in self.rooms:
             left = self.can_leave_room(room, state)
             if not left:
                 continue
             for right in self.hallway_positions(left, state):
                 yield left, right
-
-    def cost_calc(self, loc, state) -> int:
-        """Callback function to get the cost of an amphipod"""
-        return self.COST[state[loc]]
 
     def solve(self) -> Optional[Node[str]]:
         """The A* (astar) function
@@ -280,14 +272,14 @@ class AmphibodPuzzle:
         """
         frontier: PriorityQueue[Node[str]] = PriorityQueue()
         frontier.push(Node(self.initial, None))
-        explored: Dict[str, float] = {self.initial: 0.0}
+        explored: dict[str, float] = {self.initial: 0.0}
         while not frontier.empty:
             current_node: Node[str] = frontier.pop()
             current_state: str = current_node.state
-            if self.is_goal(current_state):
+            if self.goal == current_state:
                 return current_node
             for left, right in self.successors(current_state):
-                new_cost: float = current_node.cost + self.DISTANCES[(left, right)] * self.COST[current_state[left]]
+                new_cost: float = current_node.cost + self.distances[(left, right)] * self.cost[current_state[left]]
                 new_state = self.swap(left, right, current_state)
                 if new_state not in explored or explored[new_state] > new_cost:
                     explored[new_state] = new_cost
@@ -298,12 +290,20 @@ class AmphibodPuzzle:
 def state_print(state):
     if len(state) > 20:
         print(
-            "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #{}#{}#{}#{}#  \n  #{}#{}#{}#{}#\n  #########".format(
-                *list(state)))
+            """#############
+#{}{}{}{}{}{}{}{}{}{}{}#
+###{}#{}#{}#{}###
+  #{}#{}#{}#{}#
+  #{}#{}#{}#{}#  
+  #{}#{}#{}#{}#
+  #########""".format(*list(state)))
     else:
         print(
-            "#############\n#{}{}{}{}{}{}{}{}{}{}{}#\n###{}#{}#{}#{}###\n  #{}#{}#{}#{}#\n  #########".format(
-                *list(state)))
+            """#############
+#{}{}{}{}{}{}{}{}{}{}{}#
+###{}#{}#{}#{}###
+  #{}#{}#{}#{}#
+  #########""".format(*list(state)))
 
 
 def part_1(source, goal="...........ABCDABCD"):
@@ -328,18 +328,8 @@ class UnitTests(unittest.TestCase):
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
         self.source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_2.input")))
-        self.test_source = read_rows("""#############
-#...........#
-###B#C#B#D###
-  #A#D#C#A#
-  #########""")
-        self.test_source2 = read_rows("""#############
-#...........#
-###B#C#B#D###
-  #D#C#B#A#
-  #D#B#A#C#
-  #A#D#C#A#
-  #########""")
+        self.test_source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_test_a.input")))
+        self.test_source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_test_b.input")))
 
     def test_example_data_part_1(self):
         self.assertEqual(12521, part_1(self.test_source))
