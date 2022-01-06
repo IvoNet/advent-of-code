@@ -45,7 +45,7 @@ class Interpreter:
             value = v.split()
             self.instructions[k] = value
 
-    def override(self, key, value) -> self:
+    def override(self, key, value) -> Interpreter:
         """Builder like function to override a cached item
         it returns self so that chaining of commands is possible
         """
