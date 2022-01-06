@@ -94,6 +94,8 @@ class AmphibodPuzzle:
           and so on
         - going right from the first door would have [3, 5, 7, 9, 10] as viable stopping locations.
           these are already in the correct ordering
+        - I tried doing this with the hallway as defined but with a range of 11 and than filtering out the side-room
+          doors proved easier
         """
         hallway = range(11)
         left = {}
@@ -124,7 +126,7 @@ class AmphibodPuzzle:
         """Distance in this puzzle is not as straight forward as it in an normal grid.
         I still call it a manhatten distance as I am still calculating in "straight lines"
         but a I created a formula for it
-        ############# (inclusive)      ############# distance betwee @ and * is like distance between
+        ############# (inclusive)      ############# distance between @ and * is like distance between
         #...........# 0..10            #@..&.....!.# pos 0 and pos 11 and that is 3
         ###B#C#B#D### 11..14     ==>   ###*#%#B#D### and between @ and $
           #A#D#C#A#   15..18             #A#D#C#$#   pos 0 and pos 18 -> dist 10 (largest distance)
@@ -134,11 +136,11 @@ class AmphibodPuzzle:
         - (&,$) -> (3,18) -> distance 7
         - (!,*) -> (9,11) -> distance 8
         - (A,!) -> (15,9) -> distance 9
-        - the postions do not matter for the distance left/right or right/left distance is the same
+        - the positions do not matter for the distance left/right or right/left distance is the same
         - I made a dictionary with all the possible distances between two points and that in actual fact
           twice as the position does not matter
         - all the possibilities can be found by finding the product of all the possible distances.
-          these are betweeen the hallway and side-rooms.
+          these are between the hallway and side-rooms.
           We never walk from a room to a room. There is always a hallway passage
         - a distance is always positive
         So how to calculate this:
