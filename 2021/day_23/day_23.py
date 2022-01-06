@@ -202,12 +202,13 @@ def can_enter_room(goal):
     side_room_target, _ = gen_side_room_target(goal)
 
     def can_enter(loc, state) -> int | bool:
-        """See if amphipod at state[loc] can enter it target sideroom
+        """See if amphipod at state[loc] can enter it target side-room
         - assume we can not and it has to be proven we can
-        - find the target sideroom
-        - see if there is empty space in the sideroom and if all the states are of their own type
+        - find the target side-room
+        - see if all room space is empty or the one filled is of correct type
+        - if not of correct type entering is not allowed
         - now check if the hallway is free and go...
-        - fail if any of the rulez are not met.
+        - fail if any of the rules are not met.
         """
         ret = False
         amphibod = state[loc]
@@ -392,8 +393,8 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}.input")))
-        self.source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_2.input")))
+        self.source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_a.input")))
+        self.source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_b.input")))
         self.test_source = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_test_a.input")))
         self.test_source2 = read_rows(str(Path(__file__).parent.joinpath(f"day_{day.zfill(2)}_test_b.input")))
 
