@@ -89,6 +89,8 @@ def isopen(passcode, pth):
 
 def surrounding(loc: Location, passcode: str, pth: str):
     """Generates all locations that can be reached from the current location."""
+    if loc == Location(3, 3):
+        return
     can_go = isopen(passcode, pth)
     if loc.x + 1 <= 3 and can_go["R"]:
         yield (Location(loc.x + 1, loc.y), "R")
@@ -100,20 +102,24 @@ def surrounding(loc: Location, passcode: str, pth: str):
         yield (Location(loc.x, loc.y - 1), "U")
 
 
-def solve(passcode, initial=Location(0, 0), goal=Location(3, 3)):
+def solve(passcode, initial=Location(0, 0), goal=Location(3, 3), part_1=True):
     q = deque()
     q.append((initial, ""))
     visited = set()
+    longest = 0
     while q:
         p, pth = q.popleft()
         if p == goal:
-            return pth
+            if part_1:
+                return pth
+            else:
+                longest = max(longest, len(pth))
         visited.add(pth)
         for loc, d in surrounding(p, passcode, pth):
             npth = pth + d
             if npth not in visited:
                 q.append((loc, npth))
-    raise ValueError("No path found")
+    return longest
 
 
 def part_1(source):
@@ -121,7 +127,7 @@ def part_1(source):
 
 
 def part_2(source):
-    return solve(source)
+    return solve(source, part_1=False)
 
 
 class UnitTests(unittest.TestCase):
@@ -149,10 +155,12 @@ class UnitTests(unittest.TestCase):
         self.assertEqual("RLDUDRDDRR", part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(370, part_2("ihgpwlah"))
+        self.assertEqual(492, part_2("kglvqrro"))
+        self.assertEqual(830, part_2("ulqzkmiv"))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(590, part_2(self.source))
 
 
 if __name__ == '__main__':
