@@ -38,11 +38,11 @@ def trap(left, center, right):
     return False
 
 
-def part_1_2(source, rows=40):
-    ret = [source]
+def part_1_2(source, rows=40, to_count="."):
+    last_row = source
+    total = last_row.count(to_count)
     for _ in range(rows - 1):
         new_row = ""
-        last_row = ret[-1]
         for i in range(len(last_row)):
             if i == 0:
                 new_row += "^" if trap(".", last_row[i], last_row[i + 1]) else "."
@@ -50,8 +50,9 @@ def part_1_2(source, rows=40):
                 new_row += "^" if trap(last_row[i - 1], last_row[i], ".") else "."
             else:
                 new_row += "^" if trap(last_row[i - 1], last_row[i], last_row[i + 1]) else "."
-        ret.append(new_row)
-    return "".join(ret).count(".")
+        total += new_row.count(to_count)
+        last_row = new_row
+    return total
 
 
 class UnitTests(unittest.TestCase):
