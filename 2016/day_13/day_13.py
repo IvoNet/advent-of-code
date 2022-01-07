@@ -12,11 +12,13 @@ import sys
 import unittest
 from enum import Enum
 from pathlib import Path
-from typing import NamedTuple, TypeVar, Callable
+from queue import Queue
+from typing import NamedTuple, TypeVar, Callable, Optional, Set
 
+from ivonet.collection import Queue
 from ivonet.files import read_data
 from ivonet.iter import ints
-from ivonet.search import bfs, node_to_path
+from ivonet.search import bfs, node_to_path, Node
 
 sys.dont_write_bytecode = True
 
@@ -63,20 +65,23 @@ class Location(NamedTuple):
 
 class Maze:
 
-    def __init__(self, start: Location, goal: Location, favorite_number, rows: int = 50, columns: int = 50) -> None:
+    def __init__(self, start: Location, goal: Location | int, favorite_number, rows: int = 50,
+                 columns: int = 50) -> None:
         self._rows: int = rows
         self._columns: int = columns
         self.start: Location = start
         self.goal: Location = goal
         self._grid: list[list[Cell]] = create_maze(rows, columns, favorite_number)
         self._grid[start.row][start.col] = Cell.START
-        self._grid[goal.row][goal.col] = Cell.GOAL
+        if isinstance(goal, Location):
+            self._grid[goal.row][goal.col] = Cell.GOAL
 
     def __str__(self) -> str:
         return repr_maze(self._grid)
 
     def is_goal(self, loc: Location) -> bool:
         return self.goal == loc
+
 
     def successors(self, ml: Location) -> list[Location]:
         locations: list[Location] = []
@@ -112,21 +117,73 @@ def manhattan_distance(goal: Location) -> Callable[[Location], float]:
     return distance
 
 
+def max_steps(option: Optional[Node[Location]], max=50) -> bool:
+    if option is None:
+        return False
+    return len(node_to_path(option)) - 1 <= max
+
+
+def bfs_part2(initial: T, goal_test: int, successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
+    # frontier is where we've yet to go
+    frontier: Queue[Node[T]] = Queue()
+    frontier.push(Node(initial, None))
+    # explored is where we've been
+    explored: Set[T] = {initial}
+
+    # keep going while there is more to explore
+    while not frontier.empty:
+        current_node: Node[T] = frontier.pop()
+        current_state: T = current_node.state
+        # if we found the goal, we're done
+        if len(node_to_path(current_node)) > goal_test:
+            return len(explored)
+        # check where we can go next and haven't explored
+        for child in successors(current_state):
+            if child in explored:  # skip children we already explored
+                continue
+            explored.add(child)
+            frontier.push(Node(child, current_node))
+    return None  # went through everything and never found goal
+
+
 def part_1(source, goal: Location = Location(39, 31)):
     maze = Maze(Location(1, 1), goal, int(source), rows=goal.row + 5, columns=goal.col + 5)
-    solution_dfs = bfs(maze.start, maze.is_goal, maze.successors)
+    solution_dfs: Optional[Node[Location]] = bfs(maze.start, maze.is_goal, maze.successors)
     if solution_dfs is None:
         raise ValueError("No solution found using depth-first search!")
     else:
-        path1: list[Location] = node_to_path(solution_dfs)
-        maze.mark(path1)
-        print(maze)
-        maze.clear(path1)
-        return len(path1) - 1
+        path: list[Location] = node_to_path(solution_dfs)
+        if DEBUG:
+            maze.mark(path)
+            print(maze)
+            maze.clear(path)
+        return len(path) - 1
 
 
 def part_2(source):
-    return None
+    maze = Maze(Location(1, 1), 50, int(source), rows=200, columns=200)
+    return bfs_part2(maze.start, 50, maze.successors)
+
+
+def part_2_wrong(source):
+    locs = []
+    for row in range(60):
+        for col in range(60):
+            goal = Location(row, col)
+            maze = Maze(Location(1, 1), goal, int(source), rows=goal.row + 5, columns=goal.col + 5)
+            option: Optional[Node[Location]] = bfs(maze.start, maze.is_goal, maze.successors)
+            if max_steps(option):
+                locs.append(goal)
+                path: list[Location] = node_to_path(option)
+                if DEBUG:
+                    maze.mark(path)
+                    print(maze)
+                    maze.clear(path)
+                    print(f"Path length: {len(path) - 1}")
+                    print()
+
+    _(locs)
+    return len(set(locs))
 
 
 class UnitTests(unittest.TestCase):
@@ -139,13 +196,13 @@ class UnitTests(unittest.TestCase):
         self.test_source = read_data("""10""")
 
     def test_generate_maze(self):
-        expected = """.#.####.##
-..#..#...#
-#....##...
-###.#.###.
-.##..#..#.
-..##....#.
-#...##.###"""
+        expected = """ # #### ##
+  #  #   #
+#    ##   
+### # ### 
+ ##  #  # 
+  ##    # 
+#   ## ###"""
         self.assertEqual(expected, repr_maze(create_maze(7, 10, 10)))
 
     def test_example_data_part_1(self):
@@ -154,11 +211,8 @@ class UnitTests(unittest.TestCase):
     def test_part_1(self):
         self.assertEqual(82, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
-
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(138, part_2(self.source))
 
 
 if __name__ == '__main__':
