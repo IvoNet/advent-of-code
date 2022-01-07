@@ -11,9 +11,8 @@ import os
 import sys
 import unittest
 from hashlib import md5
-from itertools import groupby, count
+from itertools import count
 from pathlib import Path
-from typing import NamedTuple
 
 from ivonet.files import read_data
 from ivonet.iter import ints
@@ -29,47 +28,39 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Potential(NamedTuple):
-    key: str
-    idx: int
-    rep: str
+def mdfive(s):
+    return md5(s.encode()).hexdigest()
 
 
-def key_gen(salt: str, nr=64):
-    """Generate new one-time pad keys
-    rules:
-    - md5 based on salt
-    - lowercase hexadecimal representation
-    - if a triplet is in the key
-    - in next thousand hashes has the same triplet but 5 times
-    """
-    idx = 1
-    potential_keys: list[Potential] = []
-    keys = []
-    for idx in count():
-        answer = f"{salt}{idx}".encode("ascii")
-        digest = md5(answer).hexdigest()
-        groups = [(label, sum(1 for _ in group)) for label, group in groupby(digest)]
-        five = [x[0] for x in groups if x[1] == 5]
-        if five:
-            pots = [x for x in potential_keys if x.rep == five[0]]
-            for key in pots:
-                if idx - key.idx <= 1000:
-                    keys.append(key.key)
-                    potential_keys.remove(key)
-                else:
-                    pots.remove(key)
-        three = [x[0] for x in groups if x[1] == 3]
-        if three:
-            potential_keys.append(Potential(digest, idx, three[0]))
-        if len(keys) >= 64:
-            break
-        idx += 1
-    return idx, keys
+def md5i(salt, idx):
+    return mdfive(f"{salt}{idx}")
+
+
+def index(salt):
+    found = 0
+    for i in count():
+        digest = md5i(salt, i)
+        for x in range(len(digest) - 2):
+            if digest[x] == digest[x + 1] == digest[x + 2]:
+                c = digest[x]
+                is_key = False
+                for k in range(1, 1001):
+                    digest2 = md5i(salt, i + k)
+                    for y in range(len(digest2) - 5):
+                        if digest2[y:y + 5] == c * 5:
+                            is_key = True
+                            break
+                    if is_key:
+                        break
+                if is_key:
+                    found += 1
+                    if found == 64:
+                        return i
+                break  # only check the first
 
 
 def part_1(source):
-    return key_gen(source)[0]
+    return index(source)
 
 
 def part_2(source):
