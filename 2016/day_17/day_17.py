@@ -10,11 +10,10 @@ __doc__ = """"""
 import os
 import sys
 import unittest
-from collections import deque
-from enum import Enum
 from pathlib import Path
 from typing import NamedTuple, TypeVar
 
+from ivonet.collection import Queue
 from ivonet.files import read_data
 from ivonet.hexadecimal import mdfive
 from ivonet.iter import ints
@@ -30,15 +29,6 @@ T = TypeVar("T")
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
-
-
-class Cell(str, Enum):
-    EMPTY = " "
-    WALL = "#"
-    DOOR = "~"
-    START = "S"
-    GOAL = "V"
-    PATH = "*"
 
 
 class Location(NamedTuple):
@@ -84,12 +74,12 @@ def solve(passcode, initial=Location(0, 0), goal=Location(3, 3), part1=True):
     I had to walk all of it and only end after walking all paths thereby finding the longest.
     In order to do that I had to add the goal test to the surroundings function to otherwise it will never end.
     """
-    q = deque()
-    q.append((initial, ""))
+    q = Queue()
+    q.push((initial, ""))
     visited = set()
     longest = 0
-    while q:
-        p, pth = q.popleft()
+    while not q.empty:
+        p, pth = q.pop()
         if p == goal:
             if part1:
                 return pth
@@ -99,7 +89,7 @@ def solve(passcode, initial=Location(0, 0), goal=Location(3, 3), part1=True):
         for loc, d in surrounding(p, passcode, pth, goal):
             new_path = pth + d
             if new_path not in visited:
-                q.append((loc, new_path))
+                q.push((loc, new_path))
     return longest
 
 
