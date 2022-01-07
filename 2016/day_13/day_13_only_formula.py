@@ -24,17 +24,19 @@ import sys
 import unittest
 from pathlib import Path
 from queue import Queue
-from typing import Optional, Set, NamedTuple
+from typing import Optional, Set, NamedTuple, TypeVar
 
 from ivonet.collection import Queue
 from ivonet.files import read_data
 from ivonet.grid import neighbors_defined_grid
 from ivonet.iter import ints
-from ivonet.search import bfs, node_to_path, Node
+from ivonet.search import node_to_path, Node
 
 sys.dont_write_bytecode = True
 
 DEBUG = False
+
+T = TypeVar("T")
 
 
 # noinspection DuplicatedCode
@@ -59,7 +61,7 @@ def successors(loc: Location, favorite_number):
             if is_empty(*coord, favorite_number)]
 
 
-def bfs(initial: T, goal: Location | int, favorite_nr: int, part_1=True) -> Optional[Node[T]]:
+def bfs(initial: T, goal: Location | int, favorite_nr: int, part_1=True) -> Optional[Node[T]] | int:
     """Standard bfs function but with a few small adjustments
     especially in the testing of the goal.
     """
