@@ -12,7 +12,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -21,13 +21,38 @@ DEBUG = True
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n"):
+def p(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
 
 
-def part_1(source):
-    return None
+def trap(left, center, right):
+    if "^" == left == center and "." == right:
+        return True
+    if "^" == center == right and "." == left:
+        return True
+    if "^" == right and "." == left == center:
+        return True
+    if "^" == left and "." == right == center:
+        return True
+    return False
+
+
+def part_1(source, rows=40):
+    ret = [source]
+    for _ in range(rows - 1):
+        new_row = ""
+        last_row = ret[-1]
+        for i in range(len(last_row)):
+            if i == 0:
+                new_row += "^" if trap(".", last_row[i], last_row[i + 1]) else "."
+            elif i == len(source) - 1:
+                new_row += "^" if trap(last_row[i - 1], last_row[i], ".") else "."
+            else:
+                new_row += "^" if trap(last_row[i - 1], last_row[i], last_row[i + 1]) else "."
+        ret.append(new_row)
+    p(ret)
+    return "".join(ret).count(".")
 
 
 def part_2(source):
@@ -40,14 +65,26 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_data("""..^^.""")
+
+    def test_trap(self):
+        self.assertTrue(trap(None, ".", "^"))
+        self.assertTrue(trap(".", "^", "^"))
+        self.assertTrue(trap("^", "^", "."))
+        self.assertTrue(trap("^", "^", None))
+        self.assertTrue(trap("^", "^", None))
+
+    def test_not_trap(self):
+        self.assertFalse(trap(".", ".", "."))
+        self.assertFalse(trap("^", "^", "^"))
+        self.assertFalse(trap(".", "^", "."))
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(6, part_1(self.test_source, rows=3))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1961, part_1(self.source, rows=40))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
