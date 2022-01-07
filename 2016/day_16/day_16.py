@@ -34,13 +34,7 @@ def convert(data):
 
 
 def checksum(data, n=2):
-    ret = ""
-    for p in [data[i:i + n] for i in range(0, len(data), n)]:
-        if p in ["11", "00"]:
-            ret += "1"
-            continue
-        ret += "0"
-    _(ret)
+    ret = "".join("1" if p in ["11", "00"] else "0" for p in [data[i:i + n] for i in range(0, len(data), n)])
     if len(ret) % 2 == 0:
         ret = checksum(ret, n)
     return ret
