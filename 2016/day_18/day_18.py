@@ -38,7 +38,7 @@ def trap(left, center, right):
     return False
 
 
-def part_1(source, rows=40):
+def part_1_2(source, rows=40):
     ret = [source]
     for _ in range(rows - 1):
         new_row = ""
@@ -51,12 +51,9 @@ def part_1(source, rows=40):
             else:
                 new_row += "^" if trap(last_row[i - 1], last_row[i], last_row[i + 1]) else "."
         ret.append(new_row)
-    p(ret)
     return "".join(ret).count(".")
 
 
-def part_2(source):
-    return None
 
 
 class UnitTests(unittest.TestCase):
@@ -69,11 +66,10 @@ class UnitTests(unittest.TestCase):
         self.test_source = read_data("""..^^.""")
 
     def test_trap(self):
-        self.assertTrue(trap(None, ".", "^"))
         self.assertTrue(trap(".", "^", "^"))
         self.assertTrue(trap("^", "^", "."))
-        self.assertTrue(trap("^", "^", None))
-        self.assertTrue(trap("^", "^", None))
+        self.assertTrue(trap("^", ".", "."))
+        self.assertTrue(trap(".", ".", "^"))
 
     def test_not_trap(self):
         self.assertFalse(trap(".", ".", "."))
@@ -81,16 +77,13 @@ class UnitTests(unittest.TestCase):
         self.assertFalse(trap(".", "^", "."))
 
     def test_example_data_part_1(self):
-        self.assertEqual(6, part_1(self.test_source, rows=3))
+        self.assertEqual(6, part_1_2(self.test_source, rows=3))
 
     def test_part_1(self):
-        self.assertEqual(1961, part_1(self.source, rows=40))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(1961, part_1_2(self.source, rows=40))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(20000795, part_1_2(self.source, rows=400000))
 
 
 if __name__ == '__main__':
