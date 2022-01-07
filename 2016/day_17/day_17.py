@@ -66,7 +66,7 @@ def surrounding(loc: Location, passcode: str, pth: str, goal):
 
 
 def solve(passcode, initial=Location(0, 0), goal=Location(3, 3), part1=True):
-    """A BFS search.
+    """A BFS.
     in this puzzle it is not important if you have already been to a certain location as doors can open and close
     becoming "walls" op open spaces again.
     This algorithm is interested in the actual path being walked.
