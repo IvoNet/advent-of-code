@@ -54,8 +54,6 @@ def part_1_2(source, rows=40):
     return "".join(ret).count(".")
 
 
-
-
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
