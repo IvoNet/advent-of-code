@@ -79,8 +79,8 @@ class UnitTests(unittest.TestCase):
 Disc #2 has 2 positions; at time=0, it is at position 1.""")
 
     def test_disk(self):
-        self.assertTrue(Disk(disk=1, positions=5, time=0, position=4).slot(5))
-        self.assertTrue(Disk(disk=2, positions=2, time=0, position=1).slot(5))
+        self.assertTrue(Disk(nr=1, positions=5, time=0, position=4).slot(5))
+        self.assertTrue(Disk(nr=2, positions=2, time=0, position=1).slot(5))
 
     def test_example_data_part_1(self):
         self.assertEqual(5, part_1(self.test_source))
