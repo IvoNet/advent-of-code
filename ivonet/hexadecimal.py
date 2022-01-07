@@ -2,8 +2,14 @@
 #  -*- coding: utf-8 -*-
 
 #          "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+from hashlib import md5
 
 ALPHABET = "OIZE S L G"
+
+
+def mdfive(s):
+    """Convenience method to get an md5 hash from a string"""
+    return md5(s.encode()).hexdigest()
 
 
 def number_as_word(num) -> str:
