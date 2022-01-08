@@ -120,18 +120,17 @@ def unscramble(source, password):
                 data = rotate_left(data, int(cmd[2]))
                 continue
             if cmd[1] == "based":  # biggest change
-                # idx  shft npos sht
-                # 0   r:1  1    l:1
-                # 1   r:2  3    l:2
-                # 2   r:3  5    l:3
-                # 3   r:4  7    l:4
-                # 4   r:6  2    l:6
-                # 5   r:7  4    l:7  8 = len passwd
-                # 6   r:8  6    l:8 (8 is same place)
-                # 7   r:9  0    l:9 (mod 8) -> build in rotate_left
-                c = cmd[-1]
-                i = data.index(c)
-                m = {0: 9, 1: 1, 2: 6, 3: 2, 4: 7, 5: 3, 6: 8, 7: 4, }
+                # idx  shift npos shift
+                # 0    r:1   1    l:1
+                # 1    r:2   3    l:2
+                # 2    r:3   5    l:3
+                # 3    r:4   7    l:4
+                # 4    r:6   2    l:6
+                # 5    r:7   4    l:7  8 = len passwd
+                # 6    r:8   6    l:8 (8 is same place)
+                # 7    r:9   0    l:9 (mod 8) -> build in rotate_left
+                i = data.index(cmd[-1])
+                m = {1: 1, 3: 2, 5: 3, 7: 4, 2: 6, 4: 7, 6: 8, 0: 9}
                 data = rotate_left(data, m[i])
                 continue
         if cmd[0] == "reverse":  # untouched
