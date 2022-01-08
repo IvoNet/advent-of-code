@@ -17,7 +17,7 @@ T = TypeVar('T')
 
 class Stack(Generic[T]):
     def __init__(self) -> None:
-        self._container: List[T] = []
+        self._container: list[T] = []
 
     @property
     def empty(self) -> bool:
@@ -53,7 +53,7 @@ class Queue(Generic[T]):
 
 class PriorityQueue(Generic[T]):
     def __init__(self) -> None:
-        self._container: List[T] = []
+        self._container: list[T] = []
 
     @property
     def empty(self) -> bool:

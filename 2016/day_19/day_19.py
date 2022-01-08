@@ -12,6 +12,7 @@ import sys
 import unittest
 from pathlib import Path
 
+from ivonet.cdll import CircularDoublyLinkedList, Node
 from ivonet.files import read_data
 from ivonet.iter import ints
 
@@ -26,125 +27,6 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.next = None
-        self.prev = None
-
-    def __repr__(self) -> str:
-        return f"Node<data={repr(self.data)} prev={repr(self.prev.data)} next={repr(self.next.data)}>"
-
-
-class CircularDoublyLinkedList:
-    def __init__(self):
-        self.first: Node | None = None
-        self.current: Node | None = None
-        self.size: int = 0
-
-    def __repr__(self) -> str:
-        """Representation of one cycle from the first node to the last node walking right"""
-        if not self.first:
-            return "CircularDoublyLinkedList<>"
-        ret = "CircularDoublyLinkedList<["
-        node = self.first
-        while True:
-            ret += f"{repr(node)}, "
-            node = node.next
-            if node == self.first:
-                break
-        return ret + "]>"
-
-    def get_node(self, index):
-        current = self.first
-        for _ in range(index):
-            current = current.next
-        self.current = current
-        return current
-
-    def next(self):
-        if not self.first:
-            return None
-        if not self.current:
-            self.current = self.first
-        self.current = self.current.next
-        return self.current
-
-    def previous(self):
-        if not self.first:
-            return None
-        if not self.current:
-            self.current = self.first
-        self.current = self.current.prev
-        return self.current
-
-    def reset(self):
-        self.current = self.first
-
-    def insert_after(self, ref_node, new_node):
-        new_node.prev = ref_node
-        new_node.next = ref_node.next
-        new_node.next.prev = new_node
-        ref_node.next = new_node
-        self.size += 1
-
-    def insert_before(self, ref_node, new_node):
-        self.insert_after(ref_node.prev, new_node)
-
-    def insert_at_end(self, new_node):
-        if self.first is None:
-            self.first = new_node
-            new_node.next = new_node
-            new_node.prev = new_node
-            self.size = 1
-        else:
-            self.insert_after(self.first.prev, new_node)
-
-    def append(self, value):
-        self.insert_at_end(Node(value))
-
-    def insert_at_beginning(self, new_node):
-        self.insert_at_end(new_node)
-        self.first = new_node
-
-    def prepend(self, value):
-        self.insert_at_beginning(Node(value))
-
-    def remove(self, node):
-        if self.first.next == self.first:
-            self.first = None
-            self.size = 0
-        else:
-            node.prev.next = node.next
-            node.next.prev = node.prev
-            if self.first == node:
-                self.first = node.next
-            if self.current == node:
-                self.current = self.first
-            self.size -= 1
-
-    def delete_at_index(self, index):
-        node = self.get_node(index)
-        if node:
-            self.remove(node)
-
-    def display(self):
-        if self.first is None:
-            return
-        current = self.first
-        while True:
-            print(current.data, end=' ')
-            current = current.next
-            if current == self.first:
-                break
-
-    def __len__(self) -> int:
-        return self.size
-
-    def get(self):
-        return self.current.data
-
-
 def create_cll(elves):
     elf_ring = CircularDoublyLinkedList()
     for i in range(1, elves + 1):
@@ -155,7 +37,7 @@ def create_cll(elves):
 def part_1(source):
     nr_of_elves = int(source)
     elf_ring = create_cll(nr_of_elves)
-    active_elf = elf_ring.get_node(0)
+    active_elf: Node = elf_ring.get_node(0)
     while len(elf_ring) > 1:
         elf_ring.remove(active_elf.next)
         active_elf = active_elf.next
