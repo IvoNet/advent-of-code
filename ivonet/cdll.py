@@ -40,7 +40,7 @@ class CircularDoublyLinkedList:
         self.current: Node[T] | None = None
         self.size: int = 0
 
-    def node(self, index: int) -> Optional[Node[T]]:
+    def node(self, index: int, update_current=True) -> Optional[Node[T]]:
         """Gets the node at index.
         As this is a circular linked list there is no end to the index.
         It goes round and round and round :-) So be careful what you ask for.
@@ -52,7 +52,8 @@ class CircularDoublyLinkedList:
         current = self.first
         for _ in range(index % self.size):
             current = current.next
-        self.current = current
+        if update_current:
+            self.current = current
         return current
 
     def next(self) -> Optional[Node[T]]:
@@ -72,6 +73,11 @@ class CircularDoublyLinkedList:
             self.current = self.first
         self.current = self.current.prev
         return self.current
+
+    def current(self) -> Optional[Node[T]]:
+        if self.current:
+            return self.current
+        return None
 
     def reset(self):
         """Resets the current node to the first node"""
@@ -144,11 +150,11 @@ class CircularDoublyLinkedList:
             if self.first == node:
                 self.first = node.next
             if self.current == node:
-                self.current = self.first
+                self.current = node.next
             self.size -= 1
 
     def remove_index(self, index: int):
-        node = self.node(index)
+        node = self.node(index, update_current=False)
         if node:
             self.remove(node)
 
@@ -164,7 +170,7 @@ class CircularDoublyLinkedList:
 
     def __getitem__(self, item: int) -> T:
         """Gets the data of a node based on the index"""
-        return self.node(item).data
+        return self.node(item, update_current=False).data
 
     def __repr__(self) -> str:
         """Representation of one cycle from the first node to the last node walking right"""

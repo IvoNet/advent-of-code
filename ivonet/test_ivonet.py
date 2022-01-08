@@ -11,6 +11,8 @@ from ivonet.iter import consecutive_element_pairing
 from ivonet.roman_numerals import roman
 from ivonet.str import sort_str, is_sorted, letters, OpenCloseTags, TagError
 
+TAG_ERROR = "Should have raised a TagError"
+
 
 class TestBase(TestCase):
     def test_base_10_to_x(self):
@@ -137,14 +139,14 @@ class StringFunctions(TestCase):
     def test_open_closet_tags_exception(self):
         try:
             OpenCloseTags("<>>", exception=True)
-            self.fail("Should have raised a TagError")
+            self.fail(TAG_ERROR)
         except TagError as e:
             self.assertEqual("Expected to be finished, but found > instead.", str(e))
             self.assertEqual(">", e.actual)
 
         try:
             OpenCloseTags("<]", exception=True)
-            self.fail("Should have raised a TagError")
+            self.fail(TAG_ERROR)
         except TagError as e:
             self.assertEqual(">", e.expected)
             self.assertEqual("]", e.actual)
@@ -152,7 +154,7 @@ class StringFunctions(TestCase):
 
         try:
             OpenCloseTags("<[{()()", exception=True)
-            self.fail("Should have raised a TagError")
+            self.fail(TAG_ERROR)
         except TagError as e:
             self.assertEqual("}]>", e.incomplete)
             self.assertEqual("Expected these closing tags '}]>'.", str(e))
@@ -203,6 +205,22 @@ class CircularDoublyLinkedListTests(TestCase):
         self.cdll.remove(self.cdll.node(0))
         self.cdll.remove(self.cdll.node(0))
         self.assertEqual(None, self.cdll.get())
+
+    def test_remove_current(self):
+        self.cdll.extend(range(5))
+        current = self.cdll.next()
+        self.cdll.remove(current)
+        self.assertEqual(2, self.cdll.get())
+
+    def test_popleft(self):
+        self.cdll.extend(range(5))
+        self.cdll.node(4)
+        self.assertEqual(0, self.cdll.popleft())
+        self.assertEqual(1, self.cdll.popleft())
+        self.assertEqual(2, self.cdll[0])
+        self.assertEqual(3, len(self.cdll))
+        self.cdll.previous()
+        self.assertEqual(3, self.cdll.get())
 
 
 if __name__ == "__main__":
