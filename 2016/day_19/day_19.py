@@ -10,9 +10,7 @@ __doc__ = """"""
 import os
 import sys
 import unittest
-from itertools import count
 from pathlib import Path
-from typing import Optional
 
 from ivonet.files import read_data
 from ivonet.iter import ints
@@ -40,11 +38,12 @@ class Node:
 
 class CircularDoublyLinkedList:
     def __init__(self):
-        self.first: Node = Optional[Node]
-        self.current: Node = Optional[Node]
+        self.first: Node | None = None
+        self.current: Node | None = None
+        self.size: int = 0
 
     def __repr__(self) -> str:
-        """Representation of one cicle from the first node to the last node walking right"""
+        """Representation of one cycle from the first node to the last node walking right"""
         if not self.first:
             return "CircularDoublyLinkedList<>"
         ret = "CircularDoublyLinkedList<["
@@ -82,12 +81,12 @@ class CircularDoublyLinkedList:
     def reset(self):
         self.current = self.first
 
-    @staticmethod
-    def insert_after(ref_node, new_node):
+    def insert_after(self, ref_node, new_node):
         new_node.prev = ref_node
         new_node.next = ref_node.next
         new_node.next.prev = new_node
         ref_node.next = new_node
+        self.size += 1
 
     def insert_before(self, ref_node, new_node):
         self.insert_after(ref_node.prev, new_node)
@@ -97,6 +96,7 @@ class CircularDoublyLinkedList:
             self.first = new_node
             new_node.next = new_node
             new_node.prev = new_node
+            self.size = 1
         else:
             self.insert_after(self.first.prev, new_node)
 
@@ -113,6 +113,7 @@ class CircularDoublyLinkedList:
     def remove(self, node):
         if self.first.next == self.first:
             self.first = None
+            self.size = 0
         else:
             node.prev.next = node.next
             node.next.prev = node.prev
@@ -120,6 +121,7 @@ class CircularDoublyLinkedList:
                 self.first = node.next
             if self.current == node:
                 self.current = self.first
+            self.size -= 1
 
     def delete_at_index(self, index):
         node = self.get_node(index)
@@ -137,11 +139,7 @@ class CircularDoublyLinkedList:
                 break
 
     def __len__(self) -> int:
-        node = self.first
-        for i in count():
-            node = node.next
-            if node == self.first:
-                return i
+        return self.size
 
     def get(self):
         return self.current.data
