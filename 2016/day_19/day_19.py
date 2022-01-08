@@ -27,7 +27,7 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def part_1(source):
+def part_1a(source):
     nr_of_elves = int(source)
     elves = {k: True for k in range(int(nr_of_elves))}
     for i in count():
@@ -41,6 +41,16 @@ def part_1(source):
         left = [k for k, v in elves.items() if v]
         if len(left) == 1:
             return left[0] + 1
+
+
+def part_1(source):
+    nr_of_elves = int(source)
+    elves = list(range(1, int(nr_of_elves) + 1))
+    elf = 0
+    while len(elves) > 1:
+        elf = (elf + 1) % len(elves)
+        elves.pop(elf)
+    return elves[0]
 
 
 def part_2(source):
