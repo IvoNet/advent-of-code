@@ -27,27 +27,35 @@ def _(*args, end="\n"):
 
 
 def parse(source):
-    ret = []
-    for line in source:
-        l, h = ints(line.replace("-", " "))
-        ret.append((l, h))
-    return sorted(ret)
+    """Create a sorted list of the input of ranges(low, high) so that we can start from zero"""
+    return sorted([ints(line.replace("-", " ")) for line in source])
 
 
-def valid_ip(data, n):
+def valid_ip(data, ip):
+    """Test if an ip is valid
+    Valid when:
+    - not in one of the ranges in the data
+    - not higher than highest IP allowed
+    """
     for start, end in data:
-        if start <= n <= end:
+        if start <= ip <= end:
             break
     else:
-        if n <= 4294967295:  # or n < 2 ** 32
+        if ip <= 4294967295:  # or n < 2 ** 32
             return True
     return False
 
 
 def process(source):
+    """
+    A candidate is:
+    - always 1 higher than a highest in a range
+    - must not fall in a range of another
+    - must not be higher than the allowed highest value
+    """
     data = parse(source)
-    upper_ranges = [x[1] + 1 for x in data]
-    valids = [x for x in upper_ranges if valid_ip(data, x)]
+    candidates = [x[1] + 1 for x in data]
+    valids = [ip for ip in candidates if valid_ip(data, ip)]
     return min(valids), len(valids)
 
 
