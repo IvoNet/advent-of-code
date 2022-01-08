@@ -12,7 +12,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from ivonet.cdll import CircularDoublyLinkedList, Node
+from ivonet.cdll import CircularDoublyLinkedList
 from ivonet.files import read_data
 from ivonet.iter import ints
 
@@ -36,21 +36,17 @@ def create_cll(elves):
 
 def part_1(source):
     elf_ring = create_cll(source)
-    active_elf: Node = elf_ring.node(0)
     while len(elf_ring) > 1:
-        elf_ring.remove(active_elf.next)
-        active_elf = elf_ring.next()
+        elf_ring.remove(elf_ring.next())
     return elf_ring.get()
 
 
 def part_2(source):
     elf_ring = create_cll(source)
-    active_elf = elf_ring.node(0)
     opposite = elf_ring.node(len(elf_ring) // 2)
     while len(elf_ring) > 1:
         elf_ring.remove(opposite)
         opposite = opposite.next if len(elf_ring) % 2 == 1 else opposite.next.next
-        active_elf = active_elf.next
     return elf_ring.get()
 
 
