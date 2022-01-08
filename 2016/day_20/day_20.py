@@ -30,54 +30,33 @@ def parse(source):
     ret = []
     for line in source:
         l, h = ints(line.replace("-", " "))
-        ret.append(range(l, h + 1))
-    return ret
+        ret.append((l, h))
+    return sorted(ret)
+
+
+def valid_ip(data, n):
+    for start, end in data:
+        if start <= n <= end:
+            break
+    else:
+        if n <= 4294967295:  # or n < 2 ** 32
+            return True
+    return False
+
+
+def process(source):
+    data = parse(source)
+    upper_ranges = [x[1] + 1 for x in data]
+    valids = [x for x in upper_ranges if valid_ip(data, x)]
+    return min(valids), len(valids)
 
 
 def part_1(source):
-    ranges = parse(source)
-    srted = sorted(ranges, key=lambda r: r.start, reverse=True)
-    print(srted)
-    ret = []
-    lowest = 0
-    while srted:
-        current = srted.pop()
-        if current.start == 0:
-            ret.append(current)
-            lowest = current.stop
-            _(f"Start: {lowest}")
-            continue
-        if current.start <= lowest:
-            if current.stop <= lowest:
-                # just ignore as it fully falls in another range
-                _(f"Ignoring range: {current}")
-                continue
-            if current.stop > lowest:
-                ret.append(current)
-                lowest = current.stop
-                _(current)
-                _(f"New lowest: {lowest}")
-                continue
-        if current.start - 1 == lowest:
-            lowest = current.stop
-            _(current)
-            _(f"Just one higher. New lowest: {lowest}")
-            continue
-        _(f"Other: {current}")
-        break
-
-    #
-    #
-    # for i, r in enumerate(srted[:-1]):
-    #     print(r.start, r.stop, srted[i+1].start, srted[i+1].start)
-    #     if r.stop > srted[i+1].stop:
-    #         return r.stop
-    # print(srted)
-    # return None
+    return process(source)[0]
 
 
 def part_2(source):
-    return None
+    return process(source)[1]
 
 
 class UnitTests(unittest.TestCase):
@@ -95,13 +74,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(31053880, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(117, part_2(self.source))
 
 
 if __name__ == '__main__':
