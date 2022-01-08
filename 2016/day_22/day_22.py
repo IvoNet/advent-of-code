@@ -10,7 +10,9 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from itertools import permutations
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -26,8 +28,34 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Node(NamedTuple):
+    x: int
+    y: int
+    size: int
+    used: int
+    avail: int
+    use: int
+
+
+def parse(source) -> list[Node]:
+    return [Node(*ints(line)) for line in source[2:]]
+
+
 def part_1(source):
-    return None
+    nodes = parse(source)
+    # _(nodes)
+    candidates = [n for n in nodes if n.used != 0]
+    # _(sorted(nodes, key=lambda x: x.avail, reverse=True))
+    # _(sorted(nodes, key=lambda x: x.used))
+    # _(candidates)
+    ret = []
+    for a, b in permutations(nodes, 2):
+        # _(a.used, b.avail, a.avail, b.used)
+        if b.avail >= a.used > 0:
+            ret.append((a, b))
+    _(ret)
+    ret = [x for x in ret if x[0].used != 0]
+    return len(ret)
 
 
 def part_2(source):
@@ -43,11 +71,9 @@ class UnitTests(unittest.TestCase):
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source = read_rows("""""")
 
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(967, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
