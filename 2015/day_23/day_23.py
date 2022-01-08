@@ -30,7 +30,7 @@ def prepare(source):
         cmd = line.replace(",", "").strip().split()
         if cmd[0] in ("jio", "jmp", "jie"):
             del (cmd[-1])
-            cmd.insert_at_end(ints(line)[0])
+            cmd.append(ints(line)[0])
         program.append(cmd)
     return program
 

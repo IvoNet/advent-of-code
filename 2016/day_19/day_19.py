@@ -29,26 +29,24 @@ def _(*args, end="\n"):
 
 def create_cll(elves):
     elf_ring = CircularDoublyLinkedList()
-    for i in range(1, elves + 1):
+    for i in range(1, int(elves) + 1):
         elf_ring.append(i)
     return elf_ring
 
 
 def part_1(source):
-    nr_of_elves = int(source)
-    elf_ring = create_cll(nr_of_elves)
-    active_elf: Node = elf_ring.get_node(0)
+    elf_ring = create_cll(source)
+    active_elf: Node = elf_ring.node(0)
     while len(elf_ring) > 1:
         elf_ring.remove(active_elf.next)
-        active_elf = active_elf.next
+        active_elf = elf_ring.next()
     return elf_ring.get()
 
 
 def part_2(source):
-    nr_of_elves = int(source)
-    elf_ring = create_cll(nr_of_elves)
-    active_elf = elf_ring.get_node(0)
-    opposite = elf_ring.get_node(len(elf_ring) // 2)
+    elf_ring = create_cll(source)
+    active_elf = elf_ring.node(0)
+    opposite = elf_ring.node(len(elf_ring) // 2)
     while len(elf_ring) > 1:
         elf_ring.remove(opposite)
         opposite = opposite.next if len(elf_ring) % 2 == 1 else opposite.next.next

@@ -8,9 +8,12 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """A Circular Doubly Linked List
 a simple implementation of a CircularDoublyLinkedList
+
+See the unit tests in this package and a good 
+usage example in 2016 day 19
 """
 
-from typing import TypeVar, Generic, Optional
+from typing import TypeVar, Generic, Optional, Iterator
 
 T = TypeVar('T')
 
@@ -31,19 +34,28 @@ class Node(Generic[T]):
 
 
 class CircularDoublyLinkedList:
-    def __init__(self):
+
+    def __init__(self) -> None:
         self.first: Node[T] | None = None
         self.current: Node[T] | None = None
         self.size: int = 0
 
-    def get_node(self, index: int):
+    def node(self, index: int) -> Optional[Node[T]]:
+        """Gets the node at index.
+        As this is a circular linked list there is no end to the index.
+        It goes round and round and round :-) So be careful what you ask for.
+        To speed things up first a mod of the size will be done so that we are not
+        walking around in circles for nothing.
+        """
+        if not self.first:
+            return None
         current = self.first
-        for _ in range(index):
+        for _ in range(index % self.size):
             current = current.next
         self.current = current
         return current
 
-    def next(self):
+    def next(self) -> Optional[Node[T]]:
         """'Walks' forwards from the current node"""
         if not self.first:
             return None
@@ -52,7 +64,7 @@ class CircularDoublyLinkedList:
         self.current = self.current.next
         return self.current
 
-    def previous(self):
+    def previous(self) -> Optional[Node[T]]:
         """'Walks' backwards from the current node"""
         if not self.first:
             return None
@@ -81,6 +93,7 @@ class CircularDoublyLinkedList:
         """Appends a node at the 'end' of the cycle"""
         if self.first is None:
             self.first = new_node
+            self.current = self.first
             new_node.next = new_node
             new_node.prev = new_node
             self.size = 1
@@ -93,6 +106,11 @@ class CircularDoublyLinkedList:
         """
         self.insert_at_end(Node(value))
 
+    def extend(self, iterator: Iterator[T]):
+        """Extend the cycle by adding the whole iterable to the 'end' of the cycle"""
+        for i in iterator:
+            self.append(i)
+
     def insert_at_beginning(self, new_node: Node[T]):
         self.insert_at_end(new_node)
         self.first = new_node
@@ -104,6 +122,8 @@ class CircularDoublyLinkedList:
         self.insert_at_beginning(Node(value))
 
     def remove(self, node: Node[T]):
+        if not self.first:
+            return
         if self.first.next == self.first:
             self.first = None
             self.current = None
@@ -118,7 +138,7 @@ class CircularDoublyLinkedList:
             self.size -= 1
 
     def remove_index(self, index: int):
-        node = self.get_node(index)
+        node = self.node(index)
         if node:
             self.remove(node)
 
@@ -127,6 +147,10 @@ class CircularDoublyLinkedList:
         if self.current:
             return self.current.data
         return None
+
+    def __getitem__(self, item: int) -> T:
+        """Gets the data of a node based on the index"""
+        return self.node(item).data
 
     def __repr__(self) -> str:
         """Representation of one cycle from the first node to the last node walking right"""

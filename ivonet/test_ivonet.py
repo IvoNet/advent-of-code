@@ -5,6 +5,7 @@ from unittest import TestCase, main
 from ivonet.alphabet import base_26_encode_string, sum_letter_values_of_word, alphabet, product_letter_values_of_word, \
     base_26_decode_string
 from ivonet.calc import base_10_to_base_x, base_3
+from ivonet.cdll import CircularDoublyLinkedList
 from ivonet.hexadecimal import number_as_word
 from ivonet.iter import consecutive_element_pairing
 from ivonet.roman_numerals import roman
@@ -155,6 +156,53 @@ class StringFunctions(TestCase):
         except TagError as e:
             self.assertEqual("}]>", e.incomplete)
             self.assertEqual("Expected these closing tags '}]>'.", str(e))
+
+
+class CircularDoublyLinkedListTests(TestCase):
+
+    def setUp(self) -> None:
+        self.cdll = CircularDoublyLinkedList()
+
+    def test_cdll_1(self):
+        self.cdll.extend(range(100))
+        self.cdll.append("A")
+        self.cdll.previous()
+        self.assertEqual("A", self.cdll.get())
+        self.assertEqual(101, len(self.cdll))
+
+    def test_cdll_remove(self):
+        self.cdll.append(1)
+        self.assertEqual(1, len(self.cdll))
+        self.cdll.remove_index(0)
+        self.assertEqual(0, len(self.cdll))
+        self.cdll.remove_index(0)
+        self.assertEqual(0, len(self.cdll))
+
+    def test_cdll_subscriptable(self):
+        self.cdll.append(1)
+        self.cdll.append(2)
+        self.assertEqual(1, self.cdll[0])
+        self.assertEqual(1, self.cdll[2])
+        self.assertEqual(1, self.cdll[4])
+        self.assertEqual(2, self.cdll[1])
+        self.assertEqual(2, self.cdll[3])
+
+    def test_next(self):
+        self.cdll.extend(range(200))
+        [self.cdll.next() for _ in range(50)]
+        self.assertEqual(50, self.cdll.get())
+
+    def test_previous(self):
+        self.cdll.extend(range(200))
+        [self.cdll.previous() for _ in range(50)]
+        self.assertEqual(150, self.cdll.get())
+
+    def test_remove(self):
+        self.cdll.extend(range(2))
+        self.cdll.remove(self.cdll.node(0))
+        self.cdll.remove(self.cdll.node(0))
+        self.cdll.remove(self.cdll.node(0))
+        self.assertEqual(None, self.cdll.get())
 
 
 if __name__ == "__main__":
