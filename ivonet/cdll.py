@@ -20,7 +20,7 @@ T = TypeVar('T')
 
 class Node(Generic[T]):
     """A Node as companion to the Circular Doubly Linked List
-    A node has data and a next and previous.
+    A node contains data and a reference to its next and previous.
     On its own it points to itself both ways.
     """
 
@@ -121,6 +121,16 @@ class CircularDoublyLinkedList:
         """
         self.insert_at_beginning(Node(value))
 
+    def popleft(self) -> T:
+        """Returns the value of the first and removes the node from the cycle
+        the next node will become the first node.
+        """
+        if self.empty():
+            return None
+        value = self.first.data
+        self.remove(self.first)
+        return value
+
     def remove(self, node: Node[T]):
         if not self.first:
             return
@@ -147,6 +157,10 @@ class CircularDoublyLinkedList:
         if self.current:
             return self.current.data
         return None
+
+    def empty(self) -> bool:
+        """Do we have nodes or not"""
+        return self.size == 0
 
     def __getitem__(self, item: int) -> T:
         """Gets the data of a node based on the index"""
