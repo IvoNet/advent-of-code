@@ -155,15 +155,23 @@ def create_cll(elves):
 def part_1(source):
     nr_of_elves = int(source)
     elf_ring = create_cll(nr_of_elves)
-    start_elf = elf_ring.get_node(0)
+    active_elf = elf_ring.get_node(0)
     while len(elf_ring) > 1:
-        elf_ring.remove(start_elf.next)
-        start_elf = start_elf.next
+        elf_ring.remove(active_elf.next)
+        active_elf = active_elf.next
     return elf_ring.get()
 
 
 def part_2(source):
-    return None
+    nr_of_elves = int(source)
+    elf_ring = create_cll(nr_of_elves)
+    active_elf = elf_ring.get_node(0)
+    opposite = elf_ring.get_node(len(elf_ring) // 2)
+    while len(elf_ring) > 1:
+        elf_ring.remove(opposite)
+        opposite = opposite.next if len(elf_ring) % 2 == 1 else opposite.next.next
+        active_elf = active_elf.next
+    return elf_ring.get()
 
 
 class UnitTests(unittest.TestCase):
@@ -178,10 +186,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3, part_1("5"))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1842613, part_1(self.source))
+
+    def test_example_data_part_2(self):
+        self.assertEqual(2, part_2("5"))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1424135, part_2(self.source))
 
 
 if __name__ == '__main__':
