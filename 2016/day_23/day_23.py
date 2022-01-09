@@ -114,17 +114,22 @@ def part_2(source, a=12, multiply=True):
     - looking further (debug mode on in this case and redirecting the output to a file)
     - I noticed that at the moment b decrements it is a factorial exactly. also when it flipped from 2 to 1
     - so what happends after that as the program is not finished. I scrolled to that point and found this
+    {'a': 5040, 'b': 2, 'c': 0, 'd': 0}
+    {'a': 5040, 'b': 2, 'c': 0, 'd': 0}  <- 7! right here
+    {'a': 5040, 'b': 1, 'c': 0, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 1, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 1, 'd': 1}
+    {'a': 5040, 'b': 1, 'c': 1, 'd': 0}
     {'a': 5040, 'b': 1, 'c': 2, 'd': 0}
     {'a': 5040, 'b': 1, 'c': 2, 'd': 0}
     {'a': 5040, 'b': 1, 'c': 2, 'd': 0}
     {'a': 5040, 'b': 1, 'c': -16, 'd': 0}
     {'a': 5040, 'b': 1, 'c': 1, 'd': 0}
     {'a': 5040, 'b': 1, 'c': 85, 'd': 0}
-    {'a': 5040, 'b': 1, 'c': 85, 'd': 76}   <--!!
+    {'a': 5040, 'b': 1, 'c': 85, 'd': 76}   <--!! adding a multiplcation of 85 * 76
     {'a': 5041, 'b': 1, 'c': 85, 'd': 76}
     {'a': 5041, 'b': 1, 'c': 85, 'd': 75}
     {'a': 5041, 'b': 1, 'c': 85, 'd': 75}
-    - it seems that there is one multiplication added to the equation also  found in the assembunny here:
     jnz 1 c
     cpy 85 c
     jnz 76 d
