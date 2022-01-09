@@ -37,8 +37,9 @@ class CircularDoublyLinkedList:
 
     def __init__(self) -> None:
         self.first: Node[T] | None = None
-        self.current: Node[T] | None = None
+        self.current_node: Node[T] | None = None
         self.size: int = 0
+        self.current_first = True
 
     def node(self, index: int, update_current=True) -> Optional[Node[T]]:
         """Gets the node at index.
@@ -53,35 +54,49 @@ class CircularDoublyLinkedList:
         for _ in range(index % self.size):
             current = current.next
         if update_current:
-            self.current = current
+            self.current_node = current
         return current
 
     def next(self) -> Optional[Node[T]]:
         """'Walks' forwards from the current node"""
         if not self.first:
             return None
-        if not self.current:
-            self.current = self.first
-        self.current = self.current.next
-        return self.current
+        if not self.current_node:
+            self.current_node = self.first
+        self.current_first = False
+        self.current_node = self.current_node.next
+        return self.current_node
 
     def previous(self) -> Optional[Node[T]]:
         """'Walks' backwards from the current node"""
         if not self.first:
             return None
-        if not self.current:
-            self.current = self.first
-        self.current = self.current.prev
-        return self.current
+        if not self.current_node:
+            self.current_node = self.first
+        self.current_node = self.current_node.prev
+        self.current_first = False
+        return self.current_node
 
     def current(self) -> Optional[Node[T]]:
-        if self.current:
-            return self.current
+        if self.current_node:
+            return self.current_node
         return None
+
+    def done(self) -> bool:
+        """Checks if the current node is the first node
+        it assumes that if these are the same we are done
+        but if it is the first cycle it is not done
+        This function only has purpose as long as you walk
+        only one way :-)
+        """
+        if self.current_first:
+            return False
+        return self.first == self.current_node
 
     def reset(self):
         """Resets the current node to the first node"""
-        self.current = self.first
+        self.current_node = self.first
+        self.current_first = True
 
     def insert_after(self, ref_node: Node[T], new_node: Node[T]):
         """Inserts a node after the reference node"""
@@ -99,7 +114,7 @@ class CircularDoublyLinkedList:
         """Appends a node at the 'end' of the cycle"""
         if self.first is None:
             self.first = new_node
-            self.current = self.first
+            self.current_node = self.first
             new_node.next = new_node
             new_node.prev = new_node
             self.size = 1
@@ -142,15 +157,15 @@ class CircularDoublyLinkedList:
             return
         if self.first.next == self.first:
             self.first = None
-            self.current = None
+            self.current_node = None
             self.size = 0
         else:
             node.prev.next = node.next
             node.next.prev = node.prev
             if self.first == node:
                 self.first = node.next
-            if self.current == node:
-                self.current = node.next
+            if self.current_node == node:
+                self.current_node = node.next
             self.size -= 1
 
     def remove_index(self, index: int):
@@ -160,8 +175,8 @@ class CircularDoublyLinkedList:
 
     def get(self):
         """Convenience method to get the data of the current node"""
-        if self.current:
-            return self.current.data
+        if self.current_node:
+            return self.current_node.data
         return None
 
     def empty(self) -> bool:
