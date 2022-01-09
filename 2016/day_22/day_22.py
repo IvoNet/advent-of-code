@@ -43,11 +43,6 @@ def parse(source) -> list[Node]:
 
 def part_1(source):
     nodes = parse(source)
-    # _(nodes)
-    candidates = [n for n in nodes if n.used != 0]
-    # _(sorted(nodes, key=lambda x: x.avail, reverse=True))
-    # _(sorted(nodes, key=lambda x: x.used))
-    # _(candidates)
     ret = []
     for a, b in permutations(nodes, 2):
         # _(a.used, b.avail, a.avail, b.used)
@@ -58,8 +53,38 @@ def part_1(source):
     return len(ret)
 
 
+def visualize(nodes):
+    empty = [n for n in nodes if n.used == 0]
+    max_x = max(n.x for n in nodes)
+    ret = "   012345678901234567890123456789012"
+    y = -1
+    for node in sorted(nodes, key=lambda x: x.y):
+        if node.y > y:
+            ret += f"\n{str(node.y).zfill(2)} "
+            y = node.y
+        if node.x == 0 and node.y == 0:
+            ret += "F"
+        elif node.y == 0 and node.x == max_x:
+            ret += "G"
+        elif node.used > empty[0].avail:
+            # elif node.used > 90:
+            ret += "#"
+        elif node.used == 0:
+            ret += "o"
+        else:
+            ret += "."
+    return ret
+
+
 def part_2(source):
-    return None
+    nodes = parse(source)
+    print(visualize(nodes))
+    print("Visualisation helped! its just a sliding puzzle.")
+    print("- move the o (empty) to G which takes 16 + 12 + 21 steps")
+    print("- then it takes 5 steps to move G one place to the left")
+    print("- repeat the last step 31 times")
+    print("No real code here but will probably try to program it at a later date :-)")
+    return 16 + 12 + 22 + 31 * 5
 
 
 class UnitTests(unittest.TestCase):
@@ -69,17 +94,12 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
-
 
     def test_part_1(self):
         self.assertEqual(967, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
-
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(205, part_2(self.source))
 
 
 if __name__ == '__main__':
