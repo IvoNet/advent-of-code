@@ -5,7 +5,9 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+Used the same code as for day 13 of 2016. Very handy
+"""
 
 import os
 import sys
@@ -100,11 +102,12 @@ class Maze:
     def clear(self, path: list[Location]):
         for loc in path:
             self._grid[loc.row][loc.col] = Cell.EMPTY
-        self._grid[self.start.row][self.start.col] = Cell.START
-        self._grid[self.goal.row][self.goal.col] = Cell.GOAL
+        self._grid[self.start.row][self.start.col] = Cell.EMPTY
+        self._grid[self.goal.row][self.goal.col] = Cell.EMPTY
 
 
 def breath_first_search(grid: list[list[Cell]], start: Location, goal: Location) -> int:
+    """Do the search and then give back the shortest found."""
     maze = Maze(grid, start, goal)
     solution_dfs: Optional[Node[Location]] = bfs(maze.start, maze.is_goal, maze.successors)
     if solution_dfs is None:
@@ -119,8 +122,20 @@ def breath_first_search(grid: list[list[Cell]], start: Location, goal: Location)
 
 
 def find_shortest(source: str, return_to_start=False):
+    """Shortest path finder.
+    - Because there are more than 1 start and end points we need to find the
+      best combination of in order to get the shortest path.
+    - there are 7 exposed wire locations to visit
+    - startpoint is always "0", so in order to find the shortest path we need to try all combinations
+      starting with 0 and then every combination of 1..7 in steps of start,goal combinations
+      goal of first path will become start for next with new goal, etc. these are represented in the 'combi' variable
+    - in order to speed things up significantly it is useful to remember combinations already processed
+      just return the distance in that case.
+    - return the min(paths) voila
+    - if we need to return to our original starting point we just add "0" to the last step too.
+    - visualize by setting DEBUG to True :-)
+    """
     grid, locations = parse(source)
-    shortest = float("inf")
     paths = {}
     visited = {}
     if return_to_start:
@@ -131,7 +146,6 @@ def find_shortest(source: str, return_to_start=False):
         pad_tot = 0
         for start, goal in consecutive_element_pairing(pad, 2):
             if distance := visited.get((start, goal), None):
-                _("!!", visited)
                 pad_tot += distance
             else:
                 try:
@@ -140,12 +154,10 @@ def find_shortest(source: str, return_to_start=False):
                     visited[(start, goal)] = distance
                 except ValueError:
                     visited[(start, goal)] = float("inf")
-            _(locations[start], locations[goal], pad_tot)
-        _(pad, pad_tot)
-        shortest = pad_tot if pad_tot < shortest else shortest
+        _(" -> ".join(pad), "distance:", pad_tot)
         paths[pad] = pad_tot
-    _(visited)
-    _(paths)
+    shortest_pad, shortest = min(paths.items(), key=lambda x: x[1])[:2]
+    print("Shortest path:", " -> ".join(shortest_pad), "distance:", shortest)
     return shortest
 
 
