@@ -111,9 +111,29 @@ def part_2(source, a=12, multiply=True):
     Analizing the part_1 run...
     - every time register b decrements register a is a factorial down
       so in the end I thought 7! but there was a difference
-    - looking further
+    - looking further (debug mode on in this case and redirecting the output to a file)
+    - I noticed that at the moment b decrements it is a factorial exactly. also when it flipped from 2 to 1
+    - so what happends after that as the program is not finished. I scrolled to that point and found this
+    {'a': 5040, 'b': 1, 'c': 2, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 2, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 2, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': -16, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 1, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 85, 'd': 0}
+    {'a': 5040, 'b': 1, 'c': 85, 'd': 76}   <--!!
+    {'a': 5041, 'b': 1, 'c': 85, 'd': 76}
+    {'a': 5041, 'b': 1, 'c': 85, 'd': 75}
+    {'a': 5041, 'b': 1, 'c': 85, 'd': 75}
+    - it seems that there is one multiplication added to the equation also  found in the assembunny here:
+    jnz 1 c
+    cpy 85 c
+    jnz 76 d
+    inc a
+    so that is it.
+    My guess was that this would be the same when a=12 was used... proved to be correct :-)
+    I may try to optimize this in assembunny itself at a later day if I feel like it :-)
     """
-    return factorial(12) + (11500 - factorial(7))
+    return factorial(a) + 85 * 76
 
 
 class UnitTests(unittest.TestCase):
