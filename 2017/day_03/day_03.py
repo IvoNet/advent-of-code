@@ -6,6 +6,8 @@ __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
+These two helped in my thought process.
+Still had to find out this formula on my onw though...
 https://stackoverflow.com/questions/36834505/creating-a-spiral-array-in-python
 https://www.py4u.net/discuss/158349
 """
