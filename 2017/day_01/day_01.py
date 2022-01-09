@@ -12,7 +12,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -27,7 +27,10 @@ def _(*args, end="\n"):
 
 
 def part_1(source):
-    return None
+    """sum occurences as long as the next is the same
+    the modulo function is a nice way to wrap the last around to the first
+    """
+    return sum(int(source[i]) for i in range(len(source)) if source[i] == source[(i + 1) % len(source)])
 
 
 def part_2(source):
@@ -40,17 +43,16 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
 
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+    def test_part_testdata_1(self):
+        self.assertEqual(3, part_1("1122"))
+        self.assertEqual(4, part_1("1111"))
+        self.assertEqual(0, part_1("1234"))
+        self.assertEqual(9, part_1("91212129"))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
