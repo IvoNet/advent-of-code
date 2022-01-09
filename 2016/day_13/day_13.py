@@ -107,22 +107,7 @@ class Maze:
         self._grid[self.goal.row][self.goal.col] = Cell.GOAL
 
 
-def manhattan_distance(goal: Location) -> Callable[[Location], float]:
-    def distance(ml: Location) -> float:
-        xdist: int = abs(ml.col - goal.col)
-        ydist: int = abs(ml.row - goal.row)
-        return (xdist + ydist)
-
-    return distance
-
-
-def max_steps(option: Optional[Node[Location]], max=50) -> bool:
-    if option is None:
-        return False
-    return len(node_to_path(option)) - 1 <= max
-
-
-def bfs_part2(initial: T, goal_test: int, successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
+def bfs_part2(initial: T, goal_test: int, successors: Callable[[T], list[T]]) -> Optional[Node[T]] | int:
     # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
     frontier.push(Node(initial, None))

@@ -5,7 +5,7 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 import re
-from typing import Generator
+from typing import Generator, Sized
 
 
 def lmap(func, *iterables):
@@ -199,7 +199,7 @@ def invert_dict(dct: dict, single=True, verbose=True):
     return out
 
 
-def consecutive_element_pairing(data: list,
+def consecutive_element_pairing(data: Sized,
                                 elements: int = 3,
                                 map_to_func: callable = list) -> list[any]:
     """
