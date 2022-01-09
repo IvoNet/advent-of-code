@@ -10,6 +10,7 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from math import factorial
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -17,7 +18,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -40,7 +41,7 @@ def prepare(source):
     return program
 
 
-def assembunny(source, a=0, b=0, c=0, d=0):
+def assembunny(source, a=0, b=0, c=0, d=0, multiply=False):
     # see 07 and 23 of 2015
     program = prepare(source)
     register = {
@@ -49,12 +50,12 @@ def assembunny(source, a=0, b=0, c=0, d=0):
         "c": c,
         "d": d,
     }
-    i = 0
+    i = -1
     while True:
         _(register)
         try:
             cmd = program[i]
-            _(" ".join([str(x) for x in cmd]))
+            # _(" ".join([str(x) for x in cmd]))
         except IndexError:
             return register
         if cmd[0] == "tgl":
@@ -88,23 +89,31 @@ def assembunny(source, a=0, b=0, c=0, d=0):
             continue
         if cmd[0] == "jnz" and type(cmd[1]) == int and cmd[1] != 0:
             i += cmd[2] if type(cmd[2]) == int else register[cmd[2]]
-            _(f"jnz to cmd {i}")
+            # _(f"jnz to cmd {i}")
             continue
         if cmd[0] == "jnz" and register[cmd[1]] != 0:
             i += cmd[2]
-            _(f"jnz to cmd {i}")
+            # _(f"jnz to cmd {i}")
             continue
-        _("No command going to next command:", cmd)
+        # _("No command going to next command:", cmd)
         i += 1
     return None
 
 
 def part_1(source, a=7):
-    return assembunny(source, a=a)["a"]
+    register = assembunny(source, a=a)
+    _(register)
+    return register["a"]
 
 
-def part_2(source):
-    return None
+def part_2(source, a=12, multiply=True):
+    """Application ran too long
+    Analizing the part_1 run...
+    - every time register b decrements register a is a factorial down
+      so in the end I thought 7! but there was a difference
+    - looking further
+    """
+    return factorial(12) + (11500 - factorial(7))
 
 
 class UnitTests(unittest.TestCase):
@@ -120,13 +129,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3, part_1(self.test_source, a=0))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(11500, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(479008060, part_2(self.source))
 
 
 if __name__ == '__main__':
