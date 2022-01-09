@@ -82,7 +82,6 @@ class Maze:
     def is_goal(self, loc: Location) -> bool:
         return self.goal == loc
 
-
     def successors(self, ml: Location) -> list[Location]:
         locations: list[Location] = []
         if ml.row + 1 < self._rows and self._grid[ml.row + 1][ml.col] != Cell.BLOCKED:
@@ -163,27 +162,6 @@ def part_1(source, goal: Location = Location(39, 31)):
 def part_2(source):
     maze = Maze(Location(1, 1), 50, int(source), rows=200, columns=200)
     return bfs_part2(maze.start, 50, maze.successors)
-
-
-def part_2_wrong(source):
-    locs = []
-    for row in range(60):
-        for col in range(60):
-            goal = Location(row, col)
-            maze = Maze(Location(1, 1), goal, int(source), rows=goal.row + 5, columns=goal.col + 5)
-            option: Optional[Node[Location]] = bfs(maze.start, maze.is_goal, maze.successors)
-            if max_steps(option):
-                locs.append(goal)
-                path: list[Location] = node_to_path(option)
-                if DEBUG:
-                    maze.mark(path)
-                    print(maze)
-                    maze.clear(path)
-                    print(f"Path length: {len(path) - 1}")
-                    print()
-
-    _(locs)
-    return len(set(locs))
 
 
 class UnitTests(unittest.TestCase):
