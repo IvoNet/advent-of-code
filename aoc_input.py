@@ -11,6 +11,8 @@ from bs4 import BeautifulSoup
 
 
 def read_session():
+    if not Path(".session").is_file():
+        raise ValueError("Please create a '.session' file with the cookie in it (see readme)")
     with open(".session", "r") as session:
         return session.read().strip()
 
