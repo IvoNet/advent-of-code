@@ -20,11 +20,12 @@ from pathlib import Path
 from typing import NamedTuple
 
 from ivonet.files import read_data
+from ivonet.grid import neighbor_values
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -37,7 +38,7 @@ NORTH, S, W, E = (0, -1), (0, 1), (-1, 0), (1, 0)  # directions
 turn_right = {NORTH: E, E: S, S: W, W: NORTH}  # old -> new direction
 
 
-def spiral(width, height):
+def spiral(width, height, sum_neigbors=False, check_value=325489):
     if width < 1 or height < 1:
         raise ValueError
     x, y = width // 2, height // 2  # start near the center
@@ -46,7 +47,13 @@ def spiral(width, height):
     count = 0
     while True:
         count += 1
-        matrix[y][x] = count  # visit
+        if not sum_neigbors:
+            matrix[y][x] = count  # visit
+        else:
+            nb = sum(x for x in neighbor_values(matrix, (y, x)) if x is not None)
+            matrix[y][x] = nb if count > 1 else 1
+            if nb > check_value:
+                return matrix, nb, count
         # try to turn right
         new_dx, new_dy = turn_right[dx, dy]
         new_x, new_y = x + new_dx, y + new_dy
@@ -170,7 +177,11 @@ def part_1a(source):
 
 
 def part_2(source):
-    return None
+    nr = int(source)
+    matrix, number, count = spiral(9, 9, sum_neigbors=True, check_value=nr)
+    if DEBUG:
+        print_matrix(matrix)
+    return number
 
 
 class UnitTests(unittest.TestCase):
@@ -188,7 +199,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(552, part_1a(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(330785, part_2(self.source))
 
 
 if __name__ == '__main__':
