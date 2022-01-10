@@ -17,7 +17,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -29,13 +29,7 @@ def _(*args, end="\n"):
 def parse(source: str, sorting=False) -> list[list[str]]:
     pfs = [x.split() for x in source]
     if sorting:
-        ret = []
-        for row in pfs[:]:
-            items = []
-            for item in row:
-                items.append("".join(sorted(item)))
-            ret.append(items)
-        return ret
+        return [["".join(sorted(item)) for item in row] for row in pfs]
     return pfs
 
 
