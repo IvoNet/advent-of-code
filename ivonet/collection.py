@@ -10,7 +10,7 @@ __doc__ = """
 
 from collections import deque
 from heapq import heappush, heappop
-from typing import Generic, TypeVar, Deque
+from typing import Generic, TypeVar, Deque, Iterable
 
 T = TypeVar('T')
 
@@ -46,6 +46,10 @@ class Queue(Generic[T]):
 
     def pop(self) -> T:
         return self._container.popleft()  # FIFO
+
+    def extend(self, iterable: Iterable[T]):
+        self._container.extend(iterable)
+        return self
 
     def __repr__(self) -> str:
         return repr(self._container)

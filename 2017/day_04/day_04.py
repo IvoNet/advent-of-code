@@ -26,12 +26,37 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def part_1(source):
-    return None
+def parse(source: str, sorting=False) -> list[list[str]]:
+    pfs = [x.split() for x in source]
+    if sorting:
+        ret = []
+        for row in pfs[:]:
+            items = []
+            for item in row:
+                items.append("".join(sorted(item)))
+            ret.append(items)
+        return ret
+    return pfs
+
+
+def part_1(source, sorting=False):
+    passphrases: list[list[str]] = parse(source, sorting=sorting)
+    _(passphrases)
+    total = 0
+    for pf in passphrases:
+        valid = True
+        check = pf.pop()
+        while pf:
+            if check in pf:
+                valid = False
+                break
+            check = pf.pop()
+        total += 1 if valid else 0
+    return total
 
 
 def part_2(source):
-    return None
+    return part_1(source, sorting=True)
 
 
 class UnitTests(unittest.TestCase):
@@ -41,19 +66,12 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(455, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(186, part_2(self.source))
 
 
 if __name__ == '__main__':
