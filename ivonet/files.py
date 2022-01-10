@@ -59,7 +59,7 @@ def read_rows(infile: str) -> list[str]:
     return read_data(infile).strip().split("\n")
 
 
-def read_ints(infile: str, delimiter: str = ",") -> list[int]:
+def read_ints(infile: str, delimiter: str = "\n") -> list[int]:
     """Read the infile and parse it into a list of ints based on the delimiter"""
     return list(map(int, read_data(infile).strip().split(delimiter)))
 

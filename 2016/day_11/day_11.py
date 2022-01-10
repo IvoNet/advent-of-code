@@ -168,7 +168,7 @@ def parse(source):
     return State(floors)
 
 
-def display_solution(path: List[State]):
+def display_solution(path: list[State]):
     if len(path) == 0:  # sanity check
         return
     old_state: State = path[0]
