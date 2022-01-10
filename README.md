@@ -52,7 +52,7 @@ virtual environment.
 - None yet
 
 ## 2017 
-- day 1
+- day 1..7
 
 # 2016
 - 50 stars!
