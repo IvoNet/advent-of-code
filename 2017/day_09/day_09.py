@@ -30,6 +30,7 @@ def _(*args, end="\n"):
 class GarbageCollector:
 
     def __init__(self, source) -> None:
+        self.garage_dump = []
         self.garbage_stream = source
         self.bucket = LifoQueue()
         self.ignore_next = False
@@ -47,7 +48,7 @@ class GarbageCollector:
                 continue
             if self.garbage_mode:
                 if ch != ">":
-                    # We could collect garbage here
+                    self.garage_dump.append(ch)
                     continue
                 self.garbage_mode = False
                 continue
@@ -67,13 +68,16 @@ class GarbageCollector:
                 self.score += self.bucket.qsize() + 1
         return self
 
+    def garbage(self):
+        return len(self.garage_dump)
+
 
 def part_1(source):
     return GarbageCollector(source).collect().score
 
 
 def part_2(source):
-    return None
+    return GarbageCollector(source).collect().garbage()
 
 
 class UnitTests(unittest.TestCase):
@@ -99,10 +103,16 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(14204, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(0, part_2("<>"))
+        self.assertEqual(17, part_2("<random characters>"))
+        self.assertEqual(3, part_2("<<<<>"))
+        self.assertEqual(2, part_2("<{!>}>"))
+        self.assertEqual(0, part_2("<!!>"))
+        self.assertEqual(0, part_2("<!!!>>"))
+        self.assertEqual(10, part_2('<{o"i!a,<{i<a>'))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(6622, part_2(self.source))
 
 
 if __name__ == '__main__':
