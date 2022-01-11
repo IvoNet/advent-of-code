@@ -12,7 +12,7 @@ Starting with Python.
 - create a virtualenv (one time only)
 
 ```shell
-python3.9 -m venv venv
+python3 -m venv venv
 ```
 
 - activate it (every new session)
@@ -23,24 +23,28 @@ source "./venv/bin/activate"
 
 # ivonet package
 
-To use the ivonet package please create e file called `ivonet.pth`
-in the virtual env `site-packages` folder e.g.
-in `PROJECT_DIR_HERE/venv/lib/python3.9/site-packages/ivonet.pth`
-in that file put one string with the exact (fully qualified) path to the ivonet
-package parent folder in the project (root of project). e.g.
-`/Users/YOUR_USERNAME/dev/advent-of-code/`
-do not include the package name itself just the path to the folder where it
-lives
+Contains many of the convenience methods / classes and functions I created while
+solving these puzzles and use in the puzzles.
 
-now the ivonet package is accessible from all the years when running in the
-virtual environment.
+Just run the `enable_ivonet_package.sh` script from the root if this project in
+a terminal.
+
+it will:
+
+- create e file called `ivonet.pth`in the virtual env `site-packages` folder.
+- in that pth file it will place the location if this project root and that is
+  it.
+- now the ivonet package is accessible from all the years when running in the
+  virtual environment.
 
 # What is completed...
 
 ## 2021
+
 - 50 stars!
 
 ## 2020
+
 - days 1..11
 - 12 part 1
 - 17, 24
