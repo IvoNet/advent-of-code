@@ -117,6 +117,10 @@ def process(source, furthest=False):
 def part_1(source):
     """bfs approach
     Works beautifully but is slow.
+    and I still had to find the goal first by following the directions.
+    I had no deduced the (simple) formula for calculating the distance yet and I know
+    a bfs is perfect for stuff like this.
+    It worked :-)
     """
     row = 0
     col = 0
