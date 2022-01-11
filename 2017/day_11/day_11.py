@@ -30,27 +30,25 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-DIR = {
-    #    up,right
+DIRECTION = {
     "n": (1, 0),
     "ne": (0.5, 1),
     "se": (-0.5, 1),
     "s": (-1, 0),
     "sw": (-0.5, -1),
     "nw": (0.5, -1),
-
 }
 
 
 def get_neighbors(loc: Location, with_self=False):
     if with_self:
         yield loc
-    yield Location(loc.row + DIR["n"][0], loc.col + DIR["n"][1])
-    yield Location(loc.row + DIR["ne"][0], loc.col + DIR["ne"][1])
-    yield Location(loc.row + DIR["se"][0], loc.col + DIR["se"][1])
-    yield Location(loc.row + DIR["s"][0], loc.col + DIR["s"][1])
-    yield Location(loc.row + DIR["sw"][0], loc.col + DIR["sw"][1])
-    yield Location(loc.row + DIR["nw"][0], loc.col + DIR["nw"][1])
+    yield Location(loc.row + DIRECTION["n"][0], loc.col + DIRECTION["n"][1])
+    yield Location(loc.row + DIRECTION["ne"][0], loc.col + DIRECTION["ne"][1])
+    yield Location(loc.row + DIRECTION["se"][0], loc.col + DIRECTION["se"][1])
+    yield Location(loc.row + DIRECTION["s"][0], loc.col + DIRECTION["s"][1])
+    yield Location(loc.row + DIRECTION["sw"][0], loc.col + DIRECTION["sw"][1])
+    yield Location(loc.row + DIRECTION["nw"][0], loc.col + DIRECTION["nw"][1])
 
 
 class Location(NamedTuple):
@@ -61,26 +59,36 @@ class Location(NamedTuple):
 def bfs(initial: T, goal: T) -> Optional[Node[T]]:
     """Breath first search
     """
-    # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
     frontier.push(Node(initial, None))
-    # explored is where we've been
     explored: Set[T] = {initial}
 
-    # keep going while there is more to explore
     while not frontier.empty:
         current_node: Node[T] = frontier.pop()
         current_state: T = current_node.state
-        # if we found the goal, we're done
         if current_state == goal:
             return current_node
-        # check where we can go next and haven't explored
         for child in get_neighbors(current_state):
             if child in explored:  # skip children we already explored
                 continue
             explored.add(child)
             frontier.push(Node(child, current_node))
-    return None  # went through everything and never found goal
+    return None
+
+
+def hexagon_distance(row, col):
+    """Hexagon distance.
+    - if the col is larger than the row and we always walk diagonally
+      we do not need to take the row into account the distance is the col
+    - if the col is smaller than the row the formulae is a bit more convoluted
+      it is the col distance plus the number of steps up or down we need to do and
+      those are measured in halves and we need to subtract the col times halve from
+      that because we walk diagonally.
+    """
+    if abs(col) >= abs(row):
+        return abs(col)
+    else:
+        return abs(col) + (abs(row) - abs(col) * 0.5)
 
 
 def part_1(source):
@@ -90,7 +98,7 @@ def part_1(source):
     row = 0
     col = 0
     for d in source.strip().split(","):
-        r, c = DIR[d]
+        r, c = DIRECTION[d]
         row += r
         col += c
         _(row, col)
@@ -101,22 +109,15 @@ def part_1(source):
     return len(path) - 1
 
 
-def dist(row, col):
-    if abs(col) > abs(row):
-        return abs(col)
-    else:
-        return abs(col) + (abs(row) - abs(col) * 0.5)
-
-
 def part_1_v2(source):
     row = 0
     col = 0
     for d in source.strip().split(","):
-        r, c = DIR[d]
+        r, c = DIRECTION[d]
         row += r
         col += c
-        _(row, col, dist(row, col))
-    return dist(row, col)
+        _(row, col, hexagon_distance(row, col))
+    return hexagon_distance(row, col)
 
 
 def part_2(source):
@@ -124,11 +125,11 @@ def part_2(source):
     col = 0
     ret = 0
     for d in source.strip().split(","):
-        r, c = DIR[d]
+        r, c = DIRECTION[d]
         row += r
         col += c
-        _(row, col, dist(row, col))
-        ret = max(dist(row, col), ret)
+        _(row, col, hexagon_distance(row, col))
+        ret = max(hexagon_distance(row, col), ret)
     return ret
 
 
@@ -153,7 +154,11 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(0, part_1_v2("ne,ne,sw,sw"))
         self.assertEqual(3, part_1_v2("ne,ne,ne"))
 
+    # @unittest.SkipTest
     def test_part_1(self):
+        """This test proves the bfs approach and yes it works but it takes about 10 seconds
+        just uncomment the skiptest to speed things up.
+        """
         self.assertEqual(812, part_1(self.source))
 
     def test_part_1_v2(self):
