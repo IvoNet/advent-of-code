@@ -84,11 +84,34 @@ def hexagon_distance(row, col):
       it is the col distance plus the number of steps up or down we need to do and
       those are measured in halves and we need to subtract the col times halve from
       that because we walk diagonally.
+          \ n  /
+        nw +--+ ne
+          /    \
+        -+      +-
+          \    /
+        sw +--+ se
+          / s  \
     """
     if abs(col) >= abs(row):
         return abs(col)
     else:
         return abs(col) + (abs(row) - abs(col) * 0.5)
+
+
+def process(source, furthest=False):
+    """The performing way of solving this puzzle"""
+    row = 0
+    col = 0
+    max_distance = 0
+    for d in source.strip().split(","):
+        r, c = DIRECTION[d]
+        row += r
+        col += c
+        _(row, col, hexagon_distance(row, col))
+        max_distance = max(hexagon_distance(row, col), max_distance)
+    if furthest:
+        return max_distance
+    return hexagon_distance(row, col)
 
 
 def part_1(source):
@@ -110,27 +133,12 @@ def part_1(source):
 
 
 def part_1_v2(source):
-    row = 0
-    col = 0
-    for d in source.strip().split(","):
-        r, c = DIRECTION[d]
-        row += r
-        col += c
-        _(row, col, hexagon_distance(row, col))
-    return hexagon_distance(row, col)
+    """The much faster solution than bfs"""
+    return process(source)
 
 
 def part_2(source):
-    row = 0
-    col = 0
-    ret = 0
-    for d in source.strip().split(","):
-        r, c = DIRECTION[d]
-        row += r
-        col += c
-        _(row, col, hexagon_distance(row, col))
-        ret = max(hexagon_distance(row, col), ret)
-    return ret
+    return process(source, furthest=True)
 
 
 class UnitTests(unittest.TestCase):

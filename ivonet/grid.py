@@ -107,7 +107,7 @@ def diagonals(grid: list[list[any]], coord: tuple[int, int], merged: bool = Fals
 
 
 def direction(grid: list[list[any]], coord: tuple[int, int], to: tuple[int, int] = (-1, 1)) -> [int, int]:
-    """Direction in a grid based on its staring point and direction.
+    """Direction in a grid based on its starting point and direction.
     """
     vertical, horizontal = to
     down, right = coord

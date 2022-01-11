@@ -6,7 +6,7 @@ from ivonet.alphabet import base_26_encode_string, sum_letter_values_of_word, al
     base_26_decode_string
 from ivonet.calc import base_10_to_base_x, base_3
 from ivonet.cdll import CircularDoublyLinkedList
-from ivonet.hexadecimal import number_as_word
+from ivonet.hexa import number_as_word
 from ivonet.iter import consecutive_element_pairing
 from ivonet.roman_numerals import roman
 from ivonet.str import sort_str, is_sorted, letters, OpenCloseTags, TagError

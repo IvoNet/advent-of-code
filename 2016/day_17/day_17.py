@@ -15,7 +15,7 @@ from typing import NamedTuple, TypeVar
 
 from ivonet.collection import Queue
 from ivonet.files import read_data
-from ivonet.hexadecimal import mdfive
+from ivonet.hexa import mdfive
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True

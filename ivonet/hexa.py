@@ -29,6 +29,28 @@ def number_as_word(num) -> str:
     return "".join(answer)
 
 
+def hexagon_distance(row, col):
+    """Hexagon distance.
+    - if the col is larger than the row and we always walk diagonally
+      we do not need to take the row into account the distance is the col
+    - if the col is smaller than the row the formulae is a bit more convoluted
+      it is the col distance plus the number of steps up or down we need to do and
+      those are measured in halves and we need to subtract the col times halve from
+      that because we walk diagonally.
+          \ n  /
+        nw +--+ ne
+          /    \
+        -+      +-
+          \    /
+        sw +--+ se
+          / s  \
+    """
+    if abs(col) >= abs(row):
+        return abs(col)
+    else:
+        return abs(col) + (abs(row) - abs(col) * 0.5)
+
+
 if __name__ == '__main__':
     print(number_as_word(84679335))
     print(number_as_word(12484125))
