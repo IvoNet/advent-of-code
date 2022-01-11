@@ -22,8 +22,7 @@ from ivonet.search import Node
 sys.dont_write_bytecode = True
 
 DEBUG = True
-V = TypeVar('V')  # type of the vertices in the graph
-T = TypeVar('T')  # type of the vertices in the graph
+T = TypeVar('T')
 
 
 # noinspection DuplicatedCode
@@ -32,23 +31,31 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def process(source):
+def parse(source):
     groups = {}
-    ids = []
     vertices = set()
     for line in source:
         nrs = ints(line)
         groups[nrs[0]] = nrs[1:]
-        ids.append(nrs)
         next(vertices.add(x) for x in nrs)
         vertices = vertices.union(nrs)
+    return groups, list(vertices)
 
-    return groups, ids, list(vertices)
+
+def build_graph(source):
+    """Builds a graph"""
+    group, vertices = parse(source)
+    graph: Graph[int] = Graph(vertices)
+    for node, neighbors in group.items():
+        for edge in neighbors:
+            graph.add_edge_by_vertices(node, edge)
+    return graph
 
 
 def bfs(initial: T, successors: Callable[[T], list[T]]) -> set[T]:
     """Breath first search
-    for finding the longest route from an initial
+    This one is adjusted so that it does not have a 'goal' per se except
+    for exploring all the connections to 'initial'.
     """
     frontier: Queue[Node[T]] = Queue()
     frontier.push(Node(initial, None))
@@ -57,22 +64,18 @@ def bfs(initial: T, successors: Callable[[T], list[T]]) -> set[T]:
     while not frontier.empty:
         current_node: Node[T] = frontier.pop()
         current_state: T = current_node.state
-        # Goal test here if you need it but we want to explore the whole thing
+        # removed goal test here
         for child in successors(current_state):
-            if child in explored:  # skip children we already explored
+            if child in explored:
                 continue
             explored.add(child)
             frontier.push(Node(child, current_node))
+    # we explored as much as we could so this should be the whole set connected to 'initial'
     return explored
 
 
 def part_1(source):
-    group, ids, vertices = process(source)
-    graph: Graph[int] = Graph(vertices)
-    for node, neigbors in group.items():
-        for n in neigbors:
-            graph.add_edge_by_vertices(node, n)
-
+    graph = build_graph(source)
     return len(bfs(0, graph.neighbors_for_vertex))
 
 
@@ -96,7 +99,7 @@ class UnitTests(unittest.TestCase):
 6 <-> 4, 5""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(6, part_1(self.test_source))
 
     def test_part_1(self):
         self.assertEqual(380, part_1(self.source))
