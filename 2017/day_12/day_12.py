@@ -10,6 +10,7 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from typing import Callable, TypeVar, Set
 
@@ -20,9 +21,9 @@ from ivonet.iter import ints
 from ivonet.search import Node
 
 sys.dont_write_bytecode = True
-
-DEBUG = True
 T = TypeVar('T')
+
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -32,6 +33,12 @@ def _(*args, end="\n"):
 
 
 def parse(source):
+    """Parse the source
+    As this is a Graph related problem it is easy to prepare the code
+    in such a way that it returns a dict with group/neighbors and a
+    set of all id's (vertices)
+    makes creating the Graph easier
+    """
     groups = {}
     vertices = set()
     for line in source:
@@ -42,11 +49,10 @@ def parse(source):
     return groups, list(vertices)
 
 
-def build_graph(source):
+def build_graph(groups, vertices) -> Graph[int]:
     """Builds a graph"""
-    group, vertices = parse(source)
     graph: Graph[int] = Graph(vertices)
-    for node, neighbors in group.items():
+    for node, neighbors in groups.items():
         for edge in neighbors:
             graph.add_edge_by_vertices(node, edge)
     return graph
@@ -75,12 +81,26 @@ def bfs(initial: T, successors: Callable[[T], list[T]]) -> set[T]:
 
 
 def part_1(source):
-    graph = build_graph(source)
+    groups, vertices = parse(source)
+    graph: Graph[int] = build_graph(groups, vertices)
     return len(bfs(0, graph.neighbors_for_vertex))
 
 
 def part_2(source):
-    return None
+    groups, vertices = parse(source)
+    _(groups, vertices)
+    graph: Graph[int] = build_graph(groups, vertices)
+    todo = deepcopy(vertices)
+    total_groups = 0
+    start = 0
+    while todo:
+        explored = bfs(start, graph.neighbors_for_vertex)
+        total_groups += 1
+        todo = [x for x in todo if x not in explored]
+        start = todo.pop()
+        _(todo)
+
+    return total_groups + 1  # last item is not counted anymore (pop)
 
 
 class UnitTests(unittest.TestCase):
@@ -105,10 +125,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(380, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(2, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(181, part_2(self.source))
 
 
 if __name__ == '__main__':
