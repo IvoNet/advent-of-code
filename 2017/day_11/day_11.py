@@ -20,7 +20,7 @@ from ivonet.search import Node, node_to_path
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 T = TypeVar('T')
 
 
@@ -84,6 +84,9 @@ def bfs(initial: T, goal: T) -> Optional[Node[T]]:
 
 
 def part_1(source):
+    """bfs approach
+    Works beautifully but is slow.
+    """
     row = 0
     col = 0
     for d in source.strip().split(","):
@@ -98,8 +101,35 @@ def part_1(source):
     return len(path) - 1
 
 
-def part_2(source, furthest=True):
-    return None
+def dist(row, col):
+    if abs(col) > abs(row):
+        return abs(col)
+    else:
+        return abs(col) + (abs(row) - abs(col) * 0.5)
+
+
+def part_1_v2(source):
+    row = 0
+    col = 0
+    for d in source.strip().split(","):
+        r, c = DIR[d]
+        row += r
+        col += c
+        _(row, col, dist(row, col))
+    return dist(row, col)
+
+
+def part_2(source):
+    row = 0
+    col = 0
+    ret = 0
+    for d in source.strip().split(","):
+        r, c = DIR[d]
+        row += r
+        col += c
+        _(row, col, dist(row, col))
+        ret = max(dist(row, col), ret)
+    return ret
 
 
 class UnitTests(unittest.TestCase):
@@ -117,14 +147,20 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(0, part_1("ne,ne,sw,sw"))
         self.assertEqual(3, part_1("ne,ne,ne"))
 
+    def test_example_data_part_1_a(self):
+        self.assertEqual(3, part_1_v2("se,sw,se,sw,sw"))
+        self.assertEqual(2, part_1_v2("ne,ne,s,s"))
+        self.assertEqual(0, part_1_v2("ne,ne,sw,sw"))
+        self.assertEqual(3, part_1_v2("ne,ne,ne"))
+
     def test_part_1(self):
         self.assertEqual(812, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+    def test_part_1_v2(self):
+        self.assertEqual(812, part_1_v2(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1603, part_2(self.source))
 
 
 if __name__ == '__main__':
