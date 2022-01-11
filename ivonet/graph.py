@@ -10,8 +10,12 @@ __doc__ = """
 
 """
 
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import TypeVar, Generic
+
+from ivonet.collection import Queue
+from ivonet.search import Node
 
 V = TypeVar('V')  # type of the vertices in the graph
 
@@ -102,6 +106,38 @@ class Graph(Generic[V]):
     # Lookup the index of a vertex and return its edges (convenience method)
     def edges_for_vertex(self, vertex: V) -> list[Edge]:
         return self.edges_for_index(self.index_of(vertex))
+
+    def connected_components(self, initial: V) -> set[V]:
+        """Breath first search
+        This one is adjusted so that it does not have a 'goal' per se except
+        for exploring all the connections to 'initial'.
+
+        Effectively this bfs has been changed so that it will return the
+        'connected_components' https://en.wikipedia.org/wiki/Component_(graph_theory)
+        """
+        frontier: Queue[Node[V]] = Queue()
+        frontier.push(Node(initial, None))
+        explored: set[V] = {initial}
+
+        while not frontier.empty:
+            current_node: Node[V] = frontier.pop()
+            current_state: V = current_node.state
+            for child in self.neighbors_for_index(current_state):
+                if child in explored:
+                    continue
+                explored.add(child)
+                frontier.push(Node(child, current_node))
+        return explored
+
+    def connected_groups(self):
+        """Create groups of all separate connected_component groups"""
+        todo = deepcopy(self._vertices)
+        groups = []
+        while todo:
+            explored = self.connected_components(todo.pop())
+            todo = [vertex for vertex in todo if vertex not in explored]
+            groups.append(explored)
+        return sorted(groups, key=lambda x: len(x), reverse=True)
 
     # Make it easy to pretty-print a Graph
     def __str__(self) -> str:

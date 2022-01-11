@@ -5,25 +5,30 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+Look back at the history of this file in git to see the first implementations.
+
+I liked my solution a lot because I actually used what I had just refreshed from 
+'Classic Computer Science Problems' that I added my adjustments to the Graph code
+
+Later I found out that you can do this just as easily with the networkx component
+but my goal with these solutions is to use as much standard library and plain Python.
+
+It is for my understanding not and fun :-)
+"""
 
 import os
 import sys
 import unittest
-from copy import deepcopy
 from pathlib import Path
-from typing import Callable, TypeVar, Set
 
-from ivonet.collection import Queue
 from ivonet.files import read_rows
 from ivonet.graph import Graph
 from ivonet.iter import ints
-from ivonet.search import Node
 
 sys.dont_write_bytecode = True
-T = TypeVar('T')
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -49,8 +54,12 @@ def parse(source):
     return groups, list(vertices)
 
 
-def build_graph(groups, vertices) -> Graph[int]:
-    """Builds a graph"""
+def build_graph(source) -> Graph[int]:
+    """Builds a graph
+    - First initialise with the set of unique ids.
+    - then add edges to the graph based on the key values from the groups dict
+    """
+    groups, vertices = parse(source)
     graph: Graph[int] = Graph(vertices)
     for node, neighbors in groups.items():
         for edge in neighbors:
@@ -58,49 +67,14 @@ def build_graph(groups, vertices) -> Graph[int]:
     return graph
 
 
-def bfs(initial: T, successors: Callable[[T], list[T]]) -> set[T]:
-    """Breath first search
-    This one is adjusted so that it does not have a 'goal' per se except
-    for exploring all the connections to 'initial'.
-    """
-    frontier: Queue[Node[T]] = Queue()
-    frontier.push(Node(initial, None))
-    explored: Set[T] = {initial}
-
-    while not frontier.empty:
-        current_node: Node[T] = frontier.pop()
-        current_state: T = current_node.state
-        # removed goal test here
-        for child in successors(current_state):
-            if child in explored:
-                continue
-            explored.add(child)
-            frontier.push(Node(child, current_node))
-    # we explored as much as we could so this should be the whole set connected to 'initial'
-    return explored
-
-
 def part_1(source):
-    groups, vertices = parse(source)
-    graph: Graph[int] = build_graph(groups, vertices)
-    return len(bfs(0, graph.neighbors_for_vertex))
+    graph: Graph[int] = build_graph(source)
+    return len(graph.connected_components(0))
 
 
 def part_2(source):
-    groups, vertices = parse(source)
-    _(groups, vertices)
-    graph: Graph[int] = build_graph(groups, vertices)
-    todo = deepcopy(vertices)
-    total_groups = 0
-    start = 0
-    while todo:
-        explored = bfs(start, graph.neighbors_for_vertex)
-        total_groups += 1
-        todo = [x for x in todo if x not in explored]
-        start = todo.pop()
-        _(todo)
-
-    return total_groups + 1  # last item is not counted anymore (pop)
+    graph: Graph[int] = build_graph(source)
+    return len(graph.connected_groups())
 
 
 class UnitTests(unittest.TestCase):
