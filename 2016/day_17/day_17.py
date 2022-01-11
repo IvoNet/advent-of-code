@@ -65,7 +65,7 @@ def surrounding(loc: Location, passcode: str, pth: str, goal):
         yield Location(loc.x, loc.y - 1), "U"
 
 
-def solve(passcode, initial=Location(0, 0), goal=Location(3, 3), part1=True):
+def bfs(passcode, initial=Location(0, 0), goal=Location(3, 3), part1=True):
     """A BFS.
     in this puzzle it is not important if you have already been to a certain location as doors can open and close
     becoming "walls" op open spaces again.
@@ -94,11 +94,11 @@ def solve(passcode, initial=Location(0, 0), goal=Location(3, 3), part1=True):
 
 
 def part_1(source):
-    return solve(source)
+    return bfs(source)
 
 
 def part_2(source):
-    return solve(source, part1=False)
+    return bfs(source, part1=False)
 
 
 class UnitTests(unittest.TestCase):

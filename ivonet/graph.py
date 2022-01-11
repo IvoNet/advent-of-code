@@ -44,9 +44,9 @@ class WeightedEdge(Edge):
 
 
 class Graph(Generic[V]):
-    def __init__(self, vertices: List[V] = []) -> None:
-        self._vertices: List[V] = vertices
-        self._edges: List[List[Edge]] = [[] for _ in vertices]
+    def __init__(self, vertices: list[V] = []) -> None:
+        self._vertices: list[V] = vertices
+        self._edges: list[list[Edge]] = [[] for _ in vertices]
 
     @property
     def vertex_count(self) -> int:
@@ -88,19 +88,19 @@ class Graph(Generic[V]):
         return self._vertices.index(vertex)
 
     # Find the vertices that a vertex at some index is connected to
-    def neighbors_for_index(self, index: int) -> List[V]:
+    def neighbors_for_index(self, index: int) -> list[V]:
         return list(map(self.vertex_at, [e.v for e in self._edges[index]]))
 
     # Lookup a vertice's index and find its neighbors (convenience method)
-    def neighbors_for_vertex(self, vertex: V) -> List[V]:
+    def neighbors_for_vertex(self, vertex: V) -> list[V]:
         return self.neighbors_for_index(self.index_of(vertex))
 
     # Return all of the edges associated with a vertex at some index
-    def edges_for_index(self, index: int) -> List[Edge]:
+    def edges_for_index(self, index: int) -> list[Edge]:
         return self._edges[index]
 
     # Lookup the index of a vertex and return its edges (convenience method)
-    def edges_for_vertex(self, vertex: V) -> List[Edge]:
+    def edges_for_vertex(self, vertex: V) -> list[Edge]:
         return self.edges_for_index(self.index_of(vertex))
 
     # Make it easy to pretty-print a Graph
@@ -112,9 +112,9 @@ class Graph(Generic[V]):
 
 
 class WeightedGraph(Generic[V], Graph[V]):
-    def __init__(self, vertices: List[V] = []) -> None:
-        self._vertices: List[V] = vertices
-        self._edges: List[List[WeightedEdge]] = [[] for _ in vertices]
+    def __init__(self, vertices: list[V] = []) -> None:
+        self._vertices: list[V] = vertices
+        self._edges: list[list[WeightedEdge]] = [[] for _ in vertices]
 
     def add_edge_by_indices(self, u: int, v: int, weight: float) -> None:
         edge: WeightedEdge = WeightedEdge(u, v, weight)
@@ -125,8 +125,8 @@ class WeightedGraph(Generic[V], Graph[V]):
         v: int = self._vertices.index(second)
         self.add_edge_by_indices(u, v, weight)
 
-    def neighbors_for_index_with_weights(self, index: int) -> List[Tuple[V, float]]:
-        distance_tuples: List[Tuple[V, float]] = []
+    def neighbors_for_index_with_weights(self, index: int) -> list[tuple[V, float]]:
+        distance_tuples: list[tuple[V, float]] = []
         for edge in self.edges_for_index(index):
             distance_tuples.append((self.vertex_at(edge.v), edge.weight))
         return distance_tuples
