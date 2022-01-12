@@ -67,6 +67,11 @@ class CircularDoublyLinkedList:
         self.current_node = self.current_node.next
         return self.current_node
 
+    def step_right(self, times) -> Optional[Node[T]]:
+        for _ in range(times % self.size):
+            self.next()
+        return self.current()
+
     def previous(self) -> Optional[Node[T]]:
         """'Walks' backwards from the current node"""
         if not self.first:
@@ -105,6 +110,12 @@ class CircularDoublyLinkedList:
         new_node.next.prev = new_node
         ref_node.next = new_node
         self.size += 1
+
+    def insert_after_current(self, value):
+        self.insert_after(self.current_node, Node(value))
+
+    def insert_before_current(self, value):
+        self.insert_before(self.current_node, Node(value))
 
     def insert_before(self, ref_node: Node[T], new_node: Node[T]):
         """Inserts a node before the reference node"""
@@ -179,6 +190,18 @@ class CircularDoublyLinkedList:
             return self.current_node.data
         return None
 
+    def repr_current_circle(self):
+        if not self.first:
+            return "CircularDoublyLinkedList<>"
+        ret = "CircularDoublyLinkedList<["
+        node = self.current_node
+        while True:
+            ret += f"{repr(node)}, "
+            node = node.next
+            if node == self.current_node:
+                break
+        return ret + "]>"
+
     def empty(self) -> bool:
         """Do we have nodes or not"""
         return self.size == 0
@@ -186,6 +209,18 @@ class CircularDoublyLinkedList:
     def __getitem__(self, item: int) -> T:
         """Gets the data of a node based on the index"""
         return self.node(item, update_current=False).data
+
+    def repr_data(self):
+        if not self.first:
+            return "CircularDoublyLinkedList<>"
+        ret = "CircularDoublyLinkedList<["
+        node = self.first
+        while True:
+            ret += f"{repr(node.data)}, "
+            node = node.next
+            if node == self.first:
+                break
+        return ret + "]>"
 
     def __repr__(self) -> str:
         """Representation of one cycle from the first node to the last node walking right"""
