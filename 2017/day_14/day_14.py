@@ -114,6 +114,22 @@ def part_1(source):
 
 
 def part_2(source):
+    """A Graph puzzle!
+    first pass
+    - greate the graph
+    - initialize a grid with bools default false 128x128 for the edges later
+    - hash the rows with the knotter function of day 10
+    - hexlify the hash
+    - flip the grid coordinates to True of the col of that row is "1"
+    - if "1" then add a vertex to the graph (row, col)
+    second pass
+    - add the edges by looking at the neigbors of a coordinate
+      I have a function for that so that I do not have to figure that out every time :-)
+    - Only use the neigbors if their respective coordinates in the grid are True
+    - create an edge in the graph from the current coordinate to the neigbor
+    Lastly:
+    - do the dfs search for all the vertices and get the length of the connected_components (groups)
+    """
     graph: Graph[tuple] = Graph()
     grid = [[False for _ in range(128)] for _ in range(128)]
     for row in range(128):
