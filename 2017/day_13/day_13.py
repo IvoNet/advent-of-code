@@ -112,6 +112,7 @@ def scanner(depth, time):
 
 
 def find_delay(firewall):
+    """The longer more readable? version of part 2"""
     for delay in count():
         found = True
         for pos, depth in firewall:
@@ -126,10 +127,13 @@ def part_1(source):
     return sum(pos * depth for pos, depth in firewall if scanner(depth, pos) == 0)
 
 
-def part_2(source):
+def part_2(source, tuned_start_delay=0):
+    """I have added a stuned_start_delay option for performance reasons
+    Just run from 0 to do the 'real' test :-)"""
     firewall = [ints(line) for line in source]
     # return find_delay(firewall)  # second option reduced to line below to practice
-    return next(delay for delay in count() if not any(scanner(depth, delay + pos) == 0 for pos, depth in firewall))
+    return next(delay for delay in count(tuned_start_delay) if
+                not any(scanner(depth, delay + pos) == 0 for pos, depth in firewall))
 
 
 class UnitTests(unittest.TestCase):
@@ -154,7 +158,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(10, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(3861798, part_2(self.source))
+        self.assertEqual(3861798, part_2(self.source, tuned_start_delay=3861700))
 
 
 if __name__ == '__main__':
