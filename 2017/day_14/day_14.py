@@ -14,6 +14,8 @@ from functools import reduce
 from pathlib import Path
 
 from ivonet.files import read_data
+from ivonet.graph import Graph
+from ivonet.grid import neighbors
 from ivonet.iter import ints, chunkify
 
 sys.dont_write_bytecode = True
@@ -102,6 +104,7 @@ class Knotter:
         return self.dence_hash()
 
 
+
 def part_1(source):
     total = 0
     for row in range(128):
@@ -111,7 +114,23 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    graph: Graph[tuple] = Graph()
+    grid = [[False for _ in range(128)] for _ in range(128)]
+    for row in range(128):
+        knot_hasher = Knotter(f"{source}-{row}").hash_2()
+        hb = hexbin(knot_hasher)
+        for col, ch in enumerate(hb):
+            if ch == "1":
+                graph.add_vertex((row, col))
+                grid[row][col] = True
+
+    for row in range(128):
+        for col in range(128):
+            if grid[row][col]:
+                for coord in [(r, c) for r, c in neighbors(grid, (row, col), diagonal=False) if grid[r][c]]:
+                    graph.add_edge_by_vertices((row, col), coord)
+
+    return graph.number_connected_groups()
 
 
 class UnitTests(unittest.TestCase):
@@ -133,7 +152,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(1242, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1164, part_2(self.source))
 
 
 if __name__ == '__main__':

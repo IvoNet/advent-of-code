@@ -48,9 +48,9 @@ class WeightedEdge(Edge):
 
 
 class Graph(Generic[V]):
-    def __init__(self, vertices: list[V] = []) -> None:
-        self._vertices: list[V] = vertices
-        self._edges: list[list[Edge]] = [[] for _ in vertices]
+    def __init__(self, vertices: Optional(list[V]) = None) -> None:
+        self._vertices: list[V] = [] if vertices is None else vertices
+        self._edges: list[list[Edge]] = [[] for _ in self._vertices]
 
     @property
     def vertex_count(self) -> int:
@@ -122,7 +122,7 @@ class Graph(Generic[V]):
         while not frontier.empty:
             current_node: Node[V] = frontier.pop()
             current_state: V = current_node.state
-            for child in self.neighbors_for_index(current_state):
+            for child in self.neighbors_for_vertex(current_state):
                 if child in explored:
                     continue
                 explored.add(child)
@@ -138,6 +138,9 @@ class Graph(Generic[V]):
             todo = [vertex for vertex in todo if vertex not in explored]
             groups.append(explored)
         return sorted(groups, key=lambda x: len(x), reverse=True)
+
+    def number_connected_groups(self):
+        return len(self.connected_groups())
 
     # Make it easy to pretty-print a Graph
     def __str__(self) -> str:
