@@ -113,15 +113,14 @@ def base_x_to_10(value: str, base: int = 3) -> int:
     return ret
 
 
-def binary_8_bits(value) -> list:
+def binary(value, bit_len=8) -> list:
     bits = []
     if type(value) == int:
-        bits.append("{0:b}".format(value).zfill(8))
+        bits.append("{0:b}".format(value).zfill(bit_len))
         return bits
     for x in value:
-        bits.append("{0:b}".format(ord(x)).zfill(8))
+        bits.append("{0:b}".format(ord(x)).zfill(bit_len))
     return bits
-
 
 
 if __name__ == '__main__':
