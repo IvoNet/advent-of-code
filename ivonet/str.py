@@ -87,23 +87,51 @@ class OpenCloseTags(object):
             raise TagError(expected=self.expected, actual=self.actual, incomplete=self.incomplete)
 
 
-# def verify_open_closing_tags(s: str, tags="(){}[]<>"):
-#     assert tags, "tags may not be empty"
-#     assert s, "the input string may not be empty"
-#     assert len(tags) % 2 == 0, "tags should come in pairs"
-#     translation_table = dictify(tags)
-#     bucket = LifoQueue()
-#     for ch in s:
-#         if ch in translation_table:
-#             bucket.put(translation_table[ch])
-#             continue
-#         last = bucket.get()
-#         if ch != last:
-#             raise TagError(last, ch)
-#     ret = ""
-#     while not bucket.empty():
-#         ret += bucket.get()
-#     if len(ret)
+def swap_position(data: str, x: int, y: int):
+    """Swap position X with position Y means that the letters at indexes X and Y
+    (counting from 0) should be swapped"""
+    ret = list(data)
+    ret[x], ret[y] = ret[y], ret[x]
+    return "".join(ret)
+
+
+def swap_letter(data: str, a: str, b: str):
+    """Swap letter X with letter Y means that the letters X and Y should be swapped
+    (regardless of where they appear in the string)."""
+    return swap_position(data, data.index(a), data.index(b))
+
+
+def rotate_right(data: str, steps: int):
+    """Rotate right X steps means that the whole string should be rotated."""
+    steps = steps % len(data)
+    return data[-steps:] + data[:-steps]
+
+
+def rotate_left(data: str, steps: int):
+    """Rotate left X steps means that the whole string should be rotated."""
+    steps = steps % len(data)
+    return data[steps:] + data[:steps]
+
+
+def move_pos(data: str, x: int, y: int):
+    """Move position X to position Y means that the letter which is at index X
+    should be removed from the string, then inserted such that it ends up at index Y"""
+    l = data[x]
+    lst = list(data)
+    lst.remove(l)
+    lst.insert(y, l)
+    return "".join(lst)
+
+
+def reverse_positions(data: str, x: int, y: int):
+    """reverse positions X through Y means that the span of letters at indexes X through Y
+    (including the letters at X and Y) should be reversed in order"""
+    ret = data[:x]
+    ret += data[x:y + 1][::-1]
+    tail = len(data) - 1 - y
+    if tail > 0:
+        ret += data[-tail:]
+    return ret
 
 
 def str_minus_str(s1: str, s2: str):

@@ -14,6 +14,7 @@ from pathlib import Path
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.str import swap_position, swap_letter, rotate_left, rotate_right, move_pos, reverse_positions
 
 sys.dont_write_bytecode = True
 
@@ -26,26 +27,6 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def swap_position(data: str, x: int, y: int):
-    ret = list(data)
-    ret[x], ret[y] = ret[y], ret[x]
-    return "".join(ret)
-
-
-def swap_letter(data: str, a: str, b: str):
-    return swap_position(data, data.index(a), data.index(b))
-
-
-def rotate_right(data: str, steps: int):
-    steps = steps % len(data)
-    return data[-steps:] + data[:-steps]
-
-
-def rotate_left(data: str, steps: int):
-    steps = steps % len(data)
-    return data[steps:] + data[:steps]
-
-
 def rotate_based(data: str, letter: str):
     pos = data.index(letter)
     data = rotate_right(data, 1)
@@ -53,23 +34,6 @@ def rotate_based(data: str, letter: str):
     if pos >= 4:
         data = rotate_right(data, 1)
     return data
-
-
-def move_pos(data: str, x: int, y: int):
-    l = data[x]
-    lst = list(data)
-    lst.remove(l)
-    lst.insert(y, l)
-    return "".join(lst)
-
-
-def reverse_positions(data: str, x: int, y: int):
-    ret = data[:x]
-    ret += data[x:y + 1][::-1]
-    tail = len(data) - 1 - y
-    if tail > 0:
-        ret += data[-tail:]
-    return ret
 
 
 def scramble(source, password):
