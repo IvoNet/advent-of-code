@@ -44,7 +44,6 @@ def prepare(source):
 def duet(program):
     # see also day 23 and day 12.... Used the day 12 version but cleaned it up a bit
     register = defaultdict(int)
-    antenna = []
     i = 0
     last_sound = None
     while True:
