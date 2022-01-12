@@ -29,6 +29,8 @@ def p(*args, end="\n"):
 
 
 def parse(source) -> dict[[int], SecurityScanner]:
+    """Deprecated
+    Used in the first (old) version"""
     firewall = {}
     for line in source:
         k, v = ints(line)
@@ -37,6 +39,10 @@ def parse(source) -> dict[[int], SecurityScanner]:
 
 
 class SecurityScanner:
+    """Deprecated
+    Left here for learning purposes but toooo slow
+    """
+
     def __init__(self, depth) -> None:
         self.depth = depth
         self._iterator = self.__scanner()
@@ -60,6 +66,7 @@ class SecurityScanner:
 
 
 def move_layer(firewall, steps) -> list[Optional[int]]:
+    """Deprecated"""
     state = []
     for k in range(steps):
         if fw := firewall.get(k):
@@ -70,6 +77,7 @@ def move_layer(firewall, steps) -> list[Optional[int]]:
 
 
 def firewall_cost(firewall, cost_free=False):
+    """Deprecated"""
     stepst_to_take = max(firewall) + 1
 
     for delay in count():
@@ -90,21 +98,38 @@ def firewall_cost(firewall, cost_free=False):
             return delay - 1
 
 
-def part_1(source):
-    firewall = parse(source)
-    return firewall_cost(firewall)
-
-
-def part_2(source):
-    """First version seems to work ut slow... lets see if a formula can be found
+def scanner(depth, time):
+    """First version seems to work ut slow... (see git history) lets see if a formula can be found
     - the scanner moves up and down so twice the time to get back to 0
     - offset is something like time % depth * 2 -> can have a minus 1 thingy in there as depth is probably not 0 based
     - the depth is also twice so place in the firewall is
       2 * (depth -1) - offset or somtehing
     - lets try
     """
-    firewall = parse(source)
-    return firewall_cost(firewall, cost_free=True)
+    corrected_depth = depth - 1
+    offset = time % (corrected_depth * 2)
+    return 2 * corrected_depth - offset if offset > corrected_depth else offset
+
+
+def find_delay(firewall):
+    for delay in count():
+        found = True
+        for pos, depth in firewall:
+            if scanner(depth, delay + pos) == 0:
+                found = False
+        if found:
+            return delay
+
+
+def part_1(source):
+    firewall = [ints(line) for line in source]
+    return sum(pos * depth for pos, depth in firewall if scanner(depth, pos) == 0)
+
+
+def part_2(source):
+    firewall = [ints(line) for line in source]
+    # return find_delay(firewall)  # second option reduced to line below to practice
+    return next(delay for delay in count() if not any(scanner(depth, delay + pos) == 0 for pos, depth in firewall))
 
 
 class UnitTests(unittest.TestCase):
@@ -129,7 +154,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(10, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(3861798, part_2(self.source))
 
 
 if __name__ == '__main__':
