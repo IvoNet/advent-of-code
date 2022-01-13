@@ -5,20 +5,26 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+This one is an exercise in comparablity.
+No fancy stuff just OOP :-)
+I butchered the equals and lt functions to get this one working.
+"""
 
 import os
 import sys
 import unittest
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Counter
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -33,9 +39,19 @@ class Coord:
     y: int
     z: int
 
+    def __lt__(self, other):
+        return (self.x, self.y, self.z) < (other.x, other.y, other.z)
+
+    def __eq__(self, other):
+        return all([self.x == other.x, self.y == other.y, self.z == other.z])
+
+    def __hash__(self):
+        return hash(repr(self))
+
 
 class Position(Coord):
 
+    @property
     def manhatten_distance(self):
         return abs(self.x) + abs(self.y) + abs(self.z)
 
@@ -59,7 +75,8 @@ class Acceleration(Coord):
 
 class Particle:
 
-    def __init__(self, line) -> None:
+    def __init__(self, pid, line) -> None:
+        self.id = pid
         nrs = ints(line)
         self.p: Position = Position(*nrs[0:3])
         self.v: Velocity = Velocity(*nrs[3:6])
@@ -69,17 +86,25 @@ class Particle:
         self.v.update(self.a)
         self.p.update(self.v)
 
+    @property
     def manhatten_distance(self):
-        return self.p.manhatten_distance()
+        return self.p.manhatten_distance
 
     def __lt__(self, other):
+        return self.p < other.p
 
     def __eq__(self, other):
         return self.p == other.p
 
+    def __repr__(self) -> str:
+        return f"P<id={self.id}, p={repr(self.p)}, dist={self.manhatten_distance}"
+
+    def __hash__(self):
+        return hash(self.p)
+
 
 def parse(source):
-    return [Particle(line) for line in source]
+    return [Particle(i, line) for i, line in enumerate(source)]
 
 
 def part_1(source):
@@ -94,26 +119,31 @@ def part_1(source):
     - get the index where it lives... done
     """
     buffer = parse(source)
-    start_distances = [x.manhatten_distance() for x in buffer]
+    start_distances = [x.manhatten_distance for x in buffer]
     for _ in range(1000):
         for particle in buffer:
             particle.update()
-    stop_distances = [x.manhatten_distance() for x in buffer]
+    stop_distances = [x.manhatten_distance for x in buffer]
     combi = [a - b for a, b in zip(stop_distances, start_distances)]
     smallest = combi.index(min(combi))
     return smallest
 
 
 def part_2(source):
+    """Ha tried it for 10000 times but also printed the index on when I found stuff
+    proved that after about 38 iterations we hit the 'end'.
+    """
     buffer = parse(source)
-    start_distances = [x.manhatten_distance() for x in buffer]
-    for _ in range(1000):
+    for idx in range(50):
         for particle in buffer:
             particle.update()
-    stop_distances = [x.manhatten_distance() for x in buffer]
-    combi = [a - b for a, b in zip(stop_distances, start_distances)]
-    smallest = combi.index(min(combi))
-    return smallest
+        cnt = {k: v for k, v in Counter(buffer).items() if v > 1}
+        if cnt:
+            p(cnt, idx)
+            l = len(buffer)
+            buffer = [x for x in buffer if x not in cnt]
+            assert l - sum(cnt.values()) == len(buffer), "something..."
+    return len(buffer)
 
 
 class UnitTests(unittest.TestCase):
@@ -128,7 +158,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(243, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(648, part_2(self.source))
 
 
 if __name__ == '__main__':
