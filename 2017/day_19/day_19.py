@@ -10,9 +10,10 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from enum import Enum
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -26,12 +27,56 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Direction(str, Enum):
+    UP = "u"
+    DOWN = "d"
+    LEFT = "l"
+    RIGHT = "r"
+
+
+def walk_route(source, part1=True):
+    row = 0
+    col = source[row].index("|")
+    current_char = "|"
+    direction = Direction.DOWN
+    route = []
+    steps = 0
+    while current_char != " ":
+        steps += 1
+        if current_char == "+":
+            if direction in "du":
+                direction = Direction.LEFT if source[row][col - 1] != ' ' else Direction.RIGHT
+            else:
+                direction = Direction.UP if source[row - 1][col] != ' ' else Direction.DOWN
+        elif current_char not in "|-":
+            route.append(current_char)
+        if direction == Direction.DOWN:
+            row += 1
+        elif direction == Direction.UP:
+            row -= 1
+        elif direction == Direction.LEFT:
+            col -= 1
+        elif direction == Direction.RIGHT:
+            col += 1
+        current_char = source[row][col]
+    if part1:
+        return "".join(route)
+    return steps
+
+
+def parse(source):
+    data = [x for x in source.splitlines(keepends=False)]
+    width = max(len(x) for x in data)
+    data = [list(x.ljust(width, " ")) for x in data]
+    return data
+
+
 def part_1(source):
-    return None
+    return walk_route(parse(source))
 
 
 def part_2(source):
-    return None
+    return walk_route(parse(source), part1=False)
 
 
 class UnitTests(unittest.TestCase):
@@ -40,20 +85,20 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input", raw=True)
+        self.test_source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_a.input", raw=True)
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual("ABCDEF", part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual("PBAZYFMHT", part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(38, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(16072, part_2(self.source))
 
 
 if __name__ == '__main__':

@@ -48,9 +48,11 @@ def open_anything(source: any):
     return StringIO(str(source))
 
 
-def read_data(infile: str) -> str:
+def read_data(infile: str, raw=False) -> str:
     """Read the puzzle input without extra lines"""
     with open_anything(infile) as fi:
+        if raw:
+            return fi.read()
         return fi.read().strip()
 
 
