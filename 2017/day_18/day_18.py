@@ -27,20 +27,11 @@ def _(*args, end="\n"):
 
 
 def prepare(source):
-    program = []
-    for line in source:
-        tmp = line.strip().split()
-        cmd = [tmp[0]]
-        for x in tmp[1:]:
-            try:
-                cmd.append(int(x))
-            except ValueError:
-                cmd.append(x)
-        program.append(cmd)
-    return program
+    return [x.split() for x in source]
 
 
 def reg(register, value):
+    """This simple method eliminates quite a bit of plumbing code for the assembler"""
     try:
         return int(value)
     except ValueError:
@@ -48,6 +39,7 @@ def reg(register, value):
 
 
 def duet(program, q_in, q_out=None, v1=False):
+    """Made it into a generator to make duality a possibility without actual multithreading"""
     register = {"p": q_in.pop(0)}
     if q_out is None:
         q_out = []
@@ -107,6 +99,7 @@ def part_2(source):
             except StopIteration:
                 break
             finally:
+                _(q0, q1, p1_sounds, len(q0))
                 p1_sounds += len(q0)
 
     return p1_sounds
