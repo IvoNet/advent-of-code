@@ -10,7 +10,6 @@ __doc__ = """"""
 import os
 import sys
 import unittest
-from collections import defaultdict
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -41,47 +40,76 @@ def prepare(source):
     return program
 
 
-def duet(program):
-    # see also day 23 and day 12.... Used the day 12 version but cleaned it up a bit
-    register = defaultdict(int)
+def reg(register, value):
+    try:
+        return int(value)
+    except ValueError:
+        return register.get(value, 0)
+
+
+def duet(program, q_in, q_out=None, v1=False):
+    register = {"p": q_in.pop(0)}
+    if q_out is None:
+        q_out = []
     i = 0
-    last_sound = None
-    while True:
-        _(register)
-        try:
-            cmd = program[i]
-        except IndexError:
-            return None
-        if cmd[0] == "set":
-            register[cmd[1]] = cmd[2] if type(cmd[2]) == int else register[cmd[2]]
-        elif cmd[0] == "snd":
-            _("Playing sound:", register[cmd[1]])
-            last_sound = register[cmd[1]]
-        elif cmd[0] == "add":
-            register[cmd[1]] += cmd[2] if type(cmd[2]) == int else register[cmd[2]]
-        elif cmd[0] == "mul":
-            register[cmd[1]] *= cmd[2] if type(cmd[2]) == int else register[cmd[2]]
-        elif cmd[0] == "mod":
-            register[cmd[1]] %= cmd[2] if type(cmd[2]) == int else register[cmd[2]]
-        elif cmd[0] == "rcv":
-            val = cmd[1] if type(cmd[1]) == int else register[cmd[1]]
-            if val != 0:
-                _("Recovering sound:", last_sound)
-                return last_sound
-        elif cmd[0] == "jgz":
-            val = cmd[1] if type(cmd[1]) == int else register[cmd[1]]
-            if val > 0:
-                i += cmd[2] - 1
+    while 0 <= i < len(program):
+        instruction = program[i]
+        cmd = instruction[0]
+        left = reg(register, instruction[1])
+        if cmd == "snd":
+            q_out.append(left)
+        elif cmd == "rcv":
+            if v1:
+                if left != 0:
+                    yield q_out[-1]
+                    return
+            else:
+                if not q_in:
+                    yield None
+                register[instruction[1]] = q_in.pop(0)
+        else:
+            right = reg(register, instruction[2])
+            if cmd == "set":
+                register[instruction[1]] = right
+            elif cmd == "add":
+                register[instruction[1]] = left + right
+            elif cmd == "mul":
+                register[instruction[1]] = left * right
+            elif cmd == "mod":
+                register[instruction[1]] = left % right
+            elif cmd == "jgz" and left > 0:
+                i += right - 1
         i += 1
 
 
 def part_1(source):
     program = prepare(source)
-    return duet(program)
+    return next(duet(program, [0], v1=True))
 
 
 def part_2(source):
-    return None
+    program = prepare(source)
+    q0 = [0]
+    q1 = [1]
+    p0 = duet(program, q0, q1)
+    p1 = duet(program, q1, q0)
+    p1_sounds = 0
+
+    while q0:
+        if q0:
+            try:
+                next(p0)
+            except StopIteration:
+                q0 = None
+        if q1:
+            try:
+                next(p1)
+            except StopIteration:
+                break
+            finally:
+                p1_sounds += len(q0)
+
+    return p1_sounds
 
 
 class UnitTests(unittest.TestCase):
@@ -108,11 +136,8 @@ jgz a -2""")
     def test_part_1(self):
         self.assertEqual(1187, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
-
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(5969, part_2(self.source))
 
 
 if __name__ == '__main__':
