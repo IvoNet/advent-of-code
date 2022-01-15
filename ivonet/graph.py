@@ -12,7 +12,7 @@ __doc__ = """
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Optional
 
 from ivonet.collection import Queue
 from ivonet.search import Node
@@ -48,7 +48,7 @@ class WeightedEdge(Edge):
 
 
 class Graph(Generic[V]):
-    def __init__(self, vertices: Optional(list[V]) = None) -> None:
+    def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
         self._edges: list[list[Edge]] = [[] for _ in self._vertices]
 
@@ -151,8 +151,8 @@ class Graph(Generic[V]):
 
 
 class WeightedGraph(Generic[V], Graph[V]):
-    def __init__(self, vertices: list[V] = []) -> None:
-        self._vertices: list[V] = vertices
+    def __init__(self, vertices: Optional[list[V]] = None) -> None:
+        self._vertices: list[V] = [] if vertices is None else vertices
         self._edges: list[list[WeightedEdge]] = [[] for _ in vertices]
 
     def add_edge_by_indices(self, u: int, v: int, weight: float) -> None:
