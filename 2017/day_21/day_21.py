@@ -29,21 +29,25 @@ def _(*args, end="\n"):
 
 
 def flip(key):
-    ret = key.split("/")
-    ret = list(permutations(ret, 2 + len(ret) % 2))
-    result = []
-    for r in ret:
-        result.append("/".join(r))
-    return result
+    l = list(permutations(key, 2 + len(key) % 2))
+    return l
 
 
 def rotate(key, steps=1):
-    ret = "".join(key.split("/"))
+    ret = "".join(key)
     ret = rotate_right(ret, steps)
     ret = chunkify(ret, 2 + len(ret) % 2)
-    ret = "/".join(ret)
-    return ret
+    return tuple(ret)
 
+
+def diagonal(key):
+    nk = []
+    for x in range(len(key)):
+        l = []
+        for y in range(len(key)):
+            l.append(key[y][x])
+        nk.append("".join(l))
+    return tuple(nk)
 
 def parse(source):
     """Parse the source and
@@ -52,49 +56,85 @@ def parse(source):
     """
     rules = {}
     for line in source:
-        line = line.replace("/", "").replace(".", "0").replace("#", "1")
         key, value = line.split(" => ")
-        rules[ints(key)] = value
+        key = tuple(key.split("/"))
+        value = value.split("/")
+        rules[key] = value
         for c in flip(key):
             rules[c] = value
-            for i in range(len(key) - 2):
-                rules[rotate(c, i)] = value
+            rules[diagonal(c)] = value
+            for i in range(len(key)):
+                k = rotate(c, i)
+                rules[k] = value
+                rules[diagonal(k)] = value
+
     _(rules)
     return rules
 
 
+BASE_GRID = [
+    ".#.",
+    "..#",
+    "###",
+]
+
+
 class ArtProgram:
 
-    def __init__(self, rules, base=".#./..#/###") -> None:
+    def __init__(self, rules, base=BASE_GRID) -> None:
         self.rules = rules
-        self.base = base.split("/")
+        self.grid = base
+        self.index = 1
 
-    def enhance(self, key):
-        if (len(key) - 2) % 3 == 0:
-            return self.enhance_odd(key)
+    def step(self, times=1):
+        for _ in range(times):
+            self.enhance()
+            _(self.grid)
+
+    def enhance(self):
+        if len(self.grid) % 2 == 0:
+            return self.enhance_even()
+        elif len(self.grid) % 3 == 0:
+            return self.enhance_odd()
         else:
-            return self.enhance_even(key)
+            raise ValueError("Bad dimensions")
 
-    def enhance_odd(self, key):
-        if len(key.replace("/", "")) == 9:
-            return self.rules[key]
+    def enhance_odd(self):
+        _("Enhance odd")
+        new_grid = []
+        new_lines = [[], [], [], []]
+        for h in range(0, len(self.grid), 3):
+            for w in range(0, len(self.grid), 3):
+                k = tuple([self.grid[h][w:w + 3], self.grid[h + 1][w:w + 3], self.grid[h + 2][w:w + 3]])
+                v = self.rules[k]
+                for i, l in enumerate(v):
+                    new_lines[i].extend(list(l))
+            new_grid.extend(["".join(l) for l in new_lines])
+        self.grid = new_grid
 
-        # TODO real enhance here
-        return None
+    def enhance_even(self):
+        _("Enhance even")
+        new_grid = []
+        new_lines = [[], [], []]
+        for h in range(0, len(self.grid), 2):
+            for w in range(0, len(self.grid), 2):
+                k = tuple([self.grid[h][w:w + 2], self.grid[h + 1][w:w + 2]])
+                v = self.rules[k]
+                for i, l in enumerate(v):
+                    new_lines[i].extend(list(l))
+        new_grid.extend(["".join(l) for l in new_lines])
+        self.grid = new_grid
 
-    def enhance_even(self, key):
-        _("!!!")
-        return key
+    def lit_pixels(self):
+        return sum([sum([c == "#" for c in l]) for l in self.grid])
 
 
-def part_1(source, base=".#./..#/###", times=2):
+def part_1(source, times=5):
     rules = parse(source)
-    a = base
+    art_program = ArtProgram(rules)
     for i in range(times):
-        a = enhance(a)
-        print("\n".join(rules[a].split("/")))
-
-    return None
+        art_program.step()
+    return art_program.lit_pixels()
 
 
 def part_2(source):
@@ -108,11 +148,10 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""../.# => ##./#../...
-.#./..#/### => #..#/..../..../#..#                           """)
+        self.test_source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test.input")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(12, part_1(self.test_source, times=2))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
