@@ -70,7 +70,7 @@ def part_1(source):
 
 
 def part_2(source):
-    """Hmm don't particularly like these problems
+    """Hmm don't particularly like these problems :-)
 
     {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': -103229}
     {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': 2}
