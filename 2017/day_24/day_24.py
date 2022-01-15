@@ -11,10 +11,12 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from typing import TypeVar
+from typing import TypeVar, Callable
 
+from ivonet.collection import Queue
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.search import Node, node_to_path
 
 sys.dont_write_bytecode = True
 T = TypeVar('T')
@@ -32,44 +34,56 @@ def parse(source):
     return [(a, b) if a < b else (b, a) for a, b in [ints(line) for line in source]]
 
 
-def extend(bridge, blocks):
-    unused = list(filter(lambda b: b not in bridge and b[::-1] not in bridge, blocks))
-    for block in unused:
-        if bridge[-1][1] == block[0]:
-            yield bridge + [block]
-        elif bridge[-1][1] == block[1]:
-            yield bridge + [block[::-1]]
+def strength(bridge):
+    return sum(x + y for x, y in bridge)
 
 
-def bridge_strength(bridge):
-    return sum(map(sum, bridge))
+def bfs(magnets, successors):
+    """Adjusted BFS
+    - more than one init as there are more then one magnets with a 0 as start
+    - the 'explored' had to be adjusted as we can reuse magnets as long as they
+      are not part of the bridge
+    - The goal test removed
+    - testing for longest and strongest bridge added
+    """
+    strongest = float("-inf")
+    longest = float("-inf")
+    longest_bridge = []
+    for initial in [magnet for magnet in magnets if 0 in magnet]:
+        frontier: Queue[Node[T]] = Queue()
+        frontier.push(Node(initial, None))
+
+        while not frontier.empty:
+            current_node: Node[T] = frontier.pop()
+            current_state: T = current_node.state
+            bridge = node_to_path(current_node)
+            strongest = max(strength(bridge), strongest)
+            length = len(bridge)
+            if length > longest:
+                longest_bridge = bridge
+                longest = length
+            for child in successors(current_state):
+                if child in bridge or child[::-1] in bridge:
+                    continue
+                frontier.push(Node(child, current_node))
+    return strongest, strength(longest_bridge)
 
 
-def astar(magnets):
-    new_bridges = [[magnet] for magnet in magnets if 0 in magnet]  # Need to start with 0
-    strongest = 0
-    longest_strength = 0
-    while new_bridges:
-        bridges = new_bridges
-        new_bridges = []
-        for bridge in bridges:
-            new_bridges.extend(list(extend(bridge, magnets)))
-        if new_bridges:
-            longest_strength = max(bridge_strength(bridge) for bridge in new_bridges)
-            strongest = max(strongest, longest_strength)
-    return strongest, longest_strength
+def can_connect(magnets) -> Callable[[list[tuple[int, int]]], list[T]]:
+    def connectors(a: T) -> list[T]:
+        ret = set()
+        ret = ret.union((x, y) for x, y in magnets if x == a[1])
+        ret = ret.union((y, x) for x, y in magnets if y == a[1])
+        return list(ret)
+
+    return connectors
 
 
-def part_1(source):
+def part_1_2(source):
     magnets = parse(source)
-    strongest, _ = astar(magnets)
-    return strongest
-
-
-def part_2(source):
-    magnets = parse(source)
-    _, longest_strength = astar(magnets)
-    return longest_strength
+    neigbors = can_connect(magnets)
+    strongest, longest = bfs(magnets, neigbors)
+    return strongest, longest
 
 
 class UnitTests(unittest.TestCase):
@@ -89,13 +103,12 @@ class UnitTests(unittest.TestCase):
 9/10""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(31, part_1(self.test_source))
+        self.assertEqual(31, part_1_2(self.test_source)[0])
 
-    def test_part_1(self):
-        self.assertEqual(1868, part_1(self.source))
-
-    def test_part_2(self):
-        self.assertEqual(1841, part_2(self.source))
+    def test_part_1_2(self):
+        strongest, longest = part_1_2(self.source)
+        self.assertEqual(1868, strongest)
+        self.assertEqual(1841, longest)
 
 
 if __name__ == '__main__':
