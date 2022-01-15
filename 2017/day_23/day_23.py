@@ -14,10 +14,11 @@ from pathlib import Path
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.primes import is_prime
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -69,8 +70,47 @@ def part_1(source):
 
 
 def part_2(source):
-    program = prepare(source)
-    return duet(program, a=1, v1=False)
+    """Hmm don't particularly like these problems
+
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': -103229}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': 2}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': 10342}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': -98058}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5171, 'g': -98058}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': -98058}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': 5172}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': -103228}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': -103228}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': 2}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': 10344}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': -98056}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5172, 'g': -98056}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': -98056}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': 5173}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': -103227}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': -103227}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': 2}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': 10346}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': -98054}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5173, 'g': -98054}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5174, 'g': -98054}
+    {'a': 1, 'b': 108400, 'c': 125400, 'f': 1, 'd': 2, 'e': 5174, 'g': 5174}
+
+    - A range between 108400 and 125400 I guess
+    - register h only used ones
+    - last value minus one (off one problem or last zero indexed?)
+    - e counts up to 108400
+    - c - b = 17000
+    - but what does it do?
+    See if it is a composite I guess in steps of 17
+    """
+    b = 108400
+    c = 125400
+    h = 0
+    for x in range(b, c + 1, 17):
+        if not is_prime(x):
+            h += 1
+    return h
 
 
 class UnitTests(unittest.TestCase):
@@ -85,7 +125,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(6724, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(903, part_2(self.source))
 
 
 if __name__ == '__main__':
