@@ -10,12 +10,10 @@ __doc__ = """"""
 import os
 import sys
 import unittest
-from itertools import permutations
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, chunkify
-from ivonet.str import rotate_right
+from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
@@ -34,48 +32,14 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def flip(key):
-    l = list(permutations(key, 2 + len(key) % 2))
-    return l
-
-
-def rotate(key, steps=1):
-    ret = "".join(key)
-    ret = rotate_right(ret, steps)
-    ret = chunkify(ret, 2 + len(ret) % 2)
-    return tuple(ret)
-
-
 def diagonal(key):
-    nk = []
+    new_key = []
     for x in range(len(key)):
-        l = []
+        tmp = []
         for y in range(len(key)):
-            l.append(key[y][x])
-        nk.append("".join(l))
-    return tuple(nk)
-
-
-def parse_old(source):
-    """Parse the source and
-    - add all the flipped and rotated combinations of the same key to the rules
-      with its value
-    """
-    rules = {}
-    for line in source:
-        key, value = line.split(" => ")
-        key = tuple(key.split("/"))
-        value = value.split("/")
-        rules[key] = value
-        for c in flip(key):
-            rules[c] = value
-            rules[diagonal(c)] = value
-            for i in range(len(key)):
-                k = rotate(c, i)
-                rules[k] = value
-                rules[diagonal(k)] = value
-    _(rules)
-    return rules
+            tmp.append(key[y][x])
+        new_key.append("".join(tmp))
+    return tuple(new_key)
 
 
 def parse(source):
@@ -157,7 +121,6 @@ def part_1(source, times=5):
     rules = parse(source)
     art_program = ArtProgram(rules)
     art_program.step(times)
-    _(art_program)
     return art_program.lit_pixels()
 
 
