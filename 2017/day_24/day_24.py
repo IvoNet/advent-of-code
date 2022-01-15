@@ -11,7 +11,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from typing import TypeVar, Callable
+from typing import Callable
 
 from ivonet.collection import Queue
 from ivonet.files import read_rows
@@ -19,9 +19,8 @@ from ivonet.iter import ints
 from ivonet.search import Node, node_to_path
 
 sys.dont_write_bytecode = True
-T = TypeVar('T')
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -30,15 +29,15 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def parse(source):
+def parse(source: list[str]) -> list[tuple[int, int]]:
     return [(a, b) if a < b else (b, a) for a, b in [ints(line) for line in source]]
 
 
-def strength(bridge):
+def strength(bridge: list[tuple[int, int]]) -> int:
     return sum(x + y for x, y in bridge)
 
 
-def bfs(magnets, successors):
+def bfs(magnets: list[tuple[int, int]], successors: Callable[[tuple[int, int]], list[tuple[int, int]]]):
     """Adjusted BFS
     - more than one init as there are more then one magnets with a 0 as start
     - the 'explored' had to be adjusted as we can reuse magnets as long as they
@@ -50,12 +49,12 @@ def bfs(magnets, successors):
     longest = float("-inf")
     longest_bridge = []
     for initial in [magnet for magnet in magnets if 0 in magnet]:
-        frontier: Queue[Node[T]] = Queue()
+        frontier: Queue[Node[tuple[int, int]]] = Queue()
         frontier.push(Node(initial, None))
 
         while not frontier.empty:
-            current_node: Node[T] = frontier.pop()
-            current_state: T = current_node.state
+            current_node: Node[tuple[int, int]] = frontier.pop()
+            current_state: tuple[int, int] = current_node.state
             bridge = node_to_path(current_node)
             strongest = max(strength(bridge), strongest)
             length = len(bridge)
@@ -69,8 +68,8 @@ def bfs(magnets, successors):
     return strongest, strength(longest_bridge)
 
 
-def can_connect(magnets) -> Callable[[list[tuple[int, int]]], list[T]]:
-    def connectors(a: T) -> list[T]:
+def can_connect(magnets: list[tuple[int, int]]) -> Callable[[tuple[int, int]], list[tuple[int, int]]]:
+    def connectors(a: tuple[int, int]) -> list[tuple[int, int]]:
         ret = set()
         ret = ret.union((x, y) for x, y in magnets if x == a[1])
         ret = ret.union((y, x) for x, y in magnets if y == a[1])
@@ -80,9 +79,9 @@ def can_connect(magnets) -> Callable[[list[tuple[int, int]]], list[T]]:
 
 
 def part_1_2(source):
-    magnets = parse(source)
-    neigbors = can_connect(magnets)
-    strongest, longest = bfs(magnets, neigbors)
+    magnets: list[tuple[int, int]] = parse(source)
+    neighbors = can_connect(magnets)
+    strongest, longest = bfs(magnets, neighbors)
     return strongest, longest
 
 
