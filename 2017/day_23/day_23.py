@@ -26,12 +26,51 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+def prepare(source):
+    return [x.split() for x in source]
+
+
+def reg(register, value):
+    """This simple method eliminates quite a bit of plumbing code for the assembler"""
+    try:
+        return int(value)
+    except ValueError:
+        return register.get(value, 0)
+
+
+def duet(program, a=0, v1=True):
+    """Made it into a generator to make duality a possibility without actual multithreading"""
+    register = {"a": a}
+    i = 0
+    mul_count = 0
+    while 0 <= i < len(program):
+        _(register)
+        instruction = program[i]
+        cmd = instruction[0]
+        left = reg(register, instruction[1])
+        right = reg(register, instruction[2])
+        if cmd == "set":
+            register[instruction[1]] = right
+        elif cmd == "sub":
+            register[instruction[1]] = left - right
+        elif cmd == "mul":
+            register[instruction[1]] = left * right
+            mul_count += 1
+        elif cmd == "jnz" and left != 0:
+            i += right - 1
+        i += 1
+    if v1:
+        return mul_count
+
+
 def part_1(source):
-    return None
+    program = prepare(source)
+    return duet(program, v1=True)
 
 
 def part_2(source):
-    return None
+    program = prepare(source)
+    return duet(program, a=1, v1=False)
 
 
 class UnitTests(unittest.TestCase):
@@ -41,16 +80,9 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(6724, part_1(self.source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
