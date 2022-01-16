@@ -16,7 +16,7 @@ PREVENT_ENDLESS_LOOP = 1000
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
