@@ -10,6 +10,7 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from collections import Counter
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -27,7 +28,13 @@ def _(*args, end="\n"):
 
 
 def part_1(source):
-    return None
+    two = 0
+    three = 0
+    for line in source:
+        count = Counter(line)
+        two += 1 if 2 in count.values() else 0
+        three += 1 if 3 in count.values() else 0
+    return two * three
 
 
 def part_2(source):
@@ -41,16 +48,9 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(5434, part_1(self.source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
