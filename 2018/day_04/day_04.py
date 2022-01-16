@@ -10,7 +10,8 @@ __doc__ = """"""
 import os
 import sys
 import unittest
-from collections import defaultdict
+from collections import defaultdict, Counter
+from itertools import chain
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -29,7 +30,7 @@ def _(*args, end="\n"):
 
 def process(source):
     chonological = sorted(source, key=lambda x: (x[6:8], x[9:11], x[12:14], x[15:17]))
-    sleep = defaultdict(lambda: defaultdict(list))  # sleep[guard][day] = [minute,...]
+    sleep = defaultdict(lambda: defaultdict(list))
     guard = None
     falls = None
     for line in chonological:
@@ -73,7 +74,11 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    sleep = process(source)
+    counter = Counter((guard, minute) for guard in sleep
+                      for minute in chain(*sleep[guard].values()))
+    guard, minute = counter.most_common()[0][0]
+    return guard * minute
 
 
 class UnitTests(unittest.TestCase):
@@ -108,10 +113,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3212, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(4455, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(4966, part_2(self.source))
 
 
 if __name__ == '__main__':
