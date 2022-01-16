@@ -4,6 +4,8 @@ from queue import LifoQueue
 
 from ivonet.iter import dictify
 
+cat = "".join
+
 
 def sort_str(txt, reverse=False) -> str:
     return "".join(sorted(txt, reverse=reverse))

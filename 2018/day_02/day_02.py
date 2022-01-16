@@ -15,6 +15,7 @@ from pathlib import Path
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.str import cat
 
 sys.dont_write_bytecode = True
 
@@ -25,6 +26,14 @@ DEBUG = True
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
+
+
+def diff(left, right):
+    return sum(a != b for a, b in zip(left, right))
+
+
+def common(left, right):
+    return cat(a for a, b in zip(left, right) if a == b)
 
 
 def part_1(source):
@@ -38,7 +47,14 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    return common(*[i for i in source if any(diff(i, x) == 1 for x in source)])
+
+
+def part_2_verbose_version(source):
+    for i in source:
+        for x in source:
+            if diff(i, x) == 1:
+                return common(i, x)
 
 
 class UnitTests(unittest.TestCase):
@@ -48,12 +64,25 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_rows("""abcde
+fghij
+klmno
+pqrst
+fguij
+axcye
+wvxyz""")
 
     def test_part_1(self):
         self.assertEqual(5434, part_1(self.source))
 
+    def test_example_data_part_2(self):
+        self.assertEqual("fgij", part_2(self.test_source))
+
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("agimdjvlhedpsyoqfzuknpjwt", part_2(self.source))
+
+    def test_part_2_verbose(self):
+        self.assertEqual("agimdjvlhedpsyoqfzuknpjwt", part_2_verbose_version(self.source))
 
 
 if __name__ == '__main__':
