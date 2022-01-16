@@ -18,7 +18,7 @@ from ivonet.str import swap_position, swap_letter, rotate_left, rotate_right, mo
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode

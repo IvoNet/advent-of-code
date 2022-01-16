@@ -19,7 +19,7 @@ from ivonet.str import cat
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
