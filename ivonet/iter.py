@@ -5,7 +5,7 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 import re
-from typing import Generator, Sized
+from typing import Generator, Sized, Callable, Iterable
 
 
 def lmap(func, *iterables):
@@ -57,6 +57,18 @@ def max_2d(matrix: list[list[int]]):
     42
     """
     return max(map(max, matrix))
+
+
+def quantify(iterable: Iterable, pred: Callable = bool):
+    """Count how many items in iterable have pred(item) true.
+    >>> quantify([4,3,2,True,7,8,False], lambda x: x is True)
+    1
+    >>> quantify([4,3,2,True,7,8,False])
+    6
+    >>> quantify([4,3,2,True,7,8,False, 3], pred=lambda x: x == 3)
+    2
+    """
+    return sum(map(pred, iterable))
 
 
 def flatten(lst: list[list]):
