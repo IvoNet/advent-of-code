@@ -47,20 +47,34 @@ def visualise(fabric, width=1000, height=1000):
         print()
 
 
-def part_1(source):
+def process(source):
     claims = parse(source)
     fabric = defaultdict(list)
     for claim in claims:
         for h in range(claim.top, claim.top + claim.tall):
             for w in range(claim.left, claim.left + claim.wide):
                 fabric[(h, w)].append(claim.id)
+    return fabric
 
-    # visualise(fabric, 10, 10)
-    return sum(1 for k, v in fabric.items() if len(v) > 1)
+
+def part_1(source):
+    return sum(1 for k, v in process(source).items() if len(v) > 1)
 
 
 def part_2(source):
+    fabric = process(source)
+    single_squared_ids = set(v[0] for k, v in fabric.items() if len(v) == 1)
+    for i in single_squared_ids:
+        if not any(x for x in fabric.values() if i in x and len(x) > 1):
+            return i
     return None
+
+
+def part_2_for_fun(source):
+    """Just playing with list comprehension"""
+    fabric = process(source)
+    return [i for i in set(v[0] for k, v in fabric.items() if len(v) == 1) if
+            not any(x for x in fabric.values() if i in x and len(x) > 1)][0] or None
 
 
 class UnitTests(unittest.TestCase):
@@ -81,10 +95,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(120419, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(3, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(445, part_2(self.source))
+
+    def test_part_2_for_fun(self):
+        self.assertEqual(445, part_2_for_fun(self.source))
 
 
 if __name__ == '__main__':
