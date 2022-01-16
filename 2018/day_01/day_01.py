@@ -10,14 +10,15 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from itertools import count
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_ints
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -27,11 +28,19 @@ def _(*args, end="\n"):
 
 
 def part_1(source):
-    return None
+    return sum(source)
 
 
 def part_2(source):
-    return None
+    frequencies = set()
+    freq = 0
+    for i in count():
+        for hz in source:
+            freq += hz
+            if freq in frequencies:
+                return freq
+            frequencies.add(freq)
+        _(i, end=" ")
 
 
 class UnitTests(unittest.TestCase):
@@ -40,20 +49,13 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.source = read_ints(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(513, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(287, part_2(self.source))
 
 
 if __name__ == '__main__':
