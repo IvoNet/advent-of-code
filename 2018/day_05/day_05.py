@@ -13,6 +13,7 @@ import sys
 import unittest
 from pathlib import Path
 
+from ivonet.alphabet import alphabet
 from ivonet.files import read_data
 from ivonet.iter import ints
 
@@ -28,7 +29,7 @@ def _(*args, end="\n"):
 
 
 def reacting(source, remove=None):
-    l = "abcdefghijklmnopqrstuvwxyz"
+    l = alphabet(upper=False)
     lu = "|".join(["".join(x) for x in list(zip(l, l.upper()))])
     ul = "|".join(["".join(x) for x in list(zip(l.upper(), l))])
     regex = f"{lu}|{ul}"
@@ -41,22 +42,25 @@ def reacting(source, remove=None):
         if len(exploded) == len(ret):
             break
         ret = exploded
-    return len(ret), ret
+    return len(ret)
 
 
 def part_1(source):
-    return reacting(source)[0]
+    return reacting(source)
 
 
 def part_2(source):
-    l = "abcdefghijklmnopqrstuvwxyz"
-    units = ["|".join(x) for x in list(zip(l, l.upper()))]
+    units = ["|".join(x) for x in list(zip(alphabet(), alphabet(True)))]
+    return min(reacting(source, unit) for unit in units)
+
+
+def part_2_orig(source):
+    units = ["|".join(x) for x in list(zip(alphabet(), alphabet(True)))]
     shortest_polymer = None
     shortest = float("inf")
     for unit in units:
         ret = source
-        ret = re.sub(unit, "", ret)
-        length, polymer = reacting(ret)
+        length, polymer = reacting(ret, unit)
         if length < shortest:
             shortest_polymer = polymer
             shortest = length
