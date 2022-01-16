@@ -56,7 +56,7 @@ it will:
 - None yet
 
 ## 2017 
-- day 1..21
+- 50 stars!
 
 # 2016
 - 50 stars!
