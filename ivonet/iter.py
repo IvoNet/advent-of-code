@@ -5,6 +5,7 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 import re
+from collections import defaultdict
 from typing import Generator, Sized, Callable, Iterable
 
 
@@ -71,7 +72,7 @@ def quantify(iterable: Iterable, pred: Callable = bool):
     return sum(map(pred, iterable))
 
 
-def flatten(lst: list[list]):
+def flatten(lst: Iterable[Iterable]):
     """Flatten a list of lists
 
     >>> flatten([[0,3],[6,6,6,6],[9,1],[0]])
@@ -143,6 +144,17 @@ def dictify(iterable):
     for k, v in chunkify(iterable, length=2):
         ret[k] = v
     return ret
+
+
+def multimap(items):
+    """Given (key, val) pairs, return {key: [val, ....], ...}.
+    >>> multimap([("a", "b"),("a", "c"),("a", "d"),("b", "a"),("b", "c"),])
+    defaultdict(<class 'list'>, {'a': ['b', 'c', 'd'], 'b': ['a', 'c']})
+    """
+    result = defaultdict(list)
+    for (key, val) in items:
+        result[key].append(val)
+    return result
 
 
 def list_middle(inlist: list[int]) -> any:
