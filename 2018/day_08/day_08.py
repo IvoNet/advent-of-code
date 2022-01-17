@@ -11,8 +11,9 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from typing import NamedTuple
 
-from ivonet.files import read_rows
+from ivonet.files import read_ints
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -26,8 +27,24 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Tree(NamedTuple):
+    kids: int
+    metadata: list
+
+
+def parse(source):
+    kids, num_metas, rest = source[0], source[1], source[2:]
+    total = 0
+    for _ in range(kids):
+        sub_total, rest = parse(rest)
+        total += sub_total
+    metas, rest = rest[:num_metas], rest[num_metas:]
+    total += sum(metas)
+    return total, rest
+
+
 def part_1(source):
-    return None
+    return parse(source)[0]
 
 
 def part_2(source):
@@ -40,14 +57,14 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_ints(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input", delimiter=" ")
+        self.test_source = read_ints("""2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2""", delimiter=" ")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(138, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(41028, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
