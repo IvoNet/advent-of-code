@@ -82,6 +82,8 @@ __all__ = [
     "open",
 ]
 
+infinite = float("inf")
+
 
 def open(source):
     """URI, filename, or string --> stream
