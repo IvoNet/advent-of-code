@@ -116,6 +116,9 @@ class PowerGrid:
                     _(size, highest, top_left)
         return top_left.x, top_left.y, top_grid_size
 
+    def max_power_any_size(self):
+        return max(self.max_power(size=x) for x in range(300))
+
     def total_power(self, topleft, width=3, sa=summed_area(rangei(1, 300), power_level)):
         "Total power in square with given topleft corner and width (from `sa`)."
         x, y = topleft
@@ -132,7 +135,9 @@ def part_2(source):
     """Way to slow :-) But how to optimize?
     - caching? precalculating?
     """
-    return PowerGrid(source).highest_any_grid()
+    total, top_left, size = PowerGrid(source).max_power_any_size()
+    x, y = top_left
+    return ",".join(str(a) for a in [x, y, size])
 
 
 class UnitTests(unittest.TestCase):
@@ -164,13 +169,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual((241, 40), part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual((90, 269, 16), part_2(18))
+        self.assertEqual("90,269,16", part_2(18))
 
     def test_example_data_2_part_2(self):
         self.assertEqual((21, 61), part_2(42))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("166,75,12", part_2(self.source))
 
 
 if __name__ == '__main__':
