@@ -10,6 +10,8 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from collections import defaultdict
+from itertools import product
 from pathlib import Path
 from typing import NamedTuple, Iterable, Optional
 
@@ -29,19 +31,15 @@ def _(*args, end="\n"):
 
 
 class Coord(NamedTuple):
-    r: int
-    c: int
+    x: int
+    y: int
 
 
-def hundreds_digit(nr: int) -> int:
-    if nr < 100:
-        return 0
-    return int(str(nr // 100)[-1])
-
-
-def power_level(loc: Coord, grid_serial_nr=8868, plus=10):
-    rack_id = loc.c + plus
-    return hundreds_digit(((rack_id * loc.r) + grid_serial_nr) * rack_id) - 5
+def power_level(loc: tuple[int, int], grid_serial_nr=8868):
+    x, y = loc
+    rack_id = x + 10
+    level = (rack_id * y + grid_serial_nr) * rack_id
+    return (level // 100) % 10 - 5
 
 
 def grid_iter(width=300, height=300, size=3):
@@ -50,8 +48,22 @@ def grid_iter(width=300, height=300, size=3):
             yield range(r, r + size), range(c, c + size)
 
 
-def total_power(rows: Iterable, cols: Iterable, grid_serial_nr) -> int:
+def total_power_v1(rows: Iterable, cols: Iterable, grid_serial_nr) -> int:
     return sum(power_level(Coord(r, c), grid_serial_nr) for r in rows for c in cols)
+
+
+def total_power(top_left: tuple[int, int], size=3):
+    x, y = top_left
+    square = product(range(x, x + size), range(y, y + size))
+    return sum(map(power_level, square))
+
+
+def summed_area(side, key):
+    "A summed-area table."
+    sa = defaultdict(int)
+    for x, y in product(side, side):
+        sa[x, y] = key((x, y)) + sa[x, y - 1] + sa[x - 1, y] - sa[x - 1, y - 1]
+    return sa
 
 
 class PowerGrid:
@@ -59,55 +71,68 @@ class PowerGrid:
     def __init__(self, serial_number=8868) -> None:
         self.width = 300
         self.height = 300
-        self.serial = serial_number
-        self.grid = [[power_level(Coord(r=r, c=c), self.serial) for c in rangei(1, self.width)]
-                     for r in rangei(1, self.height)]
+        self.serial = int(serial_number)
+        self.grid = [[power_level(Coord(c, r), self.serial) for c in rangei(0, self.width)]
+                     for r in rangei(0, self.height)]
         self.highest = -infinite
         self.top_x = 0
         self.top_y = 0
         self.size = 0
 
-    def total_power(self, rows: Iterable, cols: Iterable) -> int:
+    def total_power_v1(self, rows: Iterable, cols: Iterable) -> int:
         return sum(self.grid[r][c] for r in rows for c in cols)
 
     def highest_power(self):
+        """First version"""
         highest: int = -infinite
         top_left: Optional[Coord] = None
         for rows, cols in grid_iter():
-            power = self.total_power(rows, cols)
+            power = self.total_power_v1(rows, cols)
             if power > highest:
-                _(power)
-                top_left = Coord(r=rows[0], c=cols[0])
+                top_left = Coord(cols[0], rows[0])
                 highest = power
-        return top_left.c, top_left.r
+        return top_left
+
+    def total_power_v2(self, top_left: tuple[int, int], size=3):
+        x, y = top_left
+        square = product(range(x, x + size), range(y, y + size))
+        return sum(map(power_level, square))
+
+    def max_power(self, size=3):
+        top_lefts = product(rangei(1, self.width - size), repeat=2)
+        return max((self.total_power(top_left, size), top_left, size) for top_left in top_lefts)
+
+    def highest_any_grid(self):
+        highest: int = -infinite
+        top_left: Optional[Coord] = None
+        top_grid_size: int = -infinite
+        for size in rangei(300, 1, -1):
+            for rows, cols in grid_iter(size=size):
+                power = self.total_power(rows, cols)
+                if power > highest:
+                    top_left = Coord(r=rows[0], c=cols[0])
+                    highest = power
+                    top_grid_size = size
+                    _(size, highest, top_left)
+        return top_left.x, top_left.y, top_grid_size
+
+    def total_power(self, topleft, width=3, sa=summed_area(rangei(1, 300), power_level)):
+        "Total power in square with given topleft corner and width (from `sa`)."
+        x, y = topleft
+        xmin, ymin, xmax, ymax = x - 1, y - 1, x + width - 1, y + width - 1
+        return sa[xmin, ymin] + sa[xmax, ymax] - sa[xmax, ymin] - sa[xmin, ymax]
 
 
-def part_1(source, width=300, height=300):
-    grid_serial_number: int = int(source)
-    highest: int = -infinite
-    top_left: Optional[Coord] = None
-    for rows, cols in grid_iter(width, height):
-        power = total_power(rows, cols, grid_serial_nr=grid_serial_number)
-        if power > highest:
-            _(power)
-            top_left = Coord(r=rows[0], c=cols[0])
-            highest = power
-    return top_left.c, top_left.r
+def part_1(source):
+    # return PowerGrid(source).highest_power()
+    return PowerGrid(source).max_power()[1]
 
 
 def part_2(source):
-    grid_serial_number: int = int(source)
-    highest: int = -infinite
-    top_left: Optional[Coord] = None
-    top_grid_size: int = -infinite
-    for size in rangei(1, 300):
-        for rows, cols in grid_iter(size=size):
-            power = total_power(rows, cols, grid_serial_nr=grid_serial_number)
-            if power > highest:
-                top_left = Coord(r=rows[0], c=cols[0])
-                highest = power
-                top_grid_size = size
-    return top_left.c, top_left.r, top_grid_size
+    """Way to slow :-) But how to optimize?
+    - caching? precalculating?
+    """
+    return PowerGrid(source).highest_any_grid()
 
 
 class UnitTests(unittest.TestCase):
@@ -142,7 +167,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual((90, 269, 16), part_2(18))
 
     def test_example_data_2_part_2(self):
-        self.assertEqual((21, 61), part_1(42))
+        self.assertEqual((21, 61), part_2(42))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))

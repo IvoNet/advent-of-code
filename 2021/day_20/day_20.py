@@ -85,8 +85,8 @@ def visualize(grid):
     print("-" * 100)
     row = -1000  # smaller than smallest
     for crd in g:
-        if crd.r > row:
-            row = crd.r
+        if crd.y > row:
+            row = crd.y
             print()
         print("#" if g[crd] else ".", end="")
     print()
