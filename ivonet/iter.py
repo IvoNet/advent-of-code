@@ -9,14 +9,9 @@ from collections import defaultdict
 from typing import Generator, Sized, Callable, Iterable
 
 
-def range_inc(start, end, step=1):
+def rangei(start, end, step=1):
     """Inclusive, range from start to end: rangei(a, b) = range(a, b+1)."""
     return range(start, end + 1, step)
-
-
-def rangei(end, step=1):
-    """Inclusive, range from start to end: rangei(b) = range(0, b+1)."""
-    return range_inc(0, end + 1, step)
 
 
 def lmap(func, *iterables):
@@ -89,6 +84,11 @@ def flatten(lst: Iterable[Iterable]):
     [0, 3, 6, 6, 6, 6, 9, 1, 0]
     """
     return [i for x in lst for i in x]
+
+
+def mapt(fn, *args):
+    """Do a map, and make the results into a tuple."""
+    return tuple(map(fn, *args))
 
 
 def ints(s: str) -> list[int]:

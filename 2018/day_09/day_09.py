@@ -14,10 +14,11 @@ from collections import defaultdict, deque
 from dataclasses import dataclass
 from itertools import count
 from pathlib import Path
+from typing import Optional
 
 from ivonet.cdll import CircularDoublyLinkedList
 from ivonet.files import read_data
-from ivonet.iter import ints, range_inc
+from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
 
@@ -96,7 +97,7 @@ def marble_game_v3(players=403, marbles=71920):
     """
     board = deque([0])
     scores = defaultdict(int)
-    for m in range_inc(1, marbles):
+    for m in rangei(1, marbles):
         player = (m - 1) % players + 1
         if m % 23 == 0:
             board.rotate(7)
