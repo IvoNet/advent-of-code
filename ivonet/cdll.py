@@ -10,27 +10,23 @@ __doc__ = """A Circular Doubly Linked List
 a simple implementation of a CircularDoublyLinkedList
 
 See the unit tests in this package and a good 
-usage example in 2016 day 19
+usage example in 2016 day 19 and 2018 day 9
 """
 
+from dataclasses import dataclass
 from typing import TypeVar, Generic, Optional, Iterator
 
 T = TypeVar('T')
 
 
+@dataclass
 class Node(Generic[T]):
     """A Node as companion to the Circular Doubly Linked List
     A node contains data and a reference to its next and previous.
-    On its own it points to itself both ways.
     """
-
-    def __init__(self, data: T):
-        self.data: T = data
-        self.next: Optional[Node] = self
-        self.prev: Optional[Node] = self
-
-    def __repr__(self) -> str:
-        return f"Node<data={repr(self.data)} prev={repr(self.prev.data)} next={repr(self.next.data)}>"
+    data: T
+    next: Optional[Node] = None
+    prev: Optional[Node] = None
 
 
 class CircularDoublyLinkedList:
@@ -81,6 +77,11 @@ class CircularDoublyLinkedList:
         self.current_node = self.current_node.prev
         self.current_first = False
         return self.current_node
+
+    def step_left(self, times) -> Optional[Node[T]]:
+        for _ in range(times % self.size):
+            self.previous()
+        return self.current()
 
     def current(self) -> Optional[Node[T]]:
         if self.current_node:

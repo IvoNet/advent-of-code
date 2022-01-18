@@ -9,6 +9,16 @@ from collections import defaultdict
 from typing import Generator, Sized, Callable, Iterable
 
 
+def range_inc(start, end, step=1):
+    """Inclusive, range from start to end: rangei(a, b) = range(a, b+1)."""
+    return range(start, end + 1, step)
+
+
+def rangei(end, step=1):
+    """Inclusive, range from start to end: rangei(b) = range(0, b+1)."""
+    return range_inc(0, end + 1, step)
+
+
 def lmap(func, *iterables):
     """list of map to func on iterables
 
