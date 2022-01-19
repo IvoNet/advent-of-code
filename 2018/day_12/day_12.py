@@ -26,7 +26,14 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def part_1(source):
+def parse(source):
+    state = source[0].replace("initial state: ", "").strip()
+    notes = [line.split(" => ") for line in source[2:]]
+    return state, notes
+
+
+def part_1(source, generations=325):
+    initial, notes = parse(source)
     return None
 
 
@@ -41,10 +48,25 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows("""initial state: #..#.#..##......###...###
+
+...## => #
+..#.. => #
+.#... => #
+.#.#. => #
+.#.## => #
+.##.. => #
+.#### => #
+#.#.# => #
+#.### => #
+##.#. => #
+##.## => #
+###.. => #
+###.# => #
+####. => #""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(".#....##....#####...#######....#.#..##.", part_1(self.test_source, generations=20))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))

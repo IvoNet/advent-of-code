@@ -14,7 +14,7 @@ I liked my solution a lot because I actually used what I had just refreshed from
 Later I found out that you can do this just as easily with the networkx component
 but my goal with these solutions is to use as much standard library and plain Python.
 
-It is for my understanding not and fun :-)
+It is for my understanding and fun :-)
 """
 
 import os
@@ -28,7 +28,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -49,7 +49,6 @@ def parse(source):
     for line in source:
         nrs = ints(line)
         groups[nrs[0]] = nrs[1:]
-        next(vertices.add(x) for x in nrs)
         vertices = vertices.union(nrs)
     return groups, list(vertices)
 
