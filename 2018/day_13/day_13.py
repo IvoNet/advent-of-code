@@ -45,7 +45,9 @@ def _(*args, end="\n"):
 
 
 def rotate(z: complex, degrees: float) -> complex:
-    """https://realpython.com/python-complex-numbers/#multiplication"""
+    """To work with complex numbers as coordinates I got this convenience method because I am still getting used to
+    calculating with them
+    https://realpython.com/python-complex-numbers/#multiplication"""
     return z * 1j ** (degrees / 90)
 
 
