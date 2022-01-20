@@ -73,7 +73,20 @@ class CardTrackSystem:
                             key=lambda cart: cart.pos.imag)
 
     def __move(self, cart: Cart):
-        """The work is done here :-)"""
+        """The real work is done here :-) Moving the carts
+        - the first iteration of all the cats it will return itself.
+          it will then skip all the ifs because none are true and then go to the next position and as we already know
+          our direction that is just fine
+        - the next move of all a cart it can encounter a few things but the only three of note are +/\ as they have an
+          effect on direction.
+        - so if it encounters a |^-v<> just go ahaid in the direction you were going already
+        - when encountering a + we will:
+          - first action (step == 0): turn left
+          - second action (step == 1): do nothing as we were already going in that direction
+          - third action (step == 2): tirn right
+        - when we encounter a \ or / sign we need to turn in the right directions based on the direction
+        - and just do a step
+        """
         track = self.tracks[cart.pos]
         if track == "+":
             if cart.step == 0:  # going left
@@ -81,13 +94,14 @@ class CardTrackSystem:
             elif cart.step == 2:  # going right
                 cart.dir = rotate(cart.dir, 90)
             cart.step = (cart.step + 1) % 3
-        elif track in "/\\":
-            cart.dir *= 1j
-            if (cart.dir.imag and track == "/") or (cart.dir.real and track == "\\"):
-                cart.dir = rotate(cart.dir, 180)
+        elif track in "\\":
+            cart.dir = rotate(cart.dir, -90 if cart.dir.imag else 90)
+        elif track in "/":
+            cart.dir = rotate(cart.dir, -90 if cart.dir.real else 90)
         cart.pos += cart.dir
 
     def first_collision(self):
+        """Find the first collision"""
         while True:
             for cart in self.carts:
                 self.__move(cart)
@@ -95,6 +109,11 @@ class CardTrackSystem:
                     return f"{int(cart.pos.real)},{int(cart.pos.imag)}"
 
     def last_collision(self):
+        """Simulate until only one card left then tell us where it is
+        - as we are removing the crashed cards we need to re sort them after every remove
+        - the order might have changed.
+        - Sort based on the row they are on as top rows move first
+        """
         carts = deepcopy(self.carts)
         while True:
             if len(carts) == 1:
