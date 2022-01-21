@@ -110,11 +110,11 @@ In range:
   Step:
 
 
-#######  #######  #######  #######  #######
-#.E...#  #.E...#  #.E...#  #4E212#  #..E..#
+#######     #######     #######  #######  #######
+#.E...#     #.E...#     #.E...#  #4E212#  #..E..#
 #...?.# --> #...!.# --> #...+.# --> #32101# --> #.....#
-#..?G?#  #..!G.#  #...G.#  #432G2#  #...G.#
-#######  #######  #######  #######  #######
+#..?G?#     #..!G.#     #...G.#  #432G2#  #...G.#
+#######     #######     #######  #######  #######
 
 The Elf sees three squares in range of a target (?), two of which are nearest
 (!), and so the first in reading order is chosen (+). Under "Distance", each
@@ -208,11 +208,11 @@ For example, suppose the only Elf is about to attack:
    HP:
 
 
-G.... 9  G.... 9 
-..G.. 4  ..G.. 4 
-..EG. 2 --> ..E..  
-..G.. 2  ..G.. 2 
-...G. 1  ...G. 1 
+G.... 9  G.... 9
+..G.. 4  ..G.. 4
+..EG. 2 --> ..E..
+..G.. 2  ..G.. 2
+...G. 1  ...G. 1
 
 The "HP" column shows the hit points of the Goblin to the left in the
 corresponding row. The Elf is in range of three targets:
@@ -243,35 +243,35 @@ are listed from left to right.
 Initially:
 
 
-####### 
+#######
 #.G...# G(200)
 #...EG# E(200), G(200)
 #.#.#G# G(200)
 #..G#E# G(200), E(200)
-#.....# 
-####### 
+#.....#
+#######
 
 After 1 round:
 
 
-####### 
+#######
 #..G..# G(200)
 #...EG# E(197), G(197)
 #.#G#G# G(200), G(197)
 #...#E# E(197)
-#.....# 
-####### 
+#.....#
+#######
 
 After 2 rounds:
 
 
-####### 
+#######
 #...G.# G(200)
 #..GEG# G(200), E(188), G(194)
 #.#.#G# G(194)
 #...#E# E(194)
-#.....# 
-####### 
+#.....#
+#######
 
 Combat ensues; eventually, the top Elf dies:
 
@@ -280,68 +280,68 @@ Combat ensues; eventually, the top Elf dies:
 After 23 rounds:
 
 
-####### 
+#######
 #...G.# G(200)
 #..G.G# G(200), G(131)
 #.#.#G# G(131)
 #...#E# E(131)
-#.....# 
-####### 
+#.....#
+#######
 
 After 24 rounds:
 
 
-####### 
+#######
 #..G..# G(200)
 #...G.# G(131)
 #.#G#G# G(200), G(128)
 #...#E# E(128)
-#.....# 
-####### 
+#.....#
+#######
 
 After 25 rounds:
 
 
-####### 
+#######
 #.G...# G(200)
 #..G..# G(131)
 #.#.#G# G(125)
 #..G#E# G(200), E(125)
-#.....# 
-####### 
+#.....#
+#######
 
 After 26 rounds:
 
 
-####### 
+#######
 #G....# G(200)
 #.G...# G(131)
 #.#.#G# G(122)
 #...#E# E(122)
 #..G..# G(200)
-####### 
+#######
 
 After 27 rounds:
 
 
-####### 
+#######
 #G....# G(200)
 #.G...# G(131)
 #.#.#G# G(119)
 #...#E# E(119)
 #...G.# G(200)
-####### 
+#######
 
 After 28 rounds:
 
 
-####### 
+#######
 #G....# G(200)
 #.G...# G(131)
 #.#.#G# G(116)
 #...#E# E(113)
 #....G# G(200)
-####### 
+#######
 
 More combat ensues; eventually, the bottom Elf dies:
 
@@ -350,13 +350,13 @@ More combat ensues; eventually, the bottom Elf dies:
 After 47 rounds:
 
 
-####### 
+#######
 #G....# G(200)
 #.G...# G(131)
 #.#.#G# G(59)
-#...#.# 
+#...#.#
 #....G# G(200)
-####### 
+#######
 
 Before the 48th round can finish, the top-left Goblin finds that there are no
 targets remaining, and so combat ends. So, the number of full rounds that were
@@ -380,13 +380,13 @@ Outcome:
 
  37 * 982 = 36334
 
-#######  ####### 
+#######  #######
 #E..EG#  #.E.E.# E(164), E(197)
 #.#G.E#  #.#E..# E(200)
 #E.##E# --> #E.##.# E(98)
 #G..#.#  #.E.#.# E(200)
-#..E#.#  #...#.# 
-#######  ####### 
+#..E#.#  #...#.#
+#######  #######
 
 Combat ends after 46 full rounds
 Elves win with 859 total hit points left
@@ -394,13 +394,13 @@ Outcome:
 
  46 * 859 = 39514
 
-#######  ####### 
+#######  #######
 #E.G#.#  #G.G#.# G(200), G(98)
 #.#G..#  #.#G..# G(200)
-#G.#.G# --> #..#..# 
+#G.#.G# --> #..#..#
 #G..#.#  #...#G# G(95)
 #...E.#  #...G.# G(200)
-#######  ####### 
+#######  #######
 
 Combat ends after 35 full rounds
 Goblins win with 793 total hit points left
@@ -408,13 +408,13 @@ Outcome:
 
  35 * 793 = 27755
 
-#######  ####### 
-#.E...#  #.....# 
+#######  #######
+#.E...#  #.....#
 #.#..G#  #.#G..# G(200)
-#.###.# --> #.###.# 
-#E#G#G#  #.#.#.# 
+#.###.# --> #.###.#
+#E#G#G#  #.#.#.#
 #...#G#  #G.G#G# G(98), G(38), G(200)
-#######  ####### 
+#######  #######
 
 Combat ends after 54 full rounds
 Goblins win with 536 total hit points left
@@ -422,15 +422,15 @@ Outcome:
 
  54 * 536 = 28944
 
-#########  ######### 
+#########  #########
 #G......#  #.G.....# G(137)
 #.E.#...#  #G.G#...# G(200), G(200)
 #..##..G#  #.G##...# G(200)
-#...##..# --> #...##..# 
+#...##..# --> #...##..#
 #...#...#  #.G.#...# G(200)
-#.G...G.#  #.......# 
-#.....G.#  #.......# 
-#########  ######### 
+#.G...G.#  #.......#
+#.....G.#  #.......#
+#########  #########
 
 Combat ends after 20 full rounds
 Goblins win with 937 total hit points left

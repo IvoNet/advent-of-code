@@ -56,12 +56,29 @@ it will:
 - 1..14
 
 ## 2017
+
 - 50 stars!
 
 # 2016
+
 - 50 stars!
 
 ## 2015
+
 - 50 stars!
 
+----
 
+# Jupiter theme
+
+## install
+
+```text
+pip install jupyterthemes
+```
+
+## Activate theme
+
+```text
+jt -f roboto -fs 12 -t monokai -T -N -kl -vim
+```
