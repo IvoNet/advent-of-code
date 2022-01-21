@@ -40,6 +40,12 @@ class Cell(str, Enum):
     GOBLIN = "G"
     PATH = "*"
 
+    def __repr__(self) -> str:
+        return self.value
+
+    def __str__(self) -> str:
+        return repr(self)
+
 
 class Location(NamedTuple):
     row: int
@@ -57,10 +63,16 @@ class Elf(Unit):
     def __repr__(self) -> str:
         return Cell.ELF
 
+    def __str__(self) -> str:
+        return repr(self)
+
 
 class Goblin(Unit):
     def __repr__(self) -> str:
         return Cell.GOBLIN
+
+    def __str__(self) -> str:
+        return repr(self)
 
 
 class BeverageBandits:
@@ -146,22 +158,39 @@ class BeverageBandits:
         self._grid[start.row][start.col] = Cell.EMPTY
         self._grid[goal.row][goal.col] = Cell.EMPTY
 
-    def parse(self, source):
-        for r, row in enumerate(source):
+    def mark_units(self):
+        for unit in self._units:
+            self._grid[unit.pos.row][unit.pos.col] = unit
+
+    def clear_units(self):
+        for unit in self._units:
+            self._grid[unit.pos.row][unit.pos.col] = Cell.EMPTY
+
+    def parse(self, source) -> None:
+        for r, line in enumerate(source):
             row = []
-            for c, value in enumerate(row):
+            for c, value in enumerate(line):
                 loc = Location(r, c)
                 if value in "GE":
-                    unit = Goblin(loc) if source == "G" else Elf(loc)
+                    unit = Goblin(loc) if value == "G" else Elf(loc)
                     self._units.append(unit)
-                    row.append(unit)
-                else:
-                    row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
-        return source
+                    # row.append(unit)
+                # else:
+                #     row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
+                row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
+            self._grid.append(row)
+
+    def __repr__(self) -> str:
+        return "\n".join("".join(str(col) for col in row) for row in self._grid)
 
 
 def part_1(source):
     war = BeverageBandits(source)
+    print(war)
+    war.mark_units()
+    print(war)
+    war.clear_units()
+    print(war)
     return None
 
 
