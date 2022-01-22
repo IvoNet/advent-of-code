@@ -119,7 +119,7 @@ class BeverageBandits:
           else move
         """
 
-    def attack(self, attacker: Unit, enemy: Unit):
+    def attack(self, attacker: Unit, enemy: Unit) -> bool:
         """Attack
         - When in range
         - reading order (top down, left-right)
@@ -191,16 +191,43 @@ class BeverageBandits:
             locations.append(Location(point.row, point.col - 1))
         return locations
 
-    def shortest_2_enemy(self, unit: Unit):
-        """Find all shortest paths of a route to chose the reading order if there are more shortests
+    def within_attack_range(self, attacker: Unit):
+        """See if there a target in range in reading order
+        - right, down, up, left
         """
-        _(unit.repr_long())
+
+        def is_enemy(u: Unit):
+            return isinstance(u, Unit) and type(u) != type(attacker)
+
+        point = attacker.pos
+        # Right
+        potential_enemy = self._grid[point.row][point.col + 1]
+        if point.col + 1 < self._columns and is_enemy(potential_enemy):
+            return potential_enemy
+        # Down
+        potential_enemy = self._grid[point.row + 1][point.col]
+        if point.row + 1 < self._rows and is_enemy(potential_enemy):
+            return potential_enemy
+        # above
+        potential_enemy = self._grid[point.row - 1][point.col]
+        if point.row - 1 >= 0 and is_enemy(potential_enemy):
+            return potential_enemy
+        # Left
+        potential_enemy = self._grid[point.row][point.col - 1]
+        if point.col - 1 >= 0 and is_enemy(potential_enemy):
+            return potential_enemy
+        return None
+
+    def shortest_2_enemy(self, unit: Unit):
+        """Find all shortest paths of a route to chose the reading order if there are more shortest paths'
+        we actually find the shortest routes to the open spaces next to the enemy.
+        """
         # enemies = sorted([enemy for enemy in self._units if type(enemy) != type(unit)], key=lambda e: manhatten_distance(e.pos, unit.pos))
         enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
         shortest = []
         max_dist = infinite
         for enemy in enemies:
-            # get the open neighbors of the enemy
+            # get the open neighbor slots of the enemy
             for target in self.bfs_successors(enemy.pos):
                 if shortest:
                     max_dist = len(min(shortest))
@@ -269,6 +296,8 @@ def part_1(source):
     print(war)
     war.move(war._units[3])
     print(war)
+    print("!!", war.within_attack_range(war._units[2]).repr_long())
+
     return None
 
 
@@ -286,10 +315,35 @@ class UnitTests(unittest.TestCase):
         self.test_source_1 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_1.input")
         self.test_source_2 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_2.input")
 
+    def test_attackers_in_range(self):
+        bb = BeverageBandits(self.test_source_2)
+        self.assertFalse(bb.within_attack_range(bb._units[0]))
+        self.assertTrue(bb.within_attack_range(bb._units[1]))
+        self.assertEqual("Goblin<pos=Location(row=2, col=5), hp=200, ap=3>",
+                         bb.within_attack_range(bb._units[1]).repr_long())
+        self.assertEqual("Elf<pos=Location(row=2, col=4), hp=200, ap=3>",
+                         bb.within_attack_range(bb._units[2]).repr_long())
+        self.assertFalse(bb.within_attack_range(bb._units[4]))
+
+    def test_move_1_unit(self):
+        bb = BeverageBandits(self.test_source_2)
+        print(bb)
+        self.assertEquals("Goblin<pos=Location(row=1, col=3), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
+        print(bb)
+        self.assertEquals("Goblin<pos=Location(row=1, col=4), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
+        print(bb)
+        self.assertEquals("Goblin<pos=Location(row=3, col=3), hp=200, ap=3>", bb.move(bb._units[4]).repr_long())
+        print(bb)
+        self.assertEquals("Goblin<pos=Location(row=2, col=3), hp=200, ap=3>", bb.move(bb._units[3]).repr_long())
+        print(bb)
+
     def test_example_data_1_part_1(self):
         self.assertEqual(None, part_1(self.test_source_1))
 
     def test_example_data_2_part_1(self):
+        self.assertEqual(None, part_1(self.test_source_2))
+
+    def test_example_data_3_part_1_(self):
         self.assertEqual(None, part_1(self.test_source_2))
 
     def test_part_1(self):
