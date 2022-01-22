@@ -12,6 +12,7 @@ import sys
 import unittest
 from dataclasses import dataclass
 from enum import Enum
+from itertools import count
 from pathlib import Path
 from typing import NamedTuple, TypeVar, Optional
 
@@ -64,6 +65,9 @@ class Unit:
     def repr_long(self):
         return f"{self.__class__.__name__}<pos={self.pos}, hp={self.hit_points}, ap={self.attack_power}>"
 
+    def hp(self):
+        return f"{self.__class__.__name__[0]}({self.hit_points})"
+
 
 class Elf(Unit):
     def __repr__(self) -> str:
@@ -107,15 +111,20 @@ class BeverageBandits:
 
     def combat_round(self):
         """A round gives all units a turn"""
-        for unit in self._units:
-            self.turn(unit)
+        units = self._units.copy()
+        while units:
+            self.turn(units.pop(0))
 
     def turn(self, unit: Unit):
         """A units turn
-        - if we don't have anyone to attack see if we can move
+        - if we don't have anyone to attack see if we can move and then see if we can attack
+        - if we can attack immediately then do so and turn is over
         """
+        if unit.hit_points <= 0:
+            return
         if not self.attack(unit):
             self.move(unit)
+            self.attack(unit)
 
     def attack(self, attacker: Unit) -> bool:
         """Attack
@@ -244,19 +253,21 @@ class BeverageBandits:
                     shortest.append(*bfs)
         if not shortest:
             return None
-        print("!", shortest)
         return sorted(shortest, key=lambda u: (len(u), u[0]))[0][0]
 
     def fight(self):
         """Let's fight!"""
-        while True:
+        _(f"Initially:")
+        _(self.repr_state())
+
+        for i in count(1):
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if not goblins or not elves:
                 break
             self.combat_round()
-            _(self)
-            _(self.repr_units())
+            _(f"After {i} round(s):")
+            _(self.repr_state())
         if elves:
             return "Elves won"
         return "Goblins won"
@@ -290,6 +301,14 @@ class BeverageBandits:
         for unit in self.retrieve_units():
             ret += f"\n{unit.repr_long()}"
         return ret
+
+    def repr_state(self):
+        ret = []
+        for row in self._grid:
+            r = "".join(str(col) for col in row) + "   "
+            r += ", ".join(u.hp() for u in row if isinstance(u, Unit))
+            ret.append(r)
+        return "\n".join(ret)
 
     def __repr__(self) -> str:
         ret = "\n".join("".join(str(col) for col in row) for row in self._grid)
@@ -397,7 +416,7 @@ class UnitTests(unittest.TestCase):
     def test_example_data_2_part_1(self):
         self.assertEqual(None, part_1(self.test_source_2))
 
-    def test_example_data_3_part_1_(self):
+    def test_example_data_3_part_1(self):
         self.assertEqual(None, part_1(self.test_source_2))
 
     def test_part_1(self):
