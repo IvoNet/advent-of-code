@@ -431,7 +431,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(18740, part_1(self.test_source_8))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(188576, part_1(self.source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
