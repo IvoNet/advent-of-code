@@ -185,25 +185,19 @@ class BeverageBandits:
         """See if there is a path to the target
         - find the successors
         - this function assumes that the Units have been marked on the board
-
-        TODO See if this one can be rewritten to == Cell.EMPTY? without the rest
         """
         locations: list[Location] = []
         if point.col + 1 < self._columns \
-                and self._grid[point.row][point.col + 1] != Cell.BLOCKED \
-                and not isinstance(self._grid[point.row][point.col + 1], Unit):
+                and self._grid[point.row][point.col + 1] == Cell.EMPTY:
             locations.append(Location(point.row, point.col + 1))
         if point.row + 1 < self._rows \
-                and self._grid[point.row + 1][point.col] != Cell.BLOCKED \
-                and not isinstance(self._grid[point.row + 1][point.col], Unit):
+                and self._grid[point.row + 1][point.col] == Cell.EMPTY:
             locations.append(Location(point.row + 1, point.col))
         if point.row - 1 >= 0 \
-                and self._grid[point.row - 1][point.col] != Cell.BLOCKED \
-                and not isinstance(self._grid[point.row - 1][point.col], Unit):
+                and self._grid[point.row - 1][point.col] == Cell.EMPTY:
             locations.append(Location(point.row - 1, point.col))
         if point.col - 1 >= 0 \
-                and self._grid[point.row][point.col - 1] != Cell.BLOCKED \
-                and not isinstance(self._grid[point.row][point.col - 1], Unit):
+                and self._grid[point.row][point.col - 1] == Cell.EMPTY:
             locations.append(Location(point.row, point.col - 1))
         return sorted(locations)
 
