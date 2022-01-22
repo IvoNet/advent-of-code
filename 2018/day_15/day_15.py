@@ -111,7 +111,7 @@ class BeverageBandits:
 
     def combat_round(self):
         """A round gives all units a turn"""
-        units = self._units.copy()
+        units = sorted(self._units.copy(), key=lambda u: u.pos)
         while units:
             self.turn(units.pop(0))
 
@@ -209,7 +209,7 @@ class BeverageBandits:
 
     def within_attack_range(self, attacker: Unit) -> Optional[Unit]:
         """See if there a target in range in reading order
-        - right, down, up, left
+        - top, down, left, right
         """
 
         def is_enemy(u: Unit):
@@ -217,19 +217,20 @@ class BeverageBandits:
             return isinstance(u, Unit) and type(u) != type(attacker)
 
         point = attacker.pos
-        # Right
+
+        # right
         potential_enemy = self._grid[point.row][point.col + 1]
         if point.col + 1 < self._columns and is_enemy(potential_enemy):
-            return potential_enemy
-        # Down
-        potential_enemy = self._grid[point.row + 1][point.col]
-        if point.row + 1 < self._rows and is_enemy(potential_enemy):
             return potential_enemy
         # above
         potential_enemy = self._grid[point.row - 1][point.col]
         if point.row - 1 >= 0 and is_enemy(potential_enemy):
             return potential_enemy
-        # Left
+        # under
+        potential_enemy = self._grid[point.row + 1][point.col]
+        if point.row + 1 < self._rows and is_enemy(potential_enemy):
+            return potential_enemy
+        # left
         potential_enemy = self._grid[point.row][point.col - 1]
         if point.col - 1 >= 0 and is_enemy(potential_enemy):
             return potential_enemy
@@ -260,17 +261,17 @@ class BeverageBandits:
         _(f"Initially:")
         _(self.repr_state())
 
-        for i in count(1):
+        for i in count(0):
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if not goblins or not elves:
-                break
+                total = sum(u.hit_points for u in self._units)
+                _(i, total)
+                return i * total
             self.combat_round()
-            _(f"After {i} round(s):")
+            _(f"After {i + 1} round(s):")
             _(self.repr_state())
-        if elves:
-            return "Elves won"
-        return "Goblins won"
+        return None
 
     def mark_units(self):
         for unit in self._units:
@@ -317,8 +318,7 @@ class BeverageBandits:
 
 def part_1(source):
     war = BeverageBandits(source)
-    war.fight()
-    return None
+    return war.fight()
 
 
 def part_2(source):
@@ -417,7 +417,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(None, part_1(self.test_source_2))
 
     def test_example_data_3_part_1(self):
-        self.assertEqual(None, part_1(self.test_source_2))
+        self.assertEqual(27730, part_1(self.test_source_2))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
