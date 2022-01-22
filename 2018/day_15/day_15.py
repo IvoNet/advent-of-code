@@ -5,7 +5,10 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+Totally loved this puzzle
+Freaking awesome!
+"""
 
 import os
 import sys
@@ -30,10 +33,6 @@ DEBUG = False
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
-
-
-def repr_maze(maze):
-    return "\n".join("".join(row) for row in maze)
 
 
 class Cell(str, Enum):
@@ -87,7 +86,6 @@ class Goblin(Unit):
 def node_to_path(node: Node[T]) -> list[T]:
     """This version removes the first state from the path as it is ourselves"""
     path: list[T] = [node.state]
-    # work backwards from end to front
     while node.parent is not None:
         node = node.parent
         path.append(node.state)
@@ -102,6 +100,7 @@ class ElfDied(Exception):
 class BeverageBandits:
 
     def __init__(self, source, elf_start_ap=3) -> None:
+        self.source = source
         self.elf_ap = elf_start_ap
         self._grid: list[list[Cell | Unit]] = []
         self._units: list[Unit] = []
@@ -260,7 +259,7 @@ class BeverageBandits:
         return sorted(shortest, key=lambda u: (len(u), u[0]))[0][0]
 
     def fight(self):
-        """fight!"""
+        """Fight!"""
         _(f"Initially:")
         _(self)
 
