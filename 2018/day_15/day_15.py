@@ -84,10 +84,6 @@ class Goblin(Unit):
         return repr(self)
 
 
-def manhatten_distance(left: Location, right: Location) -> int:
-    return abs(left.row - right.row) + abs(left.col - right.col)
-
-
 def node_to_path(node: Node[T]) -> list[T]:
     """This version removes the first state from the path as it is ourselves"""
     path: list[T] = [node.state]
