@@ -38,7 +38,7 @@ from ivonet.search import Node
 sys.dont_write_bytecode = True
 T = TypeVar('T')
 DEBUG = False
-RECORD = False
+RECORD = True
 
 
 # noinspection DuplicatedCode
@@ -342,13 +342,13 @@ class BeverageBandits:
     def render_image(self, index: int):
         def make_color(s):
             if isinstance(s, Goblin):
-                return (.8, 0, 0)
+                return 0, .5, -.5
             elif isinstance(s, Elf):
-                return (0, .8, 0)
+                return 1, -.5, -.5
             elif s == '#':
-                return (.2, .2, .2)
+                return .2, .2, .2
             else:
-                return (.8, .8, .8)
+                return .8, .8, .8
 
         fig, ax = plt.subplots(1, 1)
         plt.axis('off')
