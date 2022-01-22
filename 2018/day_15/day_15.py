@@ -13,7 +13,7 @@ import unittest
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import NamedTuple, TypeVar
+from typing import NamedTuple, TypeVar, Optional
 
 from ivonet import infinite
 from ivonet.collection import Queue
@@ -37,7 +37,7 @@ def repr_maze(maze):
 
 
 class Cell(str, Enum):
-    EMPTY = " "
+    EMPTY = "."
     BLOCKED = "#"
     ELF = "E"
     GOBLIN = "G"
@@ -107,25 +107,27 @@ class BeverageBandits:
 
     def combat_round(self):
         """A round gives all units a turn"""
-        ...
+        for unit in self._units:
+            self.turn(unit)
 
-    def turn(self, unit):
+    def turn(self, unit: Unit):
         """A units turn
-        - identify its enemy units
-        - identify open space around targets (u,d,l,r)
-            - if none end turn
-        - if already in range:
-            - attack
-          else move
+        - if we don't have anyone to attack see if we can move
         """
+        if not self.attack(unit):
+            self.move(unit)
 
-    def attack(self, attacker: Unit, enemy: Unit) -> bool:
+    def attack(self, attacker: Unit) -> bool:
         """Attack
         - When in range
         - reading order (top down, left-right)
         - starting positions in a round
         """
-        enemy.hit_points -= attacker.attack_power
+        enemy = self.within_attack_range(attacker)
+        if enemy:
+            enemy.hit_points -= attacker.attack_power
+            return True
+        return False
 
     def move(self, unit: Unit):
         """Move
@@ -157,8 +159,8 @@ class BeverageBandits:
             current_state: T = current_node.state
             if target == current_state:
                 path = tuple(node_to_path(current_node))
-                if len(path) > max_dist:
-                    return None
+                # if len(path) > max_dist:
+                #     return None
                 all_paths.append(path)
             for child in self.bfs_successors(current_state):
                 if child in explored:
@@ -173,6 +175,10 @@ class BeverageBandits:
         - this function assumes that the Units have been marked on the board
         """
         locations: list[Location] = []
+        if point.col + 1 < self._columns \
+                and self._grid[point.row][point.col + 1] != Cell.BLOCKED \
+                and not isinstance(self._grid[point.row][point.col + 1], Unit):
+            locations.append(Location(point.row, point.col + 1))
         if point.row + 1 < self._rows \
                 and self._grid[point.row + 1][point.col] != Cell.BLOCKED \
                 and not isinstance(self._grid[point.row + 1][point.col], Unit):
@@ -181,22 +187,19 @@ class BeverageBandits:
                 and self._grid[point.row - 1][point.col] != Cell.BLOCKED \
                 and not isinstance(self._grid[point.row - 1][point.col], Unit):
             locations.append(Location(point.row - 1, point.col))
-        if point.col + 1 < self._columns \
-                and self._grid[point.row][point.col + 1] != Cell.BLOCKED \
-                and not isinstance(self._grid[point.row][point.col + 1], Unit):
-            locations.append(Location(point.row, point.col + 1))
         if point.col - 1 >= 0 \
                 and self._grid[point.row][point.col - 1] != Cell.BLOCKED \
                 and not isinstance(self._grid[point.row][point.col - 1], Unit):
             locations.append(Location(point.row, point.col - 1))
-        return locations
+        return sorted(locations)
 
-    def within_attack_range(self, attacker: Unit):
+    def within_attack_range(self, attacker: Unit) -> Optional[Unit]:
         """See if there a target in range in reading order
         - right, down, up, left
         """
 
         def is_enemy(u: Unit):
+            """Are we standing next to an enemy?"""
             return isinstance(u, Unit) and type(u) != type(attacker)
 
         point = attacker.pos
@@ -236,7 +239,8 @@ class BeverageBandits:
                     shortest.append(*bfs)
         if not shortest:
             return None
-        return sorted(shortest)[0][0]
+        print("!", shortest)
+        return sorted(shortest, key=lambda u: (len(u), u[0]))[0][0]
 
     def fight(self):
         """Let's fight!"""
@@ -278,20 +282,20 @@ class BeverageBandits:
             self._grid.append(row)
         self.mark_units()
 
-    def __repr__(self) -> str:
-        ret = "\n".join("".join(str(col) for col in row) for row in self._grid)
+    def repr_units(self):
+        ret = ""
         for unit in self.retrieve_units():
             ret += f"\n{unit.repr_long()}"
+        return ret
+
+    def __repr__(self) -> str:
+        ret = "\n".join("".join(str(col) for col in row) for row in self._grid)
         return ret
 
 
 def part_1(source):
     war = BeverageBandits(source)
     print(war)
-    # war.mark_units()
-    # print(war)
-    # war.clear_units()
-    # print(war)
     war.move(war._units[4])
     print(war)
     war.move(war._units[3])
@@ -314,6 +318,7 @@ class UnitTests(unittest.TestCase):
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source_1 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_1.input")
         self.test_source_2 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_2.input")
+        self.test_source_3 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_3.input")
 
     def test_attackers_in_range(self):
         bb = BeverageBandits(self.test_source_2)
@@ -325,17 +330,74 @@ class UnitTests(unittest.TestCase):
                          bb.within_attack_range(bb._units[2]).repr_long())
         self.assertFalse(bb.within_attack_range(bb._units[4]))
 
-    def test_move_1_unit(self):
+    def test_move_single_unit(self):
         bb = BeverageBandits(self.test_source_2)
-        print(bb)
+        _(bb)
         self.assertEquals("Goblin<pos=Location(row=1, col=3), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
-        print(bb)
+        _(bb)
         self.assertEquals("Goblin<pos=Location(row=1, col=4), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
-        print(bb)
+        _(bb)
         self.assertEquals("Goblin<pos=Location(row=3, col=3), hp=200, ap=3>", bb.move(bb._units[4]).repr_long())
-        print(bb)
+        _(bb)
         self.assertEquals("Goblin<pos=Location(row=2, col=3), hp=200, ap=3>", bb.move(bb._units[3]).repr_long())
-        print(bb)
+        _(bb)
+
+    def test_move_single_unit_test_data_3(self):
+        bb = BeverageBandits(self.test_source_3)
+        _(bb)
+        self.assertEquals("Goblin<pos=Location(row=1, col=2), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
+        _(bb)
+        # self.assertEquals("Goblin<pos=Location(row=1, col=4), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
+        # _(bb)
+        # self.assertEquals("Goblin<pos=Location(row=3, col=3), hp=200, ap=3>", bb.move(bb._units[4]).repr_long())
+        # _(bb)
+        # self.assertEquals("Goblin<pos=Location(row=2, col=3), hp=200, ap=3>", bb.move(bb._units[3]).repr_long())
+        # _(bb)
+
+    def test_single_combat_round(self):
+        bb = BeverageBandits(self.test_source_3)
+        self.assertEqual("""#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########""", repr(bb))
+        bb.combat_round()
+        self.assertEqual("""#########
+#.G...G.#
+#...G...#
+#...E..G#
+#.G.....#
+#.......#
+#G..G..G#
+#.......#
+#########""", repr(bb))
+        _(bb)
+        bb.combat_round()
+        self.assertEqual("""#########
+#..G.G..#
+#...G...#
+#.G.E.G.#
+#.......#
+#G..G..G#
+#.......#
+#.......#
+#########""", repr(bb))
+        _(bb)
+        bb.combat_round()
+        self.assertEqual("""#########
+#.......#
+#..GGG..#
+#..GEG..#
+#G..G...#
+#......G#
+#.......#
+#.......#
+#########""", repr(bb))
+        _(bb)
 
     def test_example_data_1_part_1(self):
         self.assertEqual(None, part_1(self.test_source_1))
@@ -348,9 +410,6 @@ class UnitTests(unittest.TestCase):
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
