@@ -126,6 +126,11 @@ class BeverageBandits:
         enemy = self.within_attack_range(attacker)
         if enemy:
             enemy.hit_points -= attacker.attack_power
+            if enemy.hit_points <= 0:
+                _(attacker.repr_long(), "killed", enemy.repr_long())
+                self.clear_units()
+                self._units.remove(enemy)
+                self.mark_units()
             return True
         return False
 
@@ -244,19 +249,17 @@ class BeverageBandits:
 
     def fight(self):
         """Let's fight!"""
-        ...
-
-    def mark(self, path: list[Location], start: Location, goal: Location):
-        for loc in path:
-            self._grid[loc.row][loc.col] = Cell.PATH
-        self._grid[start.row][start.col] = Cell.START
-        self._grid[goal.row][goal.col] = Cell.GOAL
-
-    def clear(self, path: list[Location], start: Location, goal: Location):
-        for loc in path:
-            self._grid[loc.row][loc.col] = Cell.EMPTY
-        self._grid[start.row][start.col] = Cell.EMPTY
-        self._grid[goal.row][goal.col] = Cell.EMPTY
+        while True:
+            goblins = [u for u in self._units if isinstance(u, Goblin)]
+            elves = [u for u in self._units if isinstance(u, Elf)]
+            if not goblins or not elves:
+                break
+            self.combat_round()
+            _(self)
+            _(self.repr_units())
+        if elves:
+            return "Elves won"
+        return "Goblins won"
 
     def mark_units(self):
         for unit in self._units:
@@ -295,13 +298,7 @@ class BeverageBandits:
 
 def part_1(source):
     war = BeverageBandits(source)
-    print(war)
-    war.move(war._units[4])
-    print(war)
-    war.move(war._units[3])
-    print(war)
-    print("!!", war.within_attack_range(war._units[2]).repr_long())
-
+    war.fight()
     return None
 
 
@@ -347,12 +344,6 @@ class UnitTests(unittest.TestCase):
         _(bb)
         self.assertEquals("Goblin<pos=Location(row=1, col=2), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
         _(bb)
-        # self.assertEquals("Goblin<pos=Location(row=1, col=4), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
-        # _(bb)
-        # self.assertEquals("Goblin<pos=Location(row=3, col=3), hp=200, ap=3>", bb.move(bb._units[4]).repr_long())
-        # _(bb)
-        # self.assertEquals("Goblin<pos=Location(row=2, col=3), hp=200, ap=3>", bb.move(bb._units[3]).repr_long())
-        # _(bb)
 
     def test_single_combat_round(self):
         bb = BeverageBandits(self.test_source_3)
@@ -399,7 +390,8 @@ class UnitTests(unittest.TestCase):
 #########""", repr(bb))
         _(bb)
 
-    def test_example_data_1_part_1(self):
+    def test_a_fight(self):
+        bb = BeverageBandits(self.test_source_2)
         self.assertEqual(None, part_1(self.test_source_1))
 
     def test_example_data_2_part_1(self):
