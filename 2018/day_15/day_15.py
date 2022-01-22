@@ -86,6 +86,7 @@ def manhatten_distance(left: Location, right: Location) -> int:
 
 
 def node_to_path(node: Node[T]) -> list[T]:
+    """This version removes the first state from the path as it is ourselves"""
     path: list[T] = [node.state]
     # work backwards from end to front
     while node.parent is not None:
@@ -136,26 +137,12 @@ class BeverageBandits:
             - move
             - mark the board again with new state of units
         """
-        _(unit.repr_long())
-        # enemies = sorted([enemy for enemy in self._units if type(enemy) != type(unit)], key=lambda e: manhatten_distance(e.pos, unit.pos))
-        enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
-        shortest = []
-        max_dist = infinite
-        for enemy in enemies:
-            # get the open neighbors of the enemy
-            for target in self.bfs_successors(enemy.pos):
-                if shortest:
-                    max_dist = len(min(shortest))
-                bfs = self.bfs(unit.pos, target, max_dist=max_dist)
-                if bfs and len(bfs) > 0:
-                    shortest.append(*bfs)
-        if not shortest:
-            return
-        step = sorted(shortest)[0][0]
-        _(step)
-        self.clear_units()
-        unit.pos = step
-        self.mark_units()
+        step = self.shortest_2_enemy(unit)
+        if step:
+            self.clear_units()
+            unit.pos = step
+            self.mark_units()
+        return unit
 
     def bfs(self, initial: T, target: T, max_dist=infinite):
         """Breath first search
@@ -204,11 +191,25 @@ class BeverageBandits:
             locations.append(Location(point.row, point.col - 1))
         return locations
 
-    def shortest_paths(self):
+    def shortest_2_enemy(self, unit: Unit):
         """Find all shortest paths of a route to chose the reading order if there are more shortests
-        - or maybe give more weight to moving down then right? astar / dijkstra iso bfs?
         """
-        ...
+        _(unit.repr_long())
+        # enemies = sorted([enemy for enemy in self._units if type(enemy) != type(unit)], key=lambda e: manhatten_distance(e.pos, unit.pos))
+        enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
+        shortest = []
+        max_dist = infinite
+        for enemy in enemies:
+            # get the open neighbors of the enemy
+            for target in self.bfs_successors(enemy.pos):
+                if shortest:
+                    max_dist = len(min(shortest))
+                bfs = self.bfs(unit.pos, target, max_dist=max_dist)
+                if bfs and len(bfs) > 0:
+                    shortest.append(*bfs)
+        if not shortest:
+            return None
+        return sorted(shortest)[0][0]
 
     def fight(self):
         """Let's fight!"""
@@ -235,7 +236,8 @@ class BeverageBandits:
             self._grid[unit.pos.row][unit.pos.col] = Cell.EMPTY
 
     def retrieve_units(self):
-        self._units = {Location(r, c): unit for r, row in enumerate(self._grid) for c, unit in enumerate(row)}
+        self._units = [unit for r, row in enumerate(self._grid) for c, unit in enumerate(row) if isinstance(unit, Unit)]
+        return self._units
 
     def parse(self, source) -> None:
         for r, line in enumerate(source):
@@ -250,19 +252,22 @@ class BeverageBandits:
         self.mark_units()
 
     def __repr__(self) -> str:
-        return "\n".join("".join(str(col) for col in row) for row in self._grid)
+        ret = "\n".join("".join(str(col) for col in row) for row in self._grid)
+        for unit in self.retrieve_units():
+            ret += f"\n{unit.repr_long()}"
+        return ret
 
 
 def part_1(source):
     war = BeverageBandits(source)
-    # print(war)
+    print(war)
     # war.mark_units()
     # print(war)
     # war.clear_units()
     # print(war)
-    war.move(war._units[0])
+    war.move(war._units[4])
     print(war)
-    war.move(war._units[0])
+    war.move(war._units[3])
     print(war)
     return None
 
