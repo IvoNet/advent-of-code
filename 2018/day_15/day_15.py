@@ -13,13 +13,16 @@ import unittest
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TypeVar
 
+from ivonet import infinite
+from ivonet.collection import Queue
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.search import Node
 
 sys.dont_write_bytecode = True
-
+T = TypeVar('T')
 DEBUG = True
 
 
@@ -58,6 +61,9 @@ class Unit:
     hit_points: int = 200
     attack_power: int = 3
 
+    def repr_long(self):
+        return f"{self.__class__.__name__}<pos={self.pos}, hp={self.hit_points}, ap={self.attack_power}>"
+
 
 class Elf(Unit):
     def __repr__(self) -> str:
@@ -73,6 +79,20 @@ class Goblin(Unit):
 
     def __str__(self) -> str:
         return repr(self)
+
+
+def manhatten_distance(left: Location, right: Location) -> int:
+    return abs(left.row - right.row) + abs(left.col - right.col)
+
+
+def node_to_path(node: Node[T]) -> list[T]:
+    path: list[T] = [node.state]
+    # work backwards from end to front
+    while node.parent is not None:
+        node = node.parent
+        path.append(node.state)
+    path.reverse()
+    return path[1:]
 
 
 class BeverageBandits:
@@ -98,43 +118,91 @@ class BeverageBandits:
           else move
         """
 
-    def move(self):
-        """Move
-        - get all open neighbors of targets
-        - find the shortest route (bfs) (goal test
-        - if tied in length choose the first in reading order
-        - take 1 step towards the chosen goal
-        """
-        ...
-
-    def attack(self):
+    def attack(self, attacker: Unit, enemy: Unit):
         """Attack
         - When in range
         - reading order (top down, left-right)
         - starting positions in a round
         """
-        ...
+        enemy.hit_points -= attacker.attack_power
 
-    def bfs_goal(self):
-        """Test if goal has been reached"""
-        ...
+    def move(self, unit: Unit):
+        """Move
+        - get all open neighbors of targets
+        - find the shortest route (bfs) (goal test
+        - if tied in length choose the first in reading order
+        - take 1 step towards the chosen goal
+            - first clear the board of units
+            - move
+            - mark the board again with new state of units
+        """
+        _(unit.repr_long())
+        # enemies = sorted([enemy for enemy in self._units if type(enemy) != type(unit)], key=lambda e: manhatten_distance(e.pos, unit.pos))
+        enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
+        shortest = []
+        max_dist = infinite
+        for enemy in enemies:
+            # get the open neighbors of the enemy
+            for target in self.bfs_successors(enemy.pos):
+                if shortest:
+                    max_dist = len(min(shortest))
+                bfs = self.bfs(unit.pos, target, max_dist=max_dist)
+                if bfs and len(bfs) > 0:
+                    shortest.append(*bfs)
+        if not shortest:
+            return
+        step = sorted(shortest)[0][0]
+        _(step)
+        self.clear_units()
+        unit.pos = step
+        self.mark_units()
+
+    def bfs(self, initial: T, target: T, max_dist=infinite):
+        """Breath first search
+        This bfs searches for all the shortest paths given a target
+        """
+        frontier: Queue[Node[T]] = Queue()
+        frontier.push(Node(initial, None))
+        explored: set[T] = {initial}
+        all_paths = []
+        while not frontier.empty:
+            current_node: Node[T] = frontier.pop()
+            current_state: T = current_node.state
+            if target == current_state:
+                path = tuple(node_to_path(current_node))
+                if len(path) > max_dist:
+                    return None
+                all_paths.append(path)
+            for child in self.bfs_successors(current_state):
+                if child in explored:
+                    continue
+                explored.add(child)
+                frontier.push(Node(child, current_node))
+        return tuple(all_paths)
 
     def bfs_successors(self, point: Location):
-        """See if there is a path to the target"""
+        """See if there is a path to the target
+        - find the successors
+        - this function assumes that the Units have been marked on the board
+        """
         locations: list[Location] = []
-        if point.row + 1 < self._rows and self._grid[point.row + 1][point.col] != Cell.BLOCKED:
+        if point.row + 1 < self._rows \
+                and self._grid[point.row + 1][point.col] != Cell.BLOCKED \
+                and not isinstance(self._grid[point.row + 1][point.col], Unit):
             locations.append(Location(point.row + 1, point.col))
-        if point.row - 1 >= 0 and self._grid[point.row - 1][point.col] != Cell.BLOCKED:
+        if point.row - 1 >= 0 \
+                and self._grid[point.row - 1][point.col] != Cell.BLOCKED \
+                and not isinstance(self._grid[point.row - 1][point.col], Unit):
             locations.append(Location(point.row - 1, point.col))
-        if point.col + 1 < self._columns and self._grid[point.row][point.col + 1] != Cell.BLOCKED:
+        if point.col + 1 < self._columns \
+                and self._grid[point.row][point.col + 1] != Cell.BLOCKED \
+                and not isinstance(self._grid[point.row][point.col + 1], Unit):
             locations.append(Location(point.row, point.col + 1))
-        if point.col - 1 >= 0 and self._grid[point.row][point.col - 1] != Cell.BLOCKED:
+        if point.col - 1 >= 0 \
+                and self._grid[point.row][point.col - 1] != Cell.BLOCKED \
+                and not isinstance(self._grid[point.row][point.col - 1], Unit):
             locations.append(Location(point.row, point.col - 1))
         return locations
-
-    def bfs(self):
-        """Yup the breath-first-search function"""
-        ...
 
     def shortest_paths(self):
         """Find all shortest paths of a route to chose the reading order if there are more shortests
@@ -166,6 +234,9 @@ class BeverageBandits:
         for unit in self._units:
             self._grid[unit.pos.row][unit.pos.col] = Cell.EMPTY
 
+    def retrieve_units(self):
+        self._units = {Location(r, c): unit for r, row in enumerate(self._grid) for c, unit in enumerate(row)}
+
     def parse(self, source) -> None:
         for r, line in enumerate(source):
             row = []
@@ -174,11 +245,9 @@ class BeverageBandits:
                 if value in "GE":
                     unit = Goblin(loc) if value == "G" else Elf(loc)
                     self._units.append(unit)
-                    # row.append(unit)
-                # else:
-                #     row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
                 row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
             self._grid.append(row)
+        self.mark_units()
 
     def __repr__(self) -> str:
         return "\n".join("".join(str(col) for col in row) for row in self._grid)
@@ -186,10 +255,14 @@ class BeverageBandits:
 
 def part_1(source):
     war = BeverageBandits(source)
+    # print(war)
+    # war.mark_units()
+    # print(war)
+    # war.clear_units()
+    # print(war)
+    war.move(war._units[0])
     print(war)
-    war.mark_units()
-    print(war)
-    war.clear_units()
+    war.move(war._units[0])
     print(war)
     return None
 
@@ -205,10 +278,14 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source_1 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_1.input")
+        self.test_source_2 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_2.input")
 
-    def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+    def test_example_data_1_part_1(self):
+        self.assertEqual(None, part_1(self.test_source_1))
+
+    def test_example_data_2_part_1(self):
+        self.assertEqual(None, part_1(self.test_source_2))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))

@@ -15,7 +15,7 @@ def rangei(start, end, step=1):
     return range(start, end + 1, step)
 
 
-def lmap(func, *iterables):
+def lmap(fn, *iterables):
     """list of map to func on iterables
 
     >>> lmap(int, {1:'a', 3:'b'})
@@ -25,7 +25,12 @@ def lmap(func, *iterables):
     >>> lmap(lambda x: x*x, lmap(int, "123456789"))
     [1, 4, 9, 16, 25, 36, 49, 64, 81]
     """
-    return list(map(func, *iterables))
+    return list(map(fn, *iterables))
+
+
+def tmap(fn, *iterables):
+    """Do a map, and make the results into a tuple."""
+    return tuple(map(fn, *iterables))
 
 
 def min_max(lst: list):
@@ -85,11 +90,6 @@ def flatten(lst: Iterable[Iterable]):
     [0, 3, 6, 6, 6, 6, 9, 1, 0]
     """
     return [i for x in lst for i in x]
-
-
-def mapt(fn, *args):
-    """Do a map, and make the results into a tuple."""
-    return tuple(map(fn, *args))
 
 
 def ints(s: str) -> list[int]:
