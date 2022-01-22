@@ -23,7 +23,7 @@ from ivonet.search import Node
 
 sys.dont_write_bytecode = True
 T = TypeVar('T')
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -224,6 +224,7 @@ class BeverageBandits:
 
         potential_enemies = []
 
+        # left
         potential_enemy = self._grid[point.row][point.col + 1]
         if point.col + 1 < self._columns and is_enemy(potential_enemy):
             potential_enemies.append(potential_enemy)
@@ -240,7 +241,7 @@ class BeverageBandits:
         if point.col - 1 >= 0 and is_enemy(potential_enemy):
             potential_enemies.append(potential_enemy)
         if potential_enemies:
-            return min(potential_enemies, key=lambda u: u.hit_points)
+            return min(potential_enemies, key=lambda u: (u.hit_points, u.pos))
         return None
 
     def shortest_2_enemy(self, unit: Unit):
@@ -261,16 +262,16 @@ class BeverageBandits:
     def fight(self):
         """fight!"""
         _(f"Initially:")
-        _(self.repr_state())
+        _(self)
 
         for i in count(1):
             if not self.combat_round():
                 total = sum(u.hit_points for u in self._units)
                 _(f"After {i - 1} round(s):")
-                _(self.repr_state())
+                _(self)
                 return (i - 1) * total
             _(f"After {i} round(s):")
-            _(self.repr_state())
+            _(self)
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if not goblins or not elves:
@@ -302,23 +303,13 @@ class BeverageBandits:
             self._grid.append(row)
         self.mark_units()
 
-    def repr_units(self):
-        ret = ""
-        for unit in self.retrieve_units():
-            ret += f"\n{unit.repr_long()}"
-        return ret
-
-    def repr_state(self):
+    def __repr__(self) -> str:
         ret = []
         for row in self._grid:
             r = "".join(str(col) for col in row) + "   "
             r += ", ".join(u.hp() for u in row if isinstance(u, Unit))
             ret.append(r)
         return "\n".join(ret)
-
-    def __repr__(self) -> str:
-        ret = "\n".join("".join(str(col) for col in row) for row in self._grid)
-        return ret
 
 
 def part_1(source):
@@ -380,51 +371,6 @@ class UnitTests(unittest.TestCase):
         self.assertEquals("Goblin<pos=Location(row=1, col=2), hp=200, ap=3>", bb.move(bb._units[0]).repr_long())
         _(bb)
 
-    def test_single_combat_round(self):
-        bb = BeverageBandits(self.test_source_3)
-        self.assertEqual("""#########
-#G..G..G#
-#.......#
-#.......#
-#G..E..G#
-#.......#
-#.......#
-#G..G..G#
-#########""", repr(bb))
-        bb.combat_round()
-        self.assertEqual("""#########
-#.G...G.#
-#...G...#
-#...E..G#
-#.G.....#
-#.......#
-#G..G..G#
-#.......#
-#########""", repr(bb))
-        _(bb)
-        bb.combat_round()
-        self.assertEqual("""#########
-#..G.G..#
-#...G...#
-#.G.E.G.#
-#.......#
-#G..G..G#
-#.......#
-#.......#
-#########""", repr(bb))
-        _(bb)
-        bb.combat_round()
-        self.assertEqual("""#########
-#.......#
-#..GGG..#
-#..GEG..#
-#G..G...#
-#......G#
-#.......#
-#.......#
-#########""", repr(bb))
-        _(bb)
-
     def test_example_data_2_part_1(self):
         self.assertEqual(27730, part_1(self.test_source_2))
 
@@ -462,7 +408,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(1140, part_2(self.test_source_8))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(57112, part_2(self.source))
 
 
 if __name__ == '__main__':
