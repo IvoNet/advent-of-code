@@ -108,11 +108,16 @@ class BeverageBandits:
         self._rows = len(self._grid)
         self._columns = len(self._grid[0])
 
-    def combat_round(self):
+    def combat_round(self) -> bool:
         """A round gives all units a turn"""
         units = sorted(self._units.copy(), key=lambda u: u.pos)
         while units:
             self.turn(units.pop(0))
+            goblins = [u for u in self._units if isinstance(u, Goblin)]
+            elves = [u for u in self._units if isinstance(u, Elf)]
+            if (not goblins or not elves) and units:
+                return False
+        return True
 
     def turn(self, unit: Unit):
         """A units turn
@@ -260,15 +265,17 @@ class BeverageBandits:
         _(self.repr_state())
 
         for i in count(1):
-            self.combat_round()
+            if not self.combat_round():
+                total = sum(u.hit_points for u in self._units)
+                _(i, total)
+                return (i - 1) * total
             _(f"After {i} round(s):")
             _(self.repr_state())
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if not goblins or not elves:
                 total = sum(u.hit_points for u in self._units)
-                _(i, total)
-                return (i - 1) * total
+                return i * total
         return None
 
     def mark_units(self):
