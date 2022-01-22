@@ -335,6 +335,7 @@ class UnitTests(unittest.TestCase):
         self.test_source_1 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_1.input")
         self.test_source_2 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_2.input")
         self.test_source_3 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_3.input")
+        self.test_source_4 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_4.input")
 
     def test_attackers_in_range(self):
         bb = BeverageBandits(self.test_source_2)
@@ -418,6 +419,9 @@ class UnitTests(unittest.TestCase):
 
     def test_example_data_3_part_1(self):
         self.assertEqual(27730, part_1(self.test_source_2))
+
+    def test_example_data_4_part_1(self):
+        self.assertEqual(36334, part_1(self.test_source_4))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
