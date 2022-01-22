@@ -16,7 +16,6 @@ from itertools import count
 from pathlib import Path
 from typing import NamedTuple, TypeVar, Optional
 
-from ivonet import infinite
 from ivonet.collection import Queue
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -160,7 +159,7 @@ class BeverageBandits:
             self.mark_units()
         return unit
 
-    def bfs(self, initial: T, target: T, max_dist=infinite):
+    def bfs(self, initial: T, target: T):
         """Breath first search
         This bfs searches for all the shortest paths given a target
         """
@@ -173,8 +172,6 @@ class BeverageBandits:
             current_state: T = current_node.state
             if target == current_state:
                 path = tuple(node_to_path(current_node))
-                # if len(path) > max_dist:
-                #     return None
                 all_paths.append(path)
             for child in self.bfs_successors(current_state):
                 if child in explored:
@@ -210,6 +207,7 @@ class BeverageBandits:
     def within_attack_range(self, attacker: Unit) -> Optional[Unit]:
         """See if there a target in range in reading order
         - top, down, left, right
+        - choose the one with the lowest hitpoints!
         """
 
         def is_enemy(u: Unit):
@@ -218,22 +216,25 @@ class BeverageBandits:
 
         point = attacker.pos
 
-        # right
+        potential_enemies = []
+
         potential_enemy = self._grid[point.row][point.col + 1]
         if point.col + 1 < self._columns and is_enemy(potential_enemy):
-            return potential_enemy
+            potential_enemies.append(potential_enemy)
         # above
         potential_enemy = self._grid[point.row - 1][point.col]
         if point.row - 1 >= 0 and is_enemy(potential_enemy):
-            return potential_enemy
+            potential_enemies.append(potential_enemy)
         # under
         potential_enemy = self._grid[point.row + 1][point.col]
         if point.row + 1 < self._rows and is_enemy(potential_enemy):
-            return potential_enemy
+            potential_enemies.append(potential_enemy)
         # left
         potential_enemy = self._grid[point.row][point.col - 1]
         if point.col - 1 >= 0 and is_enemy(potential_enemy):
-            return potential_enemy
+            potential_enemies.append(potential_enemy)
+        if potential_enemies:
+            return min(potential_enemies, key=lambda u: u.hit_points)
         return None
 
     def shortest_2_enemy(self, unit: Unit):
@@ -243,21 +244,18 @@ class BeverageBandits:
         # enemies = sorted([enemy for enemy in self._units if type(enemy) != type(unit)], key=lambda e: manhatten_distance(e.pos, unit.pos))
         enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
         shortest = []
-        max_dist = infinite
         for enemy in enemies:
             # get the open neighbor slots of the enemy
             for target in self.bfs_successors(enemy.pos):
-                if shortest:
-                    max_dist = len(min(shortest))
-                bfs = self.bfs(unit.pos, target, max_dist=max_dist)
-                if bfs and len(bfs) > 0:
-                    shortest.append(*bfs)
+                paths = self.bfs(unit.pos, target)
+                if paths and len(paths) > 0:
+                    shortest.append(*paths)
         if not shortest:
             return None
         return sorted(shortest, key=lambda u: (len(u), u[0]))[0][0]
 
     def fight(self):
-        """Let's fight!"""
+        """fight!"""
         _(f"Initially:")
         _(self.repr_state())
 
