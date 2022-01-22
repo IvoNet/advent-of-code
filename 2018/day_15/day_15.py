@@ -95,25 +95,32 @@ def node_to_path(node: Node[T]) -> list[T]:
     return path[1:]
 
 
+class ElfDied(Exception):
+    pass
+
+
 class BeverageBandits:
 
-    def __init__(self, source) -> None:
+    def __init__(self, source, elf_start_ap=3) -> None:
+        self.elf_ap = elf_start_ap
         self._grid: list[list[Cell | Unit]] = []
         self._units: list[Unit] = []
         self.parse(source)
         self._rows = len(self._grid)
         self._columns = len(self._grid[0])
+        self.no_losses = elf_start_ap > 3
 
     def combat_round(self) -> bool:
         """A round gives all units a turn"""
         units = sorted(self._units.copy(), key=lambda u: u.pos)
+        full_round = True
         while units:
             self.turn(units.pop(0))
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if (not goblins or not elves) and units:
-                return False
-        return True
+                full_round = False
+        return full_round
 
     def turn(self, unit: Unit):
         """A units turn
@@ -140,6 +147,8 @@ class BeverageBandits:
                 self.clear_units()
                 self._units.remove(enemy)
                 self.mark_units()
+                if self.no_losses and isinstance(enemy, Elf):
+                    raise ElfDied
             return True
         return False
 
@@ -257,7 +266,8 @@ class BeverageBandits:
         for i in count(1):
             if not self.combat_round():
                 total = sum(u.hit_points for u in self._units)
-                _(i, total)
+                _(f"After {i - 1} round(s):")
+                _(self.repr_state())
                 return (i - 1) * total
             _(f"After {i} round(s):")
             _(self.repr_state())
@@ -286,7 +296,7 @@ class BeverageBandits:
             for c, value in enumerate(line):
                 loc = Location(r, c)
                 if value in "GE":
-                    unit = Goblin(loc) if value == "G" else Elf(loc)
+                    unit = Goblin(loc) if value == "G" else Elf(loc, attack_power=self.elf_ap)
                     self._units.append(unit)
                 row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
             self._grid.append(row)
@@ -317,7 +327,13 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    for ap in count(4):
+        try:
+            beverage_bandits = BeverageBandits(source, elf_start_ap=ap).fight()
+        except ElfDied:
+            continue
+        else:
+            return beverage_bandits
 
 
 class UnitTests(unittest.TestCase):
@@ -429,6 +445,21 @@ class UnitTests(unittest.TestCase):
 
     def test_part_1(self):
         self.assertEqual(188576, part_1(self.source))
+
+    def test_example_data_2_part_2(self):
+        self.assertEqual(4988, part_2(self.test_source_2))
+
+    def test_example_data_5_part_2(self):
+        self.assertEqual(31284, part_2(self.test_source_5))
+
+    def test_example_data_6_part_2(self):
+        self.assertEqual(3478, part_2(self.test_source_6))
+
+    def test_example_data_7_part_2(self):
+        self.assertEqual(6474, part_2(self.test_source_7))
+
+    def test_example_data_8_part_2(self):
+        self.assertEqual(1140, part_2(self.test_source_8))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
