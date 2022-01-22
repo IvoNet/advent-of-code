@@ -8,16 +8,27 @@ __license__ = "Apache 2.0"
 __doc__ = """
 Totally loved this puzzle
 Freaking awesome!
+
+if you want to create a gif with the whole battle just add set the constant RECORD to True
+it will become much slower as it renders every frame of the fight and then renders a GIF out if it
+it is fun though
+
+I have not tried to render a gif of part 2. It should work though. Probably very slow.
 """
 
+import glob
 import os
 import sys
 import unittest
 from dataclasses import dataclass
 from enum import Enum
+from glob import glob
 from itertools import count
 from pathlib import Path
 from typing import NamedTuple, TypeVar, Optional
+
+import imageio
+import matplotlib.pyplot as plt
 
 from ivonet.collection import Queue
 from ivonet.files import read_rows
@@ -27,12 +38,19 @@ from ivonet.search import Node
 sys.dont_write_bytecode = True
 T = TypeVar('T')
 DEBUG = False
+RECORD = False
 
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
+
+
+try:
+    os.makedirs("anim")
+except IOError:
+    print("Warning: recreating of the anim folder failed")
 
 
 class Cell(str, Enum):
@@ -99,7 +117,7 @@ class ElfDied(Exception):
 
 class BeverageBandits:
 
-    def __init__(self, source, elf_start_ap=3) -> None:
+    def __init__(self, source, elf_start_ap=3, record=False) -> None:
         self.source = source
         self.elf_ap = elf_start_ap
         self._grid: list[list[Cell | Unit]] = []
@@ -108,17 +126,23 @@ class BeverageBandits:
         self._rows = len(self._grid)
         self._columns = len(self._grid[0])
         self.no_losses = elf_start_ap > 3
+        self.record = record
+        self.round = 0
 
     def combat_round(self) -> bool:
         """A round gives all units a turn"""
         units = sorted(self._units.copy(), key=lambda u: u.pos)
         full_round = True
+        idx = 0
         while units:
+            idx += 1
             self.turn(units.pop(0))
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if (not goblins or not elves) and units:
                 full_round = False
+            if self.record:
+                self.render_image(idx)
         return full_round
 
     def turn(self, unit: Unit):
@@ -264,7 +288,10 @@ class BeverageBandits:
         _(self)
 
         for i in count(1):
+            self.round = i
             if not self.combat_round():
+                if self.record:
+                    self.make_gif()
                 total = sum(u.hit_points for u in self._units)
                 _(f"After {i - 1} round(s):")
                 _(self)
@@ -274,6 +301,8 @@ class BeverageBandits:
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if not goblins or not elves:
+                if self.record:
+                    self.make_gif()
                 total = sum(u.hit_points for u in self._units)
                 return i * total
         return None
@@ -310,9 +339,37 @@ class BeverageBandits:
             ret.append(r)
         return "\n".join(ret)
 
+    def render_image(self, index: int):
+        def make_color(s):
+            if isinstance(s, Goblin):
+                return (.8, 0, 0)
+            elif isinstance(s, Elf):
+                return (0, .8, 0)
+            elif s == '#':
+                return (.2, .2, .2)
+            else:
+                return (.8, .8, .8)
+
+        fig, ax = plt.subplots(1, 1)
+        plt.axis('off')
+        ax.imshow([[make_color(self._grid[r][c]) for r in range(self._columns)] for c in range(self._rows)])
+        fig.savefig(f"anim/{self.round:02d}-{index:02d}.png", dpi=200, bbox_inches='tight', pad_inches=0)
+        plt.close()
+
+    def make_gif(self):
+        # Build GIF
+        if self.record:
+            with imageio.get_writer('BeverageBandits.gif', mode='I') as writer:
+                for filename in glob("anim/*.png"):
+                    image = imageio.imread(filename)
+                    writer.append_data(image)
+            # Remove files
+            for filename in glob("anim/*.png"):
+                os.remove(filename)
+
 
 def part_1(source):
-    beverage_bandits = BeverageBandits(source)
+    beverage_bandits = BeverageBandits(source, record=RECORD)
     return beverage_bandits.fight()
 
 
