@@ -184,6 +184,8 @@ class BeverageBandits:
         """See if there is a path to the target
         - find the successors
         - this function assumes that the Units have been marked on the board
+
+        TODO See if this one can be rewritten to == Cell.EMPTY? without the rest
         """
         locations: list[Location] = []
         if point.col + 1 < self._columns \
@@ -207,7 +209,7 @@ class BeverageBandits:
     def within_attack_range(self, attacker: Unit) -> Optional[Unit]:
         """See if there a target in range in reading order
         - top, down, left, right
-        - choose the one with the lowest hitpoints!
+        - choose the one with the lowest HP!
         """
 
         def is_enemy(u: Unit):
@@ -241,11 +243,9 @@ class BeverageBandits:
         """Find all shortest paths of a route to chose the reading order if there are more shortest paths'
         we actually find the shortest routes to the open spaces next to the enemy.
         """
-        # enemies = sorted([enemy for enemy in self._units if type(enemy) != type(unit)], key=lambda e: manhatten_distance(e.pos, unit.pos))
         enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
         shortest = []
         for enemy in enemies:
-            # get the open neighbor slots of the enemy
             for target in self.bfs_successors(enemy.pos):
                 paths = self.bfs(unit.pos, target)
                 if paths and len(paths) > 0:
@@ -259,16 +259,16 @@ class BeverageBandits:
         _(f"Initially:")
         _(self.repr_state())
 
-        for i in count(0):
+        for i in count(1):
+            self.combat_round()
+            _(f"After {i} round(s):")
+            _(self.repr_state())
             goblins = [u for u in self._units if isinstance(u, Goblin)]
             elves = [u for u in self._units if isinstance(u, Elf)]
             if not goblins or not elves:
                 total = sum(u.hit_points for u in self._units)
                 _(i, total)
-                return i * total
-            self.combat_round()
-            _(f"After {i + 1} round(s):")
-            _(self.repr_state())
+                return (i - 1) * total
         return None
 
     def mark_units(self):
@@ -315,8 +315,8 @@ class BeverageBandits:
 
 
 def part_1(source):
-    war = BeverageBandits(source)
-    return war.fight()
+    beverage_bandits = BeverageBandits(source)
+    return beverage_bandits.fight()
 
 
 def part_2(source):
@@ -334,6 +334,10 @@ class UnitTests(unittest.TestCase):
         self.test_source_2 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_2.input")
         self.test_source_3 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_3.input")
         self.test_source_4 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_4.input")
+        self.test_source_5 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_5.input")
+        self.test_source_6 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_6.input")
+        self.test_source_7 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_7.input")
+        self.test_source_8 = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_8.input")
 
     def test_attackers_in_range(self):
         bb = BeverageBandits(self.test_source_2)
@@ -354,7 +358,7 @@ class UnitTests(unittest.TestCase):
         _(bb)
         self.assertEquals("Goblin<pos=Location(row=3, col=3), hp=200, ap=3>", bb.move(bb._units[4]).repr_long())
         _(bb)
-        self.assertEquals("Goblin<pos=Location(row=2, col=3), hp=200, ap=3>", bb.move(bb._units[3]).repr_long())
+        self.assertEquals("Goblin<pos=Location(row=2, col=3), hp=200, ap=3>", bb.move(bb._units[4]).repr_long())
         _(bb)
 
     def test_move_single_unit_test_data_3(self):
@@ -408,18 +412,23 @@ class UnitTests(unittest.TestCase):
 #########""", repr(bb))
         _(bb)
 
-    def test_a_fight(self):
-        bb = BeverageBandits(self.test_source_2)
-        self.assertEqual(None, part_1(self.test_source_1))
-
     def test_example_data_2_part_1(self):
-        self.assertEqual(None, part_1(self.test_source_2))
-
-    def test_example_data_3_part_1(self):
         self.assertEqual(27730, part_1(self.test_source_2))
 
     def test_example_data_4_part_1(self):
         self.assertEqual(36334, part_1(self.test_source_4))
+
+    def test_example_data_5_part_1(self):
+        self.assertEqual(39514, part_1(self.test_source_5))
+
+    def test_example_data_6_part_1(self):
+        self.assertEqual(27755, part_1(self.test_source_6))
+
+    def test_example_data_7_part_1(self):
+        self.assertEqual(28944, part_1(self.test_source_7))
+
+    def test_example_data_8_part_1(self):
+        self.assertEqual(18740, part_1(self.test_source_8))
 
     def test_part_1(self):
         self.assertEqual(None, part_1(self.source))
