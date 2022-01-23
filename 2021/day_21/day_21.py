@@ -109,8 +109,8 @@ def dirac_dice(players: tuple[Player, Player], player: int, cache) -> tuple[int,
     - now do that to the other player with this new state recursively until a terminator is reached.
     - every flow will end up in a terminator and the only thing we think important is the end result per game / flow
     - the result per game is either (1, 0) telling player 0 has won or (0, 1) if player 1 wins
-    - we keep a intermedeary result list and sum those per collumn
-    - to spead things up signifficantly we save every state that resulted in a terminator in a dictonary and before
+    - we keep a intermediary result list and sum those per column
+    - to speed things up significantly we save every state that resulted in a terminator in a dictionary and before
       going into a quantum roll flow we check if this combination has already occurred in another universe. If so we know
       the result and just return that.
     - so whats different "every" turn?
@@ -133,7 +133,6 @@ def dirac_dice(players: tuple[Player, Player], player: int, cache) -> tuple[int,
     for quantum_roll in product(range(1, 4), repeat=3):
         new_pos = (players[player].position - 1 + sum(quantum_roll)) % 10 + 1
         new_score = players[player].score + new_pos
-        new_players: tuple[Player, Player] = None
         if player == 0:
             new_players = (Player(new_pos, new_score), players[1])
         else:  # 1

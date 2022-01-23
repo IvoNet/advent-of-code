@@ -141,7 +141,7 @@ def overlap(left: Cuboid, right: Cuboid) -> Cuboid | None:
 
 
 def subtract(left: Cuboid, overlap: Cuboid) -> list[Cuboid]:
-    """This subract function takes subracts right from left
+    """This subtract function takes subtracts right from left
     right is an exact subset of what needs to be taken out (overlap)
     """
     ret: list[Cuboid] = []
