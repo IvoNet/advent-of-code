@@ -13,7 +13,8 @@ import unittest
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import NamedTuple
+from pprint import pprint
+from typing import NamedTuple, Callable
 
 from ivonet.files import read_data
 from ivonet.iter import ints
@@ -66,6 +67,23 @@ class ChronalClassification:
             3: 0,
         }
 
+        self.all_ops = [self.addr,
+                        self.addi,
+                        self.mulr,
+                        self.muli,
+                        self.banr,
+                        self.bani,
+                        self.borr,
+                        self.bori,
+                        self.setr,
+                        self.seti,
+                        self.gtir,
+                        self.gtri,
+                        self.gtrr,
+                        self.eqir,
+                        self.eqri,
+                        self.eqrr]
+
         self.commands = {
             "addr": self.addr,
             "addi": self.addi,
@@ -94,13 +112,9 @@ class ChronalClassification:
         opcodes = defaultdict(list)
         for before, cmd, after in self.testset:
             correct = defaultdict(list)
-            for name, method in self.commands.items():
+            for name, cb_method in self.commands.items():
                 self.registers = deepcopy(before)
-                _("Before  :", before.values())
-                _(cmd)
-                method(cmd)
-                _("after   :", self.registers.values())
-                _("Expected:", after.values())
+                cb_method(cmd)
                 if self.registers == after:
                     correct[cmd].append(name)
                     opcodes[cmd.opcode].append(name)
@@ -108,8 +122,37 @@ class ChronalClassification:
                 self.opcodes[cmd.opcode] = self.commands[correct[cmd][0]]
             if len(correct[cmd]) >= 3:
                 three_or_more[tuple(before.values()), cmd, tuple(after.values())] = correct[cmd]
+        return len(three_or_more), three_or_more, opcodes
 
-        return len(three_or_more)
+    def compare_before_after(self, cb: Callable, before: dict, cmd: Instruction, after: dict) -> bool:
+        self.registers = before
+        cb(cmd)
+        return self.registers == after
+
+    def deduce_opcodes(self):
+        c, three, opcodes = self.cmd_executor()
+        res = {k: list(set(v)) for k, v in opcodes.items()}
+        new_opcodes = deepcopy(res)
+        if DEBUG:
+            pprint(res)
+        for opcode, methods in res.items():
+            if len(methods) == 1:
+                self.opcodes[opcode] = self.commands[methods[0]]
+                continue
+            for mname in methods:
+                method = self.commands[mname]
+                testset = [t for t in self.testset if t[1].opcode == opcode]
+                if not all(self.compare_before_after(method, *i) for i in testset):
+                    _("All do not pass pass", opcode, mname)
+                    new_opcodes[opcode].remove(mname)
+        for k, v in list(new_opcodes.items()):
+            if len(v) == 1:
+                self.opcodes[k] = self.commands[v[0]]
+                [new_opcodes[key].remove(v) for key, value in new_opcodes if v in value]
+                del new_opcodes[k]
+        _(new_opcodes)
+        _(self.opcodes)
+        return new_opcodes
 
     def addr(self, cmd: Instruction):
         self.registers[cmd.output] = self.registers[cmd.a] + self.registers[cmd.b]
@@ -161,11 +204,11 @@ class ChronalClassification:
 
 
 def part_1(source):
-    return ChronalClassification(source).cmd_executor()
+    return ChronalClassification(source).cmd_executor()[0]
 
 
 def part_2(source):
-    return None
+    return ChronalClassification(source).deduce_opcodes()
 
 
 class UnitTests(unittest.TestCase):
