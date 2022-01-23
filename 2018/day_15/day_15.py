@@ -9,8 +9,8 @@ __doc__ = """
 Totally loved this puzzle
 Freaking awesome!
 
-if you want to create a gif with the whole battle just add set the constant RECORD to True
-it will become much slower as it renders every frame of the fight and then renders a GIF out if it
+if you want to create a gif with the whole battle just set the constant RECORD to True
+it will become much slower as it renders every frame of the fight and then renders a GIF out if it.
 it is fun though
 
 I have not tried to render a gif of part 2. It should work though. Probably very slow.
@@ -198,47 +198,6 @@ class BeverageBandits:
             self.mark_units()
         return unit
 
-    def bfs(self, initial: T, target: T):
-        """Breath first search
-        This bfs searches for all the shortest paths given a target
-        """
-        frontier: Queue[Node[T]] = Queue()
-        frontier.push(Node(initial, None))
-        explored: set[T] = {initial}
-        all_paths = []
-        while not frontier.empty:
-            current_node: Node[T] = frontier.pop()
-            current_state: T = current_node.state
-            if target == current_state:
-                path = tuple(node_to_path(current_node))
-                all_paths.append(path)
-            for child in self.bfs_successors(current_state):
-                if child in explored:
-                    continue
-                explored.add(child)
-                frontier.push(Node(child, current_node))
-        return tuple(all_paths)
-
-    def bfs_successors(self, point: Location):
-        """See if there is a path to the target
-        - find the successors
-        - this function assumes that the Units have been marked on the board
-        """
-        locations: list[Location] = []
-        if point.col + 1 < self._columns \
-                and self._grid[point.row][point.col + 1] == Cell.EMPTY:
-            locations.append(Location(point.row, point.col + 1))
-        if point.row + 1 < self._rows \
-                and self._grid[point.row + 1][point.col] == Cell.EMPTY:
-            locations.append(Location(point.row + 1, point.col))
-        if point.row - 1 >= 0 \
-                and self._grid[point.row - 1][point.col] == Cell.EMPTY:
-            locations.append(Location(point.row - 1, point.col))
-        if point.col - 1 >= 0 \
-                and self._grid[point.row][point.col - 1] == Cell.EMPTY:
-            locations.append(Location(point.row, point.col - 1))
-        return sorted(locations)
-
     def within_attack_range(self, attacker: Unit) -> Optional[Unit]:
         """See if there a target in range
         - choose the one with the lowest HP!
@@ -271,6 +230,7 @@ class BeverageBandits:
     def shortest_2_enemy(self, unit: Unit):
         """Find all shortest paths of a route to chose the reading order if there are more shortest paths'.
         we actually find the shortest routes to the open spaces next to the enemy.
+        When we have found the shortest path we return the first step of that path
         """
         enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
         shortest = []
@@ -282,6 +242,47 @@ class BeverageBandits:
         if not shortest:
             return None
         return sorted(shortest, key=lambda u: (len(u), u))[0][0]  # first entry of the shortest path = step
+
+    def bfs_successors(self, point: Location):
+        """See if there is a path to the target
+        - find the successors
+        - this function assumes that the Units have been marked on the board
+        """
+        locations: list[Location] = []
+        if point.col + 1 < self._columns \
+                and self._grid[point.row][point.col + 1] == Cell.EMPTY:
+            locations.append(Location(point.row, point.col + 1))
+        if point.row + 1 < self._rows \
+                and self._grid[point.row + 1][point.col] == Cell.EMPTY:
+            locations.append(Location(point.row + 1, point.col))
+        if point.row - 1 >= 0 \
+                and self._grid[point.row - 1][point.col] == Cell.EMPTY:
+            locations.append(Location(point.row - 1, point.col))
+        if point.col - 1 >= 0 \
+                and self._grid[point.row][point.col - 1] == Cell.EMPTY:
+            locations.append(Location(point.row, point.col - 1))
+        return sorted(locations)
+
+    def bfs(self, initial: T, target: T):
+        """Breath first search
+        This bfs searches for all the shortest paths given a target
+        """
+        frontier: Queue[Node[T]] = Queue()
+        frontier.push(Node(initial, None))
+        explored: set[T] = {initial}
+        all_paths = []
+        while not frontier.empty:
+            current_node: Node[T] = frontier.pop()
+            current_state: T = current_node.state
+            if target == current_state:
+                path = tuple(node_to_path(current_node))
+                all_paths.append(path)
+            for child in self.bfs_successors(current_state):
+                if child in explored:
+                    continue
+                explored.add(child)
+                frontier.push(Node(child, current_node))
+        return tuple(all_paths)
 
     def fight(self):
         """Fight!"""
@@ -310,6 +311,18 @@ class BeverageBandits:
         for unit in self._units:
             self._grid[unit.pos.row][unit.pos.col] = Cell.EMPTY
 
+    def parse(self, source) -> None:
+        for r, line in enumerate(source):
+            row = []
+            for c, value in enumerate(line):
+                loc = Location(r, c)
+                if value in "GE":
+                    unit = Goblin(loc) if value == "G" else Elf(loc, attack_power=self.elf_ap)
+                    self._units.append(unit)
+                row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
+            self._grid.append(row)
+        self.mark_units()
+
     def render_image(self, index: int):
         def make_color(s):
             if isinstance(s, Goblin):
@@ -326,18 +339,6 @@ class BeverageBandits:
         ax.imshow([[make_color(self._grid[r][c]) for r in range(self._columns)] for c in range(self._rows)])
         fig.savefig(f"anim/{self.round:02d}-{index:02d}.png", dpi=200, bbox_inches='tight', pad_inches=0)
         plt.close()
-
-    def parse(self, source) -> None:
-        for r, line in enumerate(source):
-            row = []
-            for c, value in enumerate(line):
-                loc = Location(r, c)
-                if value in "GE":
-                    unit = Goblin(loc) if value == "G" else Elf(loc, attack_power=self.elf_ap)
-                    self._units.append(unit)
-                row.append(Cell.BLOCKED if value == "#" else Cell.EMPTY)
-            self._grid.append(row)
-        self.mark_units()
 
     def __repr__(self) -> str:
         ret = []

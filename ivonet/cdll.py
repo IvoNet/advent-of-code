@@ -13,20 +13,24 @@ See the unit tests in this package and a good
 usage example in 2016 day 19 and 2018 day 9
 """
 
-from dataclasses import dataclass
 from typing import TypeVar, Generic, Optional, Iterator
 
 T = TypeVar('T')
 
 
-@dataclass
 class Node(Generic[T]):
     """A Node as companion to the Circular Doubly Linked List
     A node contains data and a reference to its next and previous.
+    On its own it points to itself both ways.
     """
-    data: T
-    next: Optional[Node] = None
-    prev: Optional[Node] = None
+
+    def __init__(self, data: T):
+        self.data: T = data
+        self.next: Optional[Node] = self
+        self.prev: Optional[Node] = self
+
+    def __repr__(self) -> str:
+        return f"Node<data={repr(self.data)} prev={repr(self.prev.data)} next={repr(self.next.data)}>"
 
 
 class CircularDoublyLinkedList:
@@ -193,8 +197,8 @@ class CircularDoublyLinkedList:
 
     def repr_current_circle(self):
         if not self.first:
-            return "CircularDoublyLinkedList<>"
-        ret = "CircularDoublyLinkedList<["
+            return f"{self.__class__.__name__}<>"
+        ret = f"{self.__class__.__name__}<["
         node = self.current_node
         while True:
             ret += f"{repr(node)}, "
@@ -211,23 +215,11 @@ class CircularDoublyLinkedList:
         """Gets the data of a node based on the index"""
         return self.node(item, update_current=False).data
 
-    def repr_data(self):
-        if not self.first:
-            return "CircularDoublyLinkedList<>"
-        ret = "CircularDoublyLinkedList<["
-        node = self.first
-        while True:
-            ret += f"{repr(node.data)}, "
-            node = node.next
-            if node == self.first:
-                break
-        return ret + "]>"
-
     def __repr__(self) -> str:
         """Representation of one cycle from the first node to the last node walking right"""
         if not self.first:
-            return "CircularDoublyLinkedList<>"
-        ret = "CircularDoublyLinkedList<["
+            return f"{self.__class__.__name__}<>"
+        ret = f"{self.__class__.__name__}<["
         node = self.first
         while True:
             ret += f"{repr(node)}, "

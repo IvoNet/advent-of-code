@@ -22,7 +22,7 @@ from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -51,7 +51,7 @@ def marble_game(players=403, last_marble=71920):
         if m == last_marble:
             break
         if DEBUG:
-            print(board.repr_data())
+            print(board)
     return score
 
 

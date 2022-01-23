@@ -64,7 +64,7 @@ def part_2(source):
 
 
 def part_1a(source):
-    """sum occurences as long as the next is the same
+    """sum occurrences as long as the next is the same
     the modulo function is a nice way to wrap the last around to the first
     """
     return sum(int(source[i]) for i in range(len(source)) if source[i] == source[(i + 1) % len(source)])
@@ -84,8 +84,14 @@ class UnitTests(unittest.TestCase):
 
     def test_part_testdata_1(self):
         self.assertEqual(3, part_1("1122"))
+
+    def test_part_testdata_2(self):
         self.assertEqual(4, part_1("1111"))
+
+    def test_part_testdata_3(self):
         self.assertEqual(0, part_1("1234"))
+
+    def test_part_testdata_4(self):
         self.assertEqual(9, part_1("91212129"))
 
     def test_part_1(self):
