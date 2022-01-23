@@ -11,12 +11,10 @@ import os
 import sys
 import unittest
 from collections import defaultdict
-from copy import deepcopy
 from pathlib import Path
-from pprint import pprint
-from typing import NamedTuple, Callable
+from typing import NamedTuple
 
-from ivonet.files import read_data
+from ivonet.files import read_rows
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -37,122 +35,54 @@ class Instruction(NamedTuple):
     output: int  # register
 
 
-def parse(source):
-    first, second = source.split("\n\n\n\n")
-    first = first.split("\n\n")
-    second = second.splitlines()
-    testset = []
-    instructions = []
-    for bia in first:
-        ts = []
-        before, inst, after = bia.splitlines()
-        ts.append({k: v for k, v in enumerate(ints(before))})
-        ts.append(Instruction(*ints(inst)))
-        ts.append({k: v for k, v in enumerate(ints(after))})
-        testset.append(ts)
-    for cmd in second:
-        instructions.append(Instruction(*ints(cmd)))
-    return testset, instructions
-
-
 class ChronalClassification:
 
-    def __init__(self, source) -> None:
-        self.source = source
-        self.testset, self.instructions = parse(self.source)
-        self.registers = {
-            0: 0,
-            1: 0,
-            2: 0,
-            3: 0,
-        }
+    def __init__(self, source, end_test: int = 3103, start_program: int = 3106) -> None:
+        self.source = [ints(line) for line in source]
+        self.ins = self.source[:end_test:4]
+        self.ops = [Instruction(*o) for o in self.source[1:end_test:4]]
+        self.outs = self.source[2:end_test:4]
+        self.program = [Instruction(*o) for o in self.source[start_program:]]
+        self.test_set = zip(self.ins, self.ops, self.outs)
+        self.registers = {0: 0, 1: 0, 2: 0, 3: 0, }
+        self.all_ops = [self.addr, self.addi, self.mulr, self.muli, self.banr, self.bani,
+                        self.borr, self.bori, self.setr, self.seti, self.gtir, self.gtri,
+                        self.gtrr, self.eqir, self.eqri, self.eqrr]
 
-        self.all_ops = [self.addr,
-                        self.addi,
-                        self.mulr,
-                        self.muli,
-                        self.banr,
-                        self.bani,
-                        self.borr,
-                        self.bori,
-                        self.setr,
-                        self.seti,
-                        self.gtir,
-                        self.gtri,
-                        self.gtrr,
-                        self.eqir,
-                        self.eqri,
-                        self.eqrr]
+        self.opcodes = {}
 
-        self.commands = {
-            "addr": self.addr,
-            "addi": self.addi,
-            "mulr": self.mulr,
-            "muli": self.muli,
-            "banr": self.banr,
-            "bani": self.bani,
-            "borr": self.borr,
-            "bori": self.bori,
-            "setr": self.setr,
-            "seti": self.seti,
-            "gtir": self.gtir,
-            "gtri": self.gtri,
-            "gtrr": self.gtrr,
-            "eqir": self.eqir,
-            "eqri": self.eqri,
-            "eqrr": self.eqrr,
-        }
+    def possible_ops(self, i, op, o):
+        ret = set()
+        for cb in self.all_ops:
+            self.registers = {k: v for k, v in enumerate(i)}
+            cb(op)
+            if self.registers == {k: v for k, v in enumerate(o)}:
+                ret.add(cb)
+        return ret
 
-        self.opcodes = {
-            4: self.eqrr
-        }
-
-    def cmd_executor(self):
-        three_or_more = defaultdict(list)
-        opcodes = defaultdict(list)
-        for before, cmd, after in self.testset:
-            correct = defaultdict(list)
-            for name, cb_method in self.commands.items():
-                self.registers = deepcopy(before)
-                cb_method(cmd)
-                if self.registers == after:
-                    correct[cmd].append(name)
-                    opcodes[cmd.opcode].append(name)
-            if len(correct[cmd]) == 1:
-                self.opcodes[cmd.opcode] = self.commands[correct[cmd][0]]
-            if len(correct[cmd]) >= 3:
-                three_or_more[tuple(before.values()), cmd, tuple(after.values())] = correct[cmd]
-        return len(three_or_more), three_or_more, opcodes
-
-    def compare_before_after(self, cb: Callable, before: dict, cmd: Instruction, after: dict) -> bool:
-        self.registers = before
-        cb(cmd)
-        return self.registers == after
+    def part_1(self):
+        return sum(len(self.possible_ops(*tst)) >= 3 for tst in self.test_set)
 
     def deduce_opcodes(self):
-        c, three, opcodes = self.cmd_executor()
-        res = {k: list(set(v)) for k, v in opcodes.items()}
-        new_opcodes = deepcopy(res)
-        if DEBUG:
-            pprint(res)
-        for opcode, methods in res.items():
-            if len(methods) == 1:
-                self.opcodes[opcode] = self.commands[methods[0]]
-                continue
-            for mname in methods:
-                method = self.commands[mname]
-                testset = [t for t in self.testset if t[1].opcode == opcode]
-                if not all(self.compare_before_after(method, *i) for i in testset):
-                    _("All do not pass pass", opcode, mname)
-                    new_opcodes[opcode].remove(mname)
-        for k, v in list(new_opcodes.items()):
-            if len(v) == 1:
-                self.opcodes[k] = self.commands[v[0]]
-                [new_opcodes[key].remove(v) for key, value in new_opcodes if v in value]
-                del new_opcodes[k]
-        _(new_opcodes)
-        _(self.opcodes)
-        return new_opcodes
+        possibles = defaultdict(set)
+        for i, op, o in self.test_set:
+            res = self.possible_ops(i, op, o)
+            possibles[op.opcode] = possibles[op.opcode].union(res)
+
+        while len(self.opcodes) != 16:
+            for k, v in possibles.items():
+                if len(v) == 1:
+                    code = v.pop()
+                    self.opcodes[k] = code
+                    for vals in possibles.values():
+                        vals.discard(code)
+
+    def part_2(self):
+        self.deduce_opcodes()
+        self.registers = {0: 0, 1: 0, 2: 0, 3: 0, }
+        for i in self.program:
+            self.opcodes[i.opcode](i)
+        return self.registers[0]
 
     def addr(self, cmd: Instruction):
         self.registers[cmd.output] = self.registers[cmd.a] + self.registers[cmd.b]
@@ -204,11 +134,11 @@ class ChronalClassification:
 
 
 def part_1(source):
-    return ChronalClassification(source).cmd_executor()[0]
+    return ChronalClassification(source).part_1()
 
 
 def part_2(source):
-    return ChronalClassification(source).deduce_opcodes()
+    return ChronalClassification(source).part_2()
 
 
 class UnitTests(unittest.TestCase):
@@ -217,29 +147,13 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_data("""Before: [3, 2, 1, 1]
-9 2 1 2
-After:  [3, 2, 2, 1]
-
-
-
-9 2 0 1""")
-
-    def test_parse(self):
-        parse(self.source)
-
-    def test_example_data_part_1(self):
-        self.assertEqual(1, part_1(self.test_source))
+        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
 
     def test_part_1(self):
         self.assertEqual(612, part_1(self.source))
 
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
-
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(485, part_2(self.source))
 
 
 if __name__ == '__main__':
