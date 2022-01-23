@@ -38,7 +38,7 @@ from ivonet.search import Node
 sys.dont_write_bytecode = True
 T = TypeVar('T')
 DEBUG = False
-RECORD = True
+RECORD = False
 
 
 # noinspection DuplicatedCode
@@ -86,6 +86,8 @@ class Unit:
 
 
 class Elf(Unit):
+    """An Elf! A specialised Unit class"""
+
     def __repr__(self) -> str:
         return Cell.ELF
 
@@ -94,6 +96,8 @@ class Elf(Unit):
 
 
 class Goblin(Unit):
+    """A Goblin! A specialised Unit class"""
+
     def __repr__(self) -> str:
         return Cell.GOBLIN
 
@@ -149,6 +153,7 @@ class BeverageBandits:
         """A units turn
         - if we don't have anyone to attack see if we can move and then see if we can attack
         - if we can attack immediately then do so and turn is over
+        - A unit that died is still in a given round, so should be ignored
         """
         if unit.hit_points <= 0:
             return
@@ -177,8 +182,9 @@ class BeverageBandits:
 
     def move(self, unit: Unit):
         """Move
+        - Get all possible targets
         - get all open neighbors of targets
-        - find the shortest route (bfs) (goal test
+        - find the shortest route (bfs) to these neighbors
         - if tied in length choose the first in reading order
         - take 1 step towards the chosen goal
             - first clear the board of units
@@ -234,41 +240,36 @@ class BeverageBandits:
         return sorted(locations)
 
     def within_attack_range(self, attacker: Unit) -> Optional[Unit]:
-        """See if there a target in range in reading order
-        - top, down, left, right
+        """See if there a target in range
         - choose the one with the lowest HP!
+        - if a tie happened in lowest HP then reading order again
+            - top-down, left-right but relative to their position
         """
 
         def is_enemy(u: Unit):
             """Are we standing next to an enemy?"""
             return isinstance(u, Unit) and type(u) != type(attacker)
 
-        point = attacker.pos
-
         potential_enemies = []
 
-        # left
-        potential_enemy = self._grid[point.row][point.col + 1]
-        if point.col + 1 < self._columns and is_enemy(potential_enemy):
-            potential_enemies.append(potential_enemy)
+        # right
+        if attacker.pos.col + 1 < self._columns and is_enemy(self._grid[attacker.pos.row][attacker.pos.col + 1]):
+            potential_enemies.append(self._grid[attacker.pos.row][attacker.pos.col + 1])
         # above
-        potential_enemy = self._grid[point.row - 1][point.col]
-        if point.row - 1 >= 0 and is_enemy(potential_enemy):
-            potential_enemies.append(potential_enemy)
+        if attacker.pos.row - 1 >= 0 and is_enemy(self._grid[attacker.pos.row - 1][attacker.pos.col]):
+            potential_enemies.append(self._grid[attacker.pos.row - 1][attacker.pos.col])
         # under
-        potential_enemy = self._grid[point.row + 1][point.col]
-        if point.row + 1 < self._rows and is_enemy(potential_enemy):
-            potential_enemies.append(potential_enemy)
+        if attacker.pos.row + 1 < self._rows and is_enemy(self._grid[attacker.pos.row + 1][attacker.pos.col]):
+            potential_enemies.append(self._grid[attacker.pos.row + 1][attacker.pos.col])
         # left
-        potential_enemy = self._grid[point.row][point.col - 1]
-        if point.col - 1 >= 0 and is_enemy(potential_enemy):
-            potential_enemies.append(potential_enemy)
+        if attacker.pos.col - 1 >= 0 and is_enemy(self._grid[attacker.pos.row][attacker.pos.col - 1]):
+            potential_enemies.append(self._grid[attacker.pos.row][attacker.pos.col - 1])
         if potential_enemies:
-            return min(potential_enemies, key=lambda u: (u.hit_points, u.pos))
+            return min(potential_enemies, key=lambda u: (u.hit_points, u.pos))  # sort on HP then position
         return None
 
     def shortest_2_enemy(self, unit: Unit):
-        """Find all shortest paths of a route to chose the reading order if there are more shortest paths'
+        """Find all shortest paths of a route to chose the reading order if there are more shortest paths'.
         we actually find the shortest routes to the open spaces next to the enemy.
         """
         enemies = [enemy for enemy in self._units if type(enemy) != type(unit)]
@@ -280,22 +281,16 @@ class BeverageBandits:
                     shortest.append(*paths)
         if not shortest:
             return None
-        return sorted(shortest, key=lambda u: (len(u), u[0]))[0][0]
+        return sorted(shortest, key=lambda u: (len(u), u))[0][0]  # first entry of the shortest path = step
 
     def fight(self):
         """Fight!"""
         _(f"Initially:")
         _(self)
-
         for i in count(1):
             self.round = i
             if not self.combat_round():
-                if self.record:
-                    self.make_gif()
-                total = sum(u.hit_points for u in self._units)
-                _(f"After {i - 1} round(s):")
-                _(self)
-                return (i - 1) * total
+                self.round -= 1
             _(f"After {i} round(s):")
             _(self)
             goblins = [u for u in self._units if isinstance(u, Goblin)]
@@ -304,7 +299,7 @@ class BeverageBandits:
                 if self.record:
                     self.make_gif()
                 total = sum(u.hit_points for u in self._units)
-                return i * total
+                return self.round * total
         return None
 
     def mark_units(self):
@@ -315,9 +310,22 @@ class BeverageBandits:
         for unit in self._units:
             self._grid[unit.pos.row][unit.pos.col] = Cell.EMPTY
 
-    def retrieve_units(self):
-        self._units = [unit for r, row in enumerate(self._grid) for c, unit in enumerate(row) if isinstance(unit, Unit)]
-        return self._units
+    def render_image(self, index: int):
+        def make_color(s):
+            if isinstance(s, Goblin):
+                return 0, .5, -.5
+            elif isinstance(s, Elf):
+                return 1, -.5, -.5
+            elif s == '#':
+                return .2, .2, .2
+            else:
+                return .8, .8, .8
+
+        fig, ax = plt.subplots(1, 1)
+        plt.axis('off')
+        ax.imshow([[make_color(self._grid[r][c]) for r in range(self._columns)] for c in range(self._rows)])
+        fig.savefig(f"anim/{self.round:02d}-{index:02d}.png", dpi=200, bbox_inches='tight', pad_inches=0)
+        plt.close()
 
     def parse(self, source) -> None:
         for r, line in enumerate(source):
@@ -339,23 +347,6 @@ class BeverageBandits:
             ret.append(r)
         return "\n".join(ret)
 
-    def render_image(self, index: int):
-        def make_color(s):
-            if isinstance(s, Goblin):
-                return 0, .5, -.5
-            elif isinstance(s, Elf):
-                return 1, -.5, -.5
-            elif s == '#':
-                return .2, .2, .2
-            else:
-                return .8, .8, .8
-
-        fig, ax = plt.subplots(1, 1)
-        plt.axis('off')
-        ax.imshow([[make_color(self._grid[r][c]) for r in range(self._columns)] for c in range(self._rows)])
-        fig.savefig(f"anim/{self.round:02d}-{index:02d}.png", dpi=200, bbox_inches='tight', pad_inches=0)
-        plt.close()
-
     def make_gif(self):
         # Build GIF
         if self.record:
@@ -373,8 +364,8 @@ def part_1(source):
     return beverage_bandits.fight()
 
 
-def part_2(source):
-    for ap in count(4):
+def part_2(source, start_at=4):
+    for ap in count(start_at):
         try:
             beverage_bandits = BeverageBandits(source, elf_start_ap=ap).fight()
         except ElfDied:
@@ -464,7 +455,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(1140, part_2(self.test_source_8))
 
     def test_part_2(self):
-        self.assertEqual(57112, part_2(self.source))
+        # Optimized it a bit in speed by looking at the ap needed and starting there
+        # Don't worry it also works if you set the start_at at 4.
+        # This was a later added performance boost.
+        self.assertEqual(57112, part_2(self.source, start_at=15))
 
 
 if __name__ == '__main__':
