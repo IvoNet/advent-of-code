@@ -27,6 +27,7 @@ def _(*args, end="\n"):
 
 
 def part_1(source):
+    ...
     return None
 
 
