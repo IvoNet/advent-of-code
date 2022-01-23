@@ -22,7 +22,7 @@ from ivonet.search import bfs, node_to_path
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode

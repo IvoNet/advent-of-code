@@ -20,7 +20,7 @@ from ivonet.iter import ints, chunkify
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -43,7 +43,7 @@ class Knotter:
     """
 
     def __init__(self, sequence: list[int], circle: int = 256, extra=[17, 31, 73, 47, 23]) -> None:
-        self.sequence: list[int] = [ord(x) for x in sequence] + extra
+        self.sequence: list[int] = [ord(str(x)) for x in sequence] + extra
         self.knot_circle: list[int] = list(range(circle))
         self.size: int = len(self.knot_circle)
         self.skip: int = 0

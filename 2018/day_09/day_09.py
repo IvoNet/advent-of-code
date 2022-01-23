@@ -22,7 +22,7 @@ from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
