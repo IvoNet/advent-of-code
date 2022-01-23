@@ -67,7 +67,6 @@ def marble_game_v2(players=403, marbles=71920):
     current = Marble(0)
     current.before = current
     current.after = current
-    player = 0
     for m in range(1, marbles + 1):
         player = (m - 1) % players + 1
         if m % 23 == 0:
