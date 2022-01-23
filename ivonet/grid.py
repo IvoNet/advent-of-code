@@ -5,6 +5,7 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 
 from collections import defaultdict
+from enum import Enum
 from itertools import product
 
 from ivonet.iter import flatten, max_idx
@@ -415,6 +416,20 @@ def max_height(matrix: defaultdict) -> int:
        dict[(x,y)] = value
     """
     return max_idx(list(matrix.keys()), 1) + 1
+
+
+class Cell(str, Enum):
+    EMPTY = "."
+    BLOCKED = "#"
+    PATH = "*"
+    START = "S"
+    GOAL = "G"
+
+    def __repr__(self) -> str:
+        return self.value
+
+    def __str__(self) -> str:
+        return repr(self)
 
 
 if __name__ == '__main__':
