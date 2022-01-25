@@ -12,9 +12,9 @@ import sys
 import unittest
 from collections import defaultdict
 from pathlib import Path
-from typing import NamedTuple
 
 from ivonet.files import read_data
+from ivonet.grid import Location, DIRECTIONS
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -26,22 +26,6 @@ DEBUG = True
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
-
-
-class Location(NamedTuple):
-    x: int
-    y: int
-
-    def __add__(self, other):
-        return Location(self.x + other.x, self.y + other.y)
-
-
-DIRECTIONS = {
-    "N": Location(0, -1),
-    "E": Location(1, 0),
-    "S": Location(0, 1),
-    "W": Location(-1, 0)
-}
 
 
 class ARegularMap:

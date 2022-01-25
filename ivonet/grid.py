@@ -7,8 +7,25 @@ __license__ = "Apache 2.0"
 from collections import defaultdict
 from enum import Enum
 from itertools import product
+from typing import NamedTuple
 
 from ivonet.iter import flatten, max_idx
+
+
+class Location(NamedTuple):
+    row: int
+    col: int
+
+    def __add__(self, other):
+        return Location(self.row + other.row, self.col + other.col)
+
+
+DIRECTIONS = {
+    "N": Location(-1, 0),
+    "E": Location(0, 1),
+    "S": Location(1, 0),
+    "W": Location(0, -1)
+}
 
 
 def neighbors(grid: list[list[any]], coord: tuple, diagonal=True) -> list[tuple[int, int]]:
