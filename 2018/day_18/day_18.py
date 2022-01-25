@@ -15,11 +15,11 @@ from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.grid import neighbor_values
-from ivonet.iter import ints
+from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -69,30 +69,34 @@ class LumberConstructionProject:
             return "#"
         return "."
 
-    def minute(self):
+    def minute(self, cache=False):
         nm = []
         for r, row in enumerate(self.matrix):
             nr = []
             for c, acre in enumerate(row):
-                nr.append(self.fn[acre](Location(r, c)))
+                nr.append(self.fn[acre](Location(r, c)))  # convenience funcion calling :-)
             nm.append(nr)
-        self.states.append(self.matrix)
+        if cache:
+            self.states.append(self.matrix)
         self.matrix = nm
 
     def elapse(self, minutes) -> LumberConstructionProject:
-        for i in range(minutes):
+        for _ in range(minutes):
             self.minute()
-            if self.matrix in self.states:
-                print("-" * 50)
-                print("Iteration:", i, self.states.index(self.matrix))
-                print(self)
-            if self.count(".") == self.size:
-                print("Nope!", i)
-                break
         return self
 
     def sustainable_after(self, minutes):
-        pass
+        for i in rangei(1, minutes):
+            self.minute(cache=True)
+            if self.matrix in self.states:
+                start_rep = self.states.index(self.matrix)
+                rep = i - start_rep
+                _(rep, start_rep, minutes)
+                state = start_rep + ((minutes - start_rep) % rep)
+                _(state)
+                self.matrix = self.states[state]
+                _(self)
+                return self.resource_value()
 
     def count(self, s: str):
         return sum(row.count(s) for row in self.matrix)
@@ -115,14 +119,13 @@ def part_2(source):
     """Yeah this take way to long
     So start printing and look for a pattern.
     - Yup it happens so start collecting states
-    - in my case after 426 steps a state is repeated every 27 seconds and that repeats for ever
+    - in my case after 426 steps a state is repeated every 28 seconds and that repeats for ever
       second after that
-    - so something like... count the state 426 + ((1000000000 - 426) % 27) ?
+    - so something like... count the state 426 + ((1000000000 - 426) % 28) ?
+    - so count the state resulting from that equation should do it
     """
     lcp = LumberConstructionProject(source)
-    lcp.sustainable_after(1000000000)
-    _(lcp)
-    return lcp.resource_value()
+    return lcp.sustainable_after(1000000000)
 
 
 class UnitTests(unittest.TestCase):
@@ -150,7 +153,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(594712, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(203138, part_2(self.source))
 
 
 if __name__ == '__main__':
