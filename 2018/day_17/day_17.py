@@ -10,9 +10,8 @@ __doc__ = """"""
 import os
 import sys
 import unittest
-from enum import Enum
 from pathlib import Path
-from typing import Callable, Any, NamedTuple
+from typing import NamedTuple
 
 from ivonet.files import read_rows
 from ivonet.iter import ints, rangei
@@ -28,145 +27,123 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Cell(str, Enum):
-    SAND = "."
-    CLAY = "#"
-    SETTLED_WATER = "~"
-    FLOWING_WATER = "|"
-    SPRING_OF_WATER = "+"
-    GOAL = "G"
+class Point(NamedTuple):
+    x: int
+    y: int
 
-    def __repr__(self) -> str:
-        return self.value
-
-    def __str__(self) -> str:
-        return repr(self)
-
-
-class Location(NamedTuple):
-    row: int
-    col: int
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
 
 
 class ReservoirResearch:
 
-    def __init__(self, source, init_spring: Location = Location(0, 500)) -> None:
+    def __init__(self, source, init_spring: Point = Point(500, 0)) -> None:
+        self.spring = init_spring
         self.source = source
-        self.rows: int = 0
-        self.min_rows: int = 0
-        self.cols: int = 0
-        self.grid = []
-        self.clay: list[int, int] = []
-        self.init()
-        self.springs: list[Location] = [init_spring]
-        self.settled_water: set[Location] = set()
-        self.flowing_water: set[Location] = set()
-        self.settled_springs: set[Location] = set()
+        self.lowest_y = None
+        self.highest_y = None
+        self.flowing = set()
+        self.still = set()
+        self.to_fall = set()
+        self.to_fill = set()
+        self.clay = set()
+        self.parse()
+        self.UP = Point(0, -1)
+        self.DOWN = Point(0, 1)
+        self.LEFT = Point(-1, 0)
+        self.RIGHT = Point(1, 0)
 
-    def init(self):
-        start: Callable[[Any], list[list[int]]] = lambda i: [ints(line) for line in self.source if line.startswith(i)]
-        y_start = start("y")
-        x_start = start("x")
-        self.rows = max(max(y_start, key=lambda x: x[0])[0], max(x_start, key=lambda x: x[2])[0])
-        self.min_rows = min(min(y_start, key=lambda x: x[0])[0], min(x_start, key=lambda x: x[1])[1])
-        self.cols = max(max(y_start, key=lambda x: x[2])[0], max(x_start, key=lambda x: x[0])[0])
-        self.grid = [[Cell.SAND for _ in rangei(0, self.cols)] for _ in rangei(0, self.rows)]
-        yx = [[y, range(b, c)] for y, b, c in y_start]
-        for r, cr in yx:
-            for c in cr:
-                self.grid[r][c] = Cell.CLAY
-                self.clay.append((r, c))
-        xy = [[x, range(b, c)] for x, b, c in x_start]
-        for c, yr in xy:
-            for r in yr:
-                self.grid[r][c] = Cell.CLAY
-                self.clay.append((r, c))
+    def drip(self, pos, ly, clay, flowing):
+        while pos.y < ly:
+            posd = pos + self.DOWN
+            if posd not in clay:
+                flowing.add(posd)
+                pos = posd
+            elif posd in clay:
+                return pos
+        return None
 
-    def mark(self):
-        for f in self.springs:
-            self.grid[f.row][f.col] = Cell.SPRING_OF_WATER
-        for f in self.settled_water:
-            self.grid[f.row][f.col] = Cell.SETTLED_WATER
-        for f in self.flowing_water:
-            self.grid[f.row][f.col] = Cell.FLOWING_WATER
+    def fill(self, pos, clay, flowing, still):
+        temp = set()
+        pl = self.fill_r(pos, self.LEFT, clay, still, temp)
+        pr = self.fill_r(pos, self.RIGHT, clay, still, temp)
+        if not pl and not pr:
+            still.update(temp)
+        else:
+            flowing.update(temp)
+        return pl, pr
 
-    def clear(self):
-        for f in self.springs:
-            self.grid[f.row][f.col] = Cell.SAND
-        for f in self.settled_water:
-            self.grid[f.row][f.col] = Cell.SAND
-        for f in self.flowing_water:
-            self.grid[f.row][f.col] = Cell.SAND
+    def fill_r(self, pos, off, clay, still, temp):
+        pos1 = pos
+        while pos1 not in clay:
+            temp.add(pos1)
+            pos2 = pos1 + self.DOWN
+            if pos2 not in clay and pos2 not in still:
+                return pos1
+            pos1 = pos1 + off
+        return None
 
-    def is_clay(self, loc: Location) -> bool:
-        return self.grid[loc.row][loc.col] == Cell.CLAY
+    def flow(self) -> ReservoirResearch:
+        self.to_fall.add(self.spring)
+        while self.to_fall or self.to_fill:
+            while self.to_fall:
+                tf = self.to_fall.pop()
+                res = self.drip(tf, self.lowest_y, self.clay, self.flowing)
+                if res:
+                    self.to_fill.add(res)
 
-    def is_clay(self, r: int, c: int) -> bool:
-        return self.grid[r][c] == Cell.CLAY
+            while self.to_fill:
+                ts = self.to_fill.pop()
+                rl, rr = self.fill(ts, self.clay, self.flowing, self.still)
+                if not rr and not rl:
+                    self.to_fill.add(ts + self.UP)
+                else:
+                    if rl:
+                        self.to_fall.add(rl)
+                    if rr:
+                        self.to_fall.add(rr)
+        return self
 
-    def is_settled_or_sand(self, loc: Location):
-        return self.grid[loc.row][loc.col] in [Cell.SAND, Cell.SETTLED_WATER]
+    def part_1(self):
+        return len([p for p in (self.flowing | self.still) if p.y >= self.highest_y])
 
-    def is_settled_or_sand(self, r: int, c: int):
-        return self.grid[r][c] in [Cell.SAND, Cell.SETTLED_WATER]
-
-    def flow(self, spring: Location):
-        """Let the water flow...
-        what are the steps in which water flows?
-        - we have to start with 1 spring of water (0,500)
-        - water flows down
-        - it will hit a bottom
-        - it fills from the bottom outwards till it hits a wall or can flow down again (if now wall)
-        - if a wall it fills the next row up again outwards till it hits a wall or can flow
-        - when it can flow again that will be counted as on or more new spring(s) for the next step
-        - this way we may be able to iterate flow steps?!
-        - as a step as described above would not change anymore it can be counted for all the watter (|,~)
-        - Stepping stops when the water goes above 0 or below max y
-        """
-
-        new_springs = set()
-        loc = spring
-        r = loc.row
-        c = loc.col
-        # walk down
-        while not self.is_clay(loc):
-            if loc.row >= self.min_rows:
-                self.flowing_water.add(loc)
-            if loc.row >= self.rows:
-                return new_springs
-            r += 1
-            loc = Location(r, c)
-        while True:
-            r -= 1
-            nloc = {Location(r, c)}
-            cleft = c
-            has_wall_left = False
-            while self.is_settled_or_sand(r, cleft):
-                cleft -= 1
-                ...
-
-    def flowing(self):
-        """While we have springs we need to keep flowing"""
-        while self.springs:
-            spring = self.springs.pop(0)
-            if spring in self.settled_springs:
-                continue
-            self.settled_springs.add(spring)
-            new_springs = self.flow(spring)
-        ...
+    def part_2(self):
+        return len([p for p in self.still if p.y >= self.highest_y])
 
     def __repr__(self) -> str:
-        return "\n".join("".join(c for c in row) for row in self.grid)
+        """Tuned this to the range important to this puzzle. The area was too big."""
 
+        def char(p):
+            if p == self.spring:
+                return '+'
+            elif p in self.clay:
+                return '#'
+            elif p in both:
+                return '$'
+            elif p in self.still:
+                return '~'
+            elif p in self.flowing:
+                return '|'
+            else:
+                return '.'
 
-def part_1(source):
-    rr = ReservoirResearch(source)
-    # _(rr)
-    return rr.flowing()
+        both = self.flowing & self.still
+        return '\n'.join(''.join(char(Point(x, y)) for x in rangei(300, 700)) for y in rangei(0, 1000))
 
-
-def part_2(source):
-    return None
+    def parse(self):
+        """Parse the input data to grid information
+        """
+        self.clay = set()
+        for line in self.source:
+            nums = ints(line)
+            if line.startswith("x"):
+                for y in rangei(nums[1], nums[2]):
+                    self.clay.add(Point(nums[0], y))
+            elif line.startswith("y"):
+                for x in rangei(nums[1], nums[2]):
+                    self.clay.add(Point(x, nums[0]))
+        self.lowest_y = max(p.y for p in self.clay)
+        self.highest_y = min(p.y for p in self.clay)
 
 
 class UnitTests(unittest.TestCase):
@@ -176,12 +153,15 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.rr = ReservoirResearch(self.source).flow()
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        _(self.rr)
+        self.assertEqual(30737, self.rr.part_1())
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        _(self.rr)
+        self.assertEqual(24699, self.rr.part_2())
 
 
 if __name__ == '__main__':
