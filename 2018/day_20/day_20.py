@@ -10,9 +10,11 @@ __doc__ = """"""
 import os
 import sys
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -26,12 +28,59 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+class Location(NamedTuple):
+    x: int
+    y: int
+
+    def __add__(self, other):
+        return Location(self.x + other.x, self.y + other.y)
+
+
+DIRECTIONS = {
+    "N": Location(0, -1),
+    "E": Location(1, 0),
+    "S": Location(0, 1),
+    "W": Location(-1, 0)
+}
+
+
+class ARegularMap:
+
+    def __init__(self, source) -> None:
+        self.source = source[1:-1]
+        self.positions: list[Location] = []
+        self.start = Location(0, 0)
+        self.distances = defaultdict(int)
+        self.process()
+
+    def process(self):
+        previous = current = self.start
+        for c in self.source:
+            if c == "(":
+                self.positions.append(current)
+            elif c == ")":
+                current = self.positions.pop()
+            elif c == "|":
+                current = self.positions[-1]
+            else:
+                current += DIRECTIONS[c]
+                if self.distances[current] == 0:
+                    self.distances[current] = self.distances[previous] + 1
+            previous = current
+
+    def shortest_longest_path(self) -> int:
+        return max(self.distances.values())
+
+    def doors(self, min_nr_of_doors: int) -> int:
+        return len([x for x in self.distances.values() if x >= min_nr_of_doors])
+
+
 def part_1(source):
-    return None
+    return ARegularMap(source).shortest_longest_path()
 
 
 def part_2(source):
-    return None
+    return ARegularMap(source).doors(1000)
 
 
 class UnitTests(unittest.TestCase):
@@ -40,20 +89,30 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_a.input")
+        self.test_source2 = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}_test_b.input")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(3, part_1("^WNE$"))
+        self.assertEqual(10, part_1("^ENWWW(NEEE|SSE(EE|N))$"))
+        self.assertEqual(18, part_1("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$"))
+        self.assertEqual(23, part_1("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$"))
+        self.assertEqual(31, part_1("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"))
+
+    def test_other_official_set(self):
+        self.assertEqual(3806, part_1(self.test_source))
+        self.assertEqual(8354, part_2(self.test_source))
+
+    def test_other_official_set_2(self):
+        self.assertEqual(3879, part_1(self.test_source2))
+        self.assertEqual(8464, part_2(self.test_source2))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(3755, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(8627, part_2(self.source))
 
 
 if __name__ == '__main__':
