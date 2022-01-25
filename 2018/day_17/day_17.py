@@ -5,7 +5,10 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+I made multiple failed versions before finally getting it right. Reading is an art :-)
+I found this one very frustrating!
+"""
 
 import os
 import sys
@@ -27,81 +30,85 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Point(NamedTuple):
+class Location(NamedTuple):
     x: int
     y: int
 
     def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
+        return Location(self.x + other.x, self.y + other.y)
+
+
+UP = Location(0, -1)
+DOWN = Location(0, 1)
+LEFT = Location(-1, 0)
+RIGHT = Location(1, 0)
 
 
 class ReservoirResearch:
 
-    def __init__(self, source, init_spring: Point = Point(500, 0)) -> None:
+    def __init__(self, source, init_spring: Location = Location(500, 0)) -> None:
         self.spring = init_spring
         self.source = source
         self.lowest_y = None
         self.highest_y = None
         self.flowing = set()
         self.still = set()
-        self.to_fall = set()
+        self.to_drip = set()
         self.to_fill = set()
         self.clay = set()
         self.parse()
-        self.UP = Point(0, -1)
-        self.DOWN = Point(0, 1)
-        self.LEFT = Point(-1, 0)
-        self.RIGHT = Point(1, 0)
 
-    def drip(self, pos, ly, clay, flowing):
-        while pos.y < ly:
-            posd = pos + self.DOWN
-            if posd not in clay:
-                flowing.add(posd)
-                pos = posd
-            elif posd in clay:
-                return pos
+    def drip(self, loc: Location):
+        while loc.y < self.lowest_y:
+            loc_down = loc + DOWN
+            if loc_down not in self.clay:
+                self.flowing.add(loc_down)
+                loc = loc_down
+            elif loc_down in self.clay:
+                return loc
         return None
 
-    def fill(self, pos, clay, flowing, still):
-        temp = set()
-        pl = self.fill_r(pos, self.LEFT, clay, still, temp)
-        pr = self.fill_r(pos, self.RIGHT, clay, still, temp)
-        if not pl and not pr:
-            still.update(temp)
+    def fill(self, loc: Location):
+        water_to_be_determined = set()
+
+        def fill_row(loc, direction):
+            """Fills a row in a left of right direction"""
+            pos = loc
+            while pos not in self.clay:
+                water_to_be_determined.add(pos)
+                tst_loc = pos + DOWN
+                if tst_loc not in self.clay and tst_loc not in self.still:
+                    return pos
+                pos = pos + direction
+            return None
+
+        loc_left = fill_row(loc, LEFT)
+        loc_right = fill_row(loc, RIGHT)
+        if not loc_left and not loc_right:
+            self.still.update(water_to_be_determined)
         else:
-            flowing.update(temp)
-        return pl, pr
-
-    def fill_r(self, pos, off, clay, still, temp):
-        pos1 = pos
-        while pos1 not in clay:
-            temp.add(pos1)
-            pos2 = pos1 + self.DOWN
-            if pos2 not in clay and pos2 not in still:
-                return pos1
-            pos1 = pos1 + off
-        return None
+            self.flowing.update(water_to_be_determined)
+        return loc_left, loc_right
 
     def flow(self) -> ReservoirResearch:
-        self.to_fall.add(self.spring)
-        while self.to_fall or self.to_fill:
-            while self.to_fall:
-                tf = self.to_fall.pop()
-                res = self.drip(tf, self.lowest_y, self.clay, self.flowing)
+        self.to_drip.add(self.spring)
+        while self.to_drip or self.to_fill:
+            while self.to_drip:
+                tf = self.to_drip.pop()
+                res = self.drip(tf)
                 if res:
                     self.to_fill.add(res)
 
             while self.to_fill:
                 ts = self.to_fill.pop()
-                rl, rr = self.fill(ts, self.clay, self.flowing, self.still)
-                if not rr and not rl:
-                    self.to_fill.add(ts + self.UP)
+                row_left, row_right = self.fill(ts)
+                if not row_right and not row_left:
+                    self.to_fill.add(ts + UP)
                 else:
-                    if rl:
-                        self.to_fall.add(rl)
-                    if rr:
-                        self.to_fall.add(rr)
+                    if row_left:
+                        self.to_drip.add(row_left)
+                    if row_right:
+                        self.to_drip.add(row_right)
         return self
 
     def part_1(self):
@@ -128,7 +135,7 @@ class ReservoirResearch:
                 return '.'
 
         both = self.flowing & self.still
-        return '\n'.join(''.join(char(Point(x, y)) for x in rangei(300, 700)) for y in rangei(0, 1000))
+        return '\n'.join(''.join(char(Location(x, y)) for x in rangei(300, 700)) for y in rangei(0, 1600))
 
     def parse(self):
         """Parse the input data to grid information
@@ -138,10 +145,10 @@ class ReservoirResearch:
             nums = ints(line)
             if line.startswith("x"):
                 for y in rangei(nums[1], nums[2]):
-                    self.clay.add(Point(nums[0], y))
+                    self.clay.add(Location(nums[0], y))
             elif line.startswith("y"):
                 for x in rangei(nums[1], nums[2]):
-                    self.clay.add(Point(x, nums[0]))
+                    self.clay.add(Location(x, nums[0]))
         self.lowest_y = max(p.y for p in self.clay)
         self.highest_y = min(p.y for p in self.clay)
 
