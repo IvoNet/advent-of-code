@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from ivonet.files import read_rows
-from ivonet.iter import ints
+from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
 
@@ -77,8 +77,7 @@ class ChronalClassification:
             self.registers[self.bound_reg] = self.instruction_pointer
             self.all_ops[cmd.opcode](cmd)
             self.instruction_pointer = self.registers[self.bound_reg]
-            _(self.instruction_pointer, cmd
-              , self.registers)
+            _(f"{self.instruction_pointer:<3}, {list(self.registers.values())}")
             self.instruction_pointer += 1
         return self.registers[reg]
 
@@ -132,11 +131,27 @@ class ChronalClassification:
 
 
 def part_1(source):
+    # return sum([i for i in rangei(1, 1017) if 1017 % i == 0])
     return ChronalClassification(source).background_process()
 
 
 def part_2(source):
-    return ChronalClassification(source, r0=1).background_process()
+    """Again slow!!
+    return ChronalClassification(source, r0=1).background_process() won't really work so analyse
+
+    - piece of the output
+    - significant = 10551417
+    - every time reg 2 hits 3 reg 4 adds one
+    - 10551417 % 3 == 0... does this mean anything?
+    - Should I look for devisors?
+    - all devisors for 10551417 are [1, 3, 3517139, 10551417]
+    - sum of those?
+    - Analysing output of part_1 confirms this but then with a much smaller number 1017
+       [1, 3, 9, 113, 339, 1017] halfway through its run reg 0 had value 126 which is the sum of 1,3,9,113... try!
+    - works :-)
+    """
+    # return ChronalClassification(source, r0=1).background_process()
+    return sum([i for i in rangei(1, 10551417) if 10551417 % i == 0])
 
 
 class UnitTests(unittest.TestCase):
@@ -162,7 +177,7 @@ seti 9 0 5""")
         self.assertEqual(1482, part_1(self.source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(14068560, part_2(self.source))
 
 
 if __name__ == '__main__':
