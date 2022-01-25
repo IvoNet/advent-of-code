@@ -15,7 +15,7 @@ def neighbors(grid: list[list[any]], coord: tuple, diagonal=True) -> list[tuple[
     """Retrieve all the neighbors of a coordinate in a fixed 2d grid (boundary).
 
     :param diagonal: True if you also want the direction neighbors, False if not
-    :param coord: Tuple with (height, width) coordinate (Y, X)!!
+    :param coord: Tuple with (height, width) coordinate (Y, X) or (row, col)!!
     :param grid: the boundary of the grid in layman's terms
     :return: the adjacent coordinates
     """

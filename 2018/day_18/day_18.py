@@ -11,8 +11,10 @@ import os
 import sys
 import unittest
 from pathlib import Path
+from typing import NamedTuple
 
 from ivonet.files import read_rows
+from ivonet.grid import neighbor_values
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -26,12 +28,101 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+def parse(source):
+    return [list(line) for line in source]
+
+
+class Location(NamedTuple):
+    row: int
+    col: int
+
+
+class LumberConstructionProject:
+
+    def __init__(self, source) -> None:
+        self.matrix = parse(source)
+        self.rows = len(self.matrix)
+        self.cols = len(self.matrix[0])
+        self.size = self.rows * self.cols
+        self.fn = {
+            ".": self.open_to_tree,
+            "|": self.tree_to_lumber,
+            "#": self.lumber_to_open
+        }
+        self.states = []
+
+    def open_to_tree(self, loc: Location):
+        nbv = neighbor_values(self.matrix, loc)
+        if nbv.count("|") >= 3:
+            return "|"
+        return "."
+
+    def tree_to_lumber(self, loc: Location):
+        nbv = neighbor_values(self.matrix, loc)
+        if nbv.count("#") >= 3:
+            return "#"
+        return "|"
+
+    def lumber_to_open(self, loc: Location):
+        nbv = neighbor_values(self.matrix, loc)
+        if nbv.count("#") >= 1 and nbv.count("|") >= 1:
+            return "#"
+        return "."
+
+    def minute(self):
+        nm = []
+        for r, row in enumerate(self.matrix):
+            nr = []
+            for c, acre in enumerate(row):
+                nr.append(self.fn[acre](Location(r, c)))
+            nm.append(nr)
+        self.states.append(self.matrix)
+        self.matrix = nm
+
+    def elapse(self, minutes) -> LumberConstructionProject:
+        for i in range(minutes):
+            self.minute()
+            if self.matrix in self.states:
+                print("-" * 50)
+                print("Iteration:", i, self.states.index(self.matrix))
+                print(self)
+            if self.count(".") == self.size:
+                print("Nope!", i)
+                break
+        return self
+
+    def sustainable_after(self, minutes):
+        pass
+
+    def count(self, s: str):
+        return sum(row.count(s) for row in self.matrix)
+
+    def resource_value(self):
+        return self.count("|") * self.count("#")
+
+    def __repr__(self) -> str:
+        return "\n".join("".join(row) for row in self.matrix)
+
+
 def part_1(source):
-    return None
+    lcp = LumberConstructionProject(source)
+    lcp.elapse(10)
+    _(lcp)
+    return lcp.resource_value()
 
 
 def part_2(source):
-    return None
+    """Yeah this take way to long
+    So start printing and look for a pattern.
+    - Yup it happens so start collecting states
+    - in my case after 426 steps a state is repeated every 27 seconds and that repeats for ever
+      second after that
+    - so something like... count the state 426 + ((1000000000 - 426) % 27) ?
+    """
+    lcp = LumberConstructionProject(source)
+    lcp.sustainable_after(1000000000)
+    _(lcp)
+    return lcp.resource_value()
 
 
 class UnitTests(unittest.TestCase):
@@ -41,16 +132,22 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows(""".#.#...|#.
+.....#|##|
+.|..|...#.
+..|#.....#
+#.#|||#|#|
+...#.||...
+.|....|...
+||...#|.#|
+|.||||..|.
+...#.|..|.""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(1147, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(594712, part_1(self.source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
