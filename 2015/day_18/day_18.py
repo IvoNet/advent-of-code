@@ -12,7 +12,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.grid import neighbors
+from ivonet.grid import neighbors, Location
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -38,7 +38,7 @@ def flip_lights(source, corner_stuck=False):
     matrix = deepcopy(source)
     for h, row in enumerate(source):
         for w, col in enumerate(row):
-            nb_on = sum(1 for x, y in neighbors(source, (h, w), diagonal=True) if source[x][y] == "#")
+            nb_on = sum(1 for x, y in neighbors(source, Location(h, w), diagonal=True) if source[x][y] == "#")
             if source[h][w] == "#":
                 if nb_on not in [2, 3]:
                     matrix[h][w] = "."

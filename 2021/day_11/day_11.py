@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors
+from ivonet.grid import neighbors, Location
 from ivonet.iter import max_2d, ints
 
 PREVENT_ENDLESS_LOOP = 1000
@@ -45,7 +45,7 @@ def step_neighbors(matrix, h, w):
       processing
     """
     to_flash = []
-    for h, w in [x for x in neighbors(matrix, (h, w), diagonal=True) if
+    for h, w in [x for x in neighbors(matrix, Location(h, w), diagonal=True) if
                  matrix[x[0]][x[1]] != 0 and matrix[x[0]][x[1]] < 10]:
         matrix[h][w] += 1
         if matrix[h][w] > 9:

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from ivonet.calc import prod
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors, neighbor_values
+from ivonet.grid import neighbors, neighbor_values, Location
 from ivonet.iter import ints
 
 BOUNDARY = 9
@@ -23,14 +23,14 @@ def part_1(matrix):
     smallest_points = []
     for h, row in enumerate(matrix):
         for w, x in enumerate(row):
-            nb = neighbors(matrix, (h, w), diagonal=False)
+            nb = neighbors(matrix, Location(h, w), diagonal=False)
             smallest = True
             for a, b in nb:
                 if matrix[a][b] <= x:
                     smallest = False
             if smallest:
                 som += 1 + x
-                smallest_points.append((h, w))
+                smallest_points.append(Location(h, w))
     return som, smallest_points
 
 
@@ -40,10 +40,10 @@ def part_1a(matrix):
     for h in range(len(matrix)):
         for w in range(len(matrix[0])):
             me = matrix[h][w]
-            nb = neighbor_values(matrix, (h, w), diagonal=False)
+            nb = neighbor_values(matrix, Location(h, w), diagonal=False)
             if me < min(nb):
                 points += 1 + me
-                smallest_points.append((h, w))
+                smallest_points.append(Location(h, w))
     return points, smallest_points
 
 
@@ -56,10 +56,10 @@ def part_2(matrix):
         running = True
         while running:
             try:
-                h, w = queue.pop()
-                if matrix[h][w] != BOUNDARY and (h, w) not in basin:
-                    basin.append((h, w))
-                    nb2 = neighbors(matrix, (h, w), diagonal=False)
+                loc = queue.pop()
+                if matrix[loc.row][loc.col] != BOUNDARY and loc not in basin:
+                    basin.append(loc)
+                    nb2 = neighbors(matrix, loc, diagonal=False)
                     [queue.append(n) for n in nb2 if n not in queue and n not in basin]
             except IndexError:
                 running = False

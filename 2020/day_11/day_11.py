@@ -9,7 +9,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.grid import neighbors_defined_grid, directions
+from ivonet.grid import neighbors_defined_grid, directions, Location
 from ivonet.iter import ints
 
 OCCUPIED_SEAT = '#'
@@ -29,7 +29,7 @@ def parse(data):
     matrix = {}
     for y, row in enumerate(data):
         for x, col in enumerate(row):
-            matrix[(y, x)] = col
+            matrix[Location(y, x)] = col
     return matrix
 
 

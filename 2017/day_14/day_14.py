@@ -5,7 +5,9 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+Graph usage!
+"""
 
 import os
 import sys
@@ -15,7 +17,7 @@ from pathlib import Path
 
 from ivonet.files import read_data
 from ivonet.graph import Graph
-from ivonet.grid import neighbors
+from ivonet.grid import neighbors, Location
 from ivonet.iter import ints, chunkify
 
 sys.dont_write_bytecode = True
@@ -42,7 +44,7 @@ class Knotter:
     Proved to be handy.
     """
 
-    def __init__(self, sequence: list[int], circle: int = 256, extra=[17, 31, 73, 47, 23]) -> None:
+    def __init__(self, sequence: list[str], circle: int = 256, extra=[17, 31, 73, 47, 23]) -> None:
         self.sequence: list[int] = [ord(str(x)) for x in sequence] + extra
         self.knot_circle: list[int] = list(range(circle))
         self.size: int = len(self.knot_circle)
@@ -142,7 +144,7 @@ def part_2(source):
     for row in range(128):
         for col in range(128):
             if grid[row][col]:
-                for coord in [(r, c) for r, c in neighbors(grid, (row, col), diagonal=False) if grid[r][c]]:
+                for coord in [(r, c) for r, c in neighbors(grid, Location(row, col), diagonal=False) if grid[r][c]]:
                     graph.add_edge_by_vertices((row, col), coord)
 
     return graph.number_connected_groups()

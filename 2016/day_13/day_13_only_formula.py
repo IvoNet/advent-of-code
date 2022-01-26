@@ -28,7 +28,7 @@ from typing import Optional, Set, NamedTuple, TypeVar
 
 from ivonet.collection import Queue
 from ivonet.files import read_data
-from ivonet.grid import neighbors_defined_grid
+from ivonet.grid import neighbors_defined_grid, Location
 from ivonet.iter import ints
 from ivonet.search import node_to_path, Node
 
@@ -45,7 +45,7 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-class Location(NamedTuple):
+class Point(NamedTuple):
     x: int
     y: int
 
@@ -55,13 +55,14 @@ def is_empty(x, y, favorite_nr) -> bool:
     return bin(x * x + 3 * x + 2 * x * y + y + y * y + favorite_nr).count("1") % 2 == 0
 
 
-def successors(loc: Location, favorite_number):
+def successors(loc: Point, favorite_number):
     """Generates all locations that can be reached from the current location."""
-    return [Location(*coord) for coord in neighbors_defined_grid((loc.x, loc.y), (loc.x + 2, loc.y + 2), diagonal=False)
-            if is_empty(*coord, favorite_number)]
+    return [Point(coord.col, coord.row) for coord in
+            neighbors_defined_grid(Location(loc.y, loc.x), (loc.y + 2, loc.x + 2), diagonal=False)
+            if is_empty(coord.col, coord.row, favorite_number)]
 
 
-def bfs(initial: T, goal: Location | int, favorite_nr: int, part_1=True) -> Optional[Node[T]] | int:
+def bfs(initial: T, goal: Point | int, favorite_nr: int, part_1=True) -> Optional[Node[T]] | int:
     """Standard bfs function but with a few small adjustments
     especially in the testing of the goal.
     """
@@ -84,12 +85,12 @@ def bfs(initial: T, goal: Location | int, favorite_nr: int, part_1=True) -> Opti
     return None
 
 
-def part_1(source, goal: Location = Location(31, 39)):
-    return len(node_to_path(bfs(Location(1, 1), goal, int(source), part_1=True))) - 1
+def part_1(source, goal: Point = Point(31, 39)):
+    return len(node_to_path(bfs(Point(1, 1), goal, int(source), part_1=True))) - 1
 
 
 def part_2(source):
-    return bfs(Location(1, 1), 50, int(source), part_1=False)
+    return bfs(Point(1, 1), 50, int(source), part_1=False)
 
 
 class UnitTests(unittest.TestCase):
@@ -102,7 +103,7 @@ class UnitTests(unittest.TestCase):
         self.test_source = read_data("""10""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(11, part_1(self.test_source, Location(7, 4)))
+        self.assertEqual(11, part_1(self.test_source, Point(7, 4)))
 
     def test_part_1(self):
         self.assertEqual(82, part_1(self.source))

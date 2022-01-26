@@ -18,7 +18,7 @@ from typing import Dict, NamedTuple
 from typing import TypeVar
 
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors_defined_grid
+from ivonet.grid import neighbors_defined_grid, Location
 from ivonet.iter import ints
 from ivonet.search import astar
 
@@ -51,7 +51,7 @@ def is_goal(goal: MazeLocation) -> Callable[[MazeLocation], bool]:
 def adjoining(height, width) -> Callable[[MazeLocation], list[MazeLocation]]:
     def adjacent(ml: MazeLocation) -> list[MazeLocation]:
         nb = [MazeLocation(r, c) for r, c in
-              neighbors_defined_grid((ml.row, ml.col), grid=(width, height), diagonal=False)]
+              neighbors_defined_grid(Location(ml.row, ml.col), grid=(height, width), diagonal=False)]
         return nb
 
     return adjacent
