@@ -5,8 +5,11 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """
+__doc__ = """Keywords:
 Parsing without recursion!
+regex like
+brackets
+Open and closing
 """
 
 import os
