@@ -19,6 +19,9 @@ class Location(NamedTuple):
     def __add__(self, other):
         return Location(self.row + other.row, self.col + other.col)
 
+    def __sub__(self, other):
+        return Location(self.row - other.row, self.col - other.col)
+
 
 DIRECTIONS = {
     "N": Location(-1, 0),
