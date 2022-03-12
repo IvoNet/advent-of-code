@@ -77,12 +77,12 @@ class Node(Generic[T]):
         return f"state[{self.state}] - cost_calculator[{self.cost}] - parent[None]"
 
 
-def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
+def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]]) -> Optional[Node[T]]:
     # frontier is where we've yet to go
     frontier: Stack[Node[T]] = Stack()
     frontier.push(Node(initial, None))
     # explored is where we've been
-    explored: Set[T] = {initial}
+    explored: set[T] = {initial}
 
     # keep going while there is more to explore
     while not frontier.empty:
@@ -110,7 +110,7 @@ def node_to_path(node: Node[T]) -> List[T]:
     return path
 
 
-def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], List[T]]) -> Optional[Node[T]]:
+def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]]) -> Optional[Node[T]]:
     """Breath first search
 
     See for a nice implementation with performance optimizations and a non standard successors function
@@ -120,7 +120,7 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], Li
     frontier: Queue[Node[T]] = Queue()
     frontier.push(Node(initial, None))
     # explored is where we've been
-    explored: Set[T] = {initial}
+    explored: set[T] = {initial}
 
     # keep going while there is more to explore
     while not frontier.empty:
@@ -140,7 +140,7 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], Li
 
 def astar(initial: T,
           goal_test: Callable[[T], bool],
-          successors: Callable[[T], List[T]],
+          successors: Callable[[T], list[T]],
           heuristic: Callable[[T], float],
           cost: Callable[[T], int]) -> Optional[Node[T]]:
     """The A* (astar)
@@ -152,7 +152,7 @@ def astar(initial: T,
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
     frontier.push(Node(initial, None, 0.0, heuristic(initial)))
     # explored is where we've been
-    explored: Dict[T, float] = {initial: 0.0}
+    explored: dict[T, float] = {initial: 0.0}
 
     # keep going while there is more to explore
     while not frontier.empty:
