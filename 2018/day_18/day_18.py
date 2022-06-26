@@ -11,10 +11,9 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from typing import NamedTuple
 
 from ivonet.files import read_rows
-from ivonet.grid import neighbor_values
+from ivonet.grid import neighbor_values, Location
 from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
@@ -30,11 +29,6 @@ def _(*args, end="\n"):
 
 def parse(source):
     return [list(line) for line in source]
-
-
-class Location(NamedTuple):
-    row: int
-    col: int
 
 
 class LumberConstructionProject:
@@ -74,7 +68,7 @@ class LumberConstructionProject:
         for r, row in enumerate(self.matrix):
             nr = []
             for c, acre in enumerate(row):
-                nr.append(self.fn[acre](Location(r, c)))  # convenience funcion calling :-)
+                nr.append(self.fn[acre](Location(r, c)))  # convenience function calling :-)
             nm.append(nr)
         if cache:
             self.states.append(self.matrix)

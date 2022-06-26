@@ -21,6 +21,12 @@ python3 -m venv venv
 source "./venv/bin/activate"
 ```
 
+- add the dependencies (one time only)
+
+```shell
+python3 -m pip install -r requirements.txt
+```
+
 # ivonet package
 
 Contains many of the convenience methods / classes and functions I created while

@@ -9,11 +9,11 @@ __license__ = "Apache 2.0"
 import sys
 import unittest
 from pathlib import Path
-from typing import Dict, NamedTuple, Callable
+from typing import Dict, Callable
 from typing import TypeVar
 
 from ivonet.files import read_int_matrix
-from ivonet.grid import neighbors_defined_grid
+from ivonet.grid import neighbors_defined_grid, Location
 from ivonet.iter import ints
 from ivonet.search import astar
 
@@ -22,13 +22,8 @@ sys.dont_write_bytecode = True
 T = TypeVar('T')
 
 
-class MazeLocation(NamedTuple):
-    row: int
-    col: int
-
-
-def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
-    def distance(ml: MazeLocation) -> float:
+def manhattan_distance(goal: Location) -> Callable[[Location], float]:
+    def distance(ml: Location) -> float:
         xdist: int = abs(ml.col - goal.col)
         ydist: int = abs(ml.row - goal.row)
         return xdist + ydist
@@ -36,59 +31,59 @@ def manhattan_distance(goal: MazeLocation) -> Callable[[MazeLocation], float]:
     return distance
 
 
-def is_goal(goal: MazeLocation) -> Callable[[MazeLocation], bool]:
-    def reached(current: MazeLocation) -> bool:
+def is_goal(goal: Location) -> Callable[[Location], bool]:
+    def reached(current: Location) -> bool:
         return current == goal
 
     return reached
 
 
-def adjoining(height, width) -> Callable[[MazeLocation], list[MazeLocation]]:
-    def adjacent(ml: MazeLocation) -> list[MazeLocation]:
-        nb = [MazeLocation(r, c) for r, c in
-              neighbors_defined_grid((ml.row, ml.col), grid=(width, height), diagonal=False)]
+def adjoining(height, width) -> Callable[[Location], list[Location]]:
+    def adjacent(ml: Location) -> list[Location]:
+        nb = [Location(r, c) for r, c in
+              neighbors_defined_grid(Location(ml.row, ml.col), grid=(width, height), diagonal=False)]
         return nb
 
     return adjacent
 
 
-def cost_calculator(risks: Dict[MazeLocation, int]) -> Callable[[MazeLocation], int]:
-    def get_cost(ml: MazeLocation) -> int:
+def cost_calculator(risks: Dict[Location, int]) -> Callable[[Location], int]:
+    def get_cost(ml: Location) -> int:
         return risks[ml]
 
     return get_cost
 
 
-def make_risk_map(grid: list[list[int]]) -> Dict[MazeLocation, int]:
-    risks: Dict[MazeLocation, int] = {}
+def make_risk_map(grid: list[list[int]]) -> Dict[Location, int]:
+    risks: Dict[Location, int] = {}
     for r, row in enumerate(grid):
         for c, risk in enumerate(row):
-            risks[MazeLocation(r, c)] = risk
+            risks[Location(r, c)] = risk
     return risks
 
 
-def make_extended_risk_map(risks: Dict[MazeLocation, int], width, height) -> Dict[MazeLocation, int]:
-    expanded_risks: Dict[MazeLocation, int] = {}
+def make_extended_risk_map(risks: Dict[Location, int], width, height) -> Dict[Location, int]:
+    expanded_risks: Dict[Location, int] = {}
     for k, v in risks.items():
         for r in range(5):
             for c in range(5):
                 increase = r + c
                 value = 1 + (v + increase - 1) % 9
-                expanded_risks[MazeLocation(k.row + r * height, k.col + c * width)] = value
+                expanded_risks[Location(k.row + r * height, k.col + c * width)] = value
     return expanded_risks
 
 
 def part_1(source):
     rows = len(source)
     cols = len(source[0])
-    start = MazeLocation(0, 0)
-    goal = MazeLocation(rows - 1, cols - 1)
+    start = Location(0, 0)
+    goal = Location(rows - 1, cols - 1)
     risks = make_risk_map(source)
     solution = astar(start,  # start at the start
                      is_goal(goal),  # callback function to see if the end goal has been reached
-                     adjoining(rows, cols),  # callback to get all the relevant neighbors of a MazeLocation
+                     adjoining(rows, cols),  # callback to get all the relevant neighbors of a Location
                      manhattan_distance(goal),  # No diagonals allowed so the Manhattan distance calculator callback
-                     cost_calculator(risks))  # the cost of going a direction based on the Chiton risk per MazeLocation
+                     cost_calculator(risks))  # the cost of going a direction based on the Chiton risk per Location
     if solution:
         # print(solution)
         # print(node_to_path(solution))
@@ -99,10 +94,10 @@ def part_1(source):
 def part_2(source):
     rows = len(source)
     cols = len(source[0])
-    start = MazeLocation(0, 0)
+    start = Location(0, 0)
     new_height = rows * 5
     new_width = cols * 5
-    goal = MazeLocation(new_height - 1, new_width - 1)
+    goal = Location(new_height - 1, new_width - 1)
     risks = make_extended_risk_map(make_risk_map(source), rows, cols)
     solution = astar(start,
                      is_goal(goal),

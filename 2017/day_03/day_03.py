@@ -17,10 +17,9 @@ import sys
 import unittest
 from math import sqrt, ceil
 from pathlib import Path
-from typing import NamedTuple
 
 from ivonet.files import read_data
-from ivonet.grid import neighbor_values
+from ivonet.grid import neighbor_values, Location
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -50,7 +49,7 @@ def spiral(width, height, sum_neigbors=False, check_value=325489):
         if not sum_neigbors:
             matrix[y][x] = count  # visit
         else:
-            nb = sum(x for x in neighbor_values(matrix, (y, x)) if x is not None)
+            nb = sum(x for x in neighbor_values(matrix, Location(y, x)) if x is not None)
             matrix[y][x] = nb if count > 1 else 1
             if nb > check_value:
                 return matrix, nb, count
@@ -74,12 +73,7 @@ def print_matrix(matrix):
         print(" ".join("_" * width if el is None else fmt.format(el) for el in row))
 
 
-class MazeLocation(NamedTuple):
-    row: int
-    col: int
-
-
-def manhattan_distance(start: MazeLocation, goal: MazeLocation) -> float:
+def manhattan_distance(start: Location, goal: Location) -> float:
     xdist: int = abs(start.col - goal.col)
     ydist: int = abs(start.row - goal.row)
     return xdist + ydist
@@ -97,9 +91,9 @@ def part_1(source):
     goal = None
     for h, row in enumerate(matrix):
         if nr in row:
-            start = MazeLocation(h, row.index(nr))
+            start = Location(h, row.index(nr))
         if 1 in row:
-            goal = MazeLocation(h, row.index(1))
+            goal = Location(h, row.index(1))
     _(start, goal)
     return manhattan_distance(start, goal)
 

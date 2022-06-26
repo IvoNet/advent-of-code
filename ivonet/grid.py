@@ -51,7 +51,7 @@ def neighbors(grid: list[list[any]], coord: Location, diagonal=True) -> list[Loc
     if not diagonal:
         nb = [v for k, v in DIRECTIONS.items() if k in list("NESW")]
     for loc in nb:
-        pos = current + loc
+        pos: Location = current + loc
         if pos.row < 0 or pos.row > height or pos.col < 0 or pos.col > width:
             # not within its boundaries
             continue
