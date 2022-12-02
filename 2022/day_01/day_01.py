@@ -8,10 +8,9 @@ __license__ = "Apache 2.0"
 __doc__ = """"""
 
 import os
+import sys
 import unittest
 from pathlib import Path
-
-import sys
 
 from ivonet.files import read_data, read_ints
 from ivonet.iter import ints
@@ -66,13 +65,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(24000, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(70374, part_1(self.source))
+        self.assertEqual(70369, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(45000, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(204610, part_2(self.source))
+        self.assertEqual(203002, part_2(self.source))
 
 
 if __name__ == '__main__':
