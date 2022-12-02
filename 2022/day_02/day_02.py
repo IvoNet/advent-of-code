@@ -27,8 +27,45 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+ROCK = 1
+PAPER = 2
+SCISSORS = 3
+
+shape = {
+    "A": ROCK,
+    "B": PAPER,
+    "C": SCISSORS,
+    "X": ROCK,
+    "Y": PAPER,
+    "Z": SCISSORS,
+}
+
+rules_from_your_pov = {
+    (ROCK, ROCK): "draw",
+    (ROCK, PAPER): "win",
+    (ROCK, SCISSORS): "loss",
+    (PAPER, PAPER): "draw",
+    (PAPER, ROCK): "loss",
+    (PAPER, SCISSORS): "win",
+    (SCISSORS, SCISSORS): "draw",
+    (SCISSORS, ROCK): "win",
+    (SCISSORS, PAPER): "loss",
+}
+
+state = {
+    "win": 6,
+    "draw": 3,
+    "loss": 0,
+}
+
+
+def rock_paper_scissors(source):
+    return sum(
+        [sum((state[rules_from_your_pov[(shape[a], shape[b])]], shape[b])) for a, b in [x.split(" ") for x in source]])
+
+
 def part_1(source):
-    return None
+    return rock_paper_scissors(source)
 
 
 def part_2(source):
@@ -42,13 +79,15 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows("""A Y
+B X
+C Z""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(15, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(8933, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
