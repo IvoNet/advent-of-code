@@ -61,29 +61,19 @@ state = {
 circle = [ROCK, PAPER, SCISSORS]
 
 
-def calc_rps(opponent, you) -> int:
-    plusminus = 0
-    if you == "X":  # lose
-        plusminus = -1
-    if you == "Z":  # win
-        plusminus = 1
-    return circle[(circle.index(shape[opponent]) + plusminus) % 3]
-
-
-def rock_paper_scissors(source):
-    return sum(
-        [sum((state[rules_from_your_pov[(shape[a], shape[b])]], shape[b])) for a, b in [x.split(" ") for x in source]])
+def counter_move(opponent, you) -> int:
+    """Calculate the counter move for the opponent"""
+    return circle[(circle.index(shape[opponent]) + [-1 if you == "X" else 1 if you == "Z" else 0][0]) % 3]
 
 
 def part_1(source):
-    return rock_paper_scissors(source)
+    return sum([sum((state[rules_from_your_pov[(shape[a], shape[b])]], shape[b])) for a, b in source])
 
 
 def part_2(source):
     score = 0
-    for opponent, you in [x.split(" ") for x in source]:
-        move = calc_rps(opponent, you)
-        _(move)
+    for opponent, you in source:
+        move = counter_move(opponent, you)
         score += state[rules_from_your_pov[shape[opponent], move]] + move
     return score
 
@@ -94,10 +84,10 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""A Y
+        self.source = [x.split(" ") for x in read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")]
+        self.test_source = [x.split(" ") for x in read_rows("""A Y
 B X
-C Z""")
+C Z""")]
 
     def test_example_data_part_1(self):
         self.assertEqual(15, part_1(self.test_source))
