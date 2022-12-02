@@ -13,7 +13,7 @@ from pathlib import Path
 
 import sys
 
-from ivonet.files import read_rows
+from ivonet.files import read_data, read_ints
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
@@ -27,12 +27,17 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+def sum_foods(source) -> list[int]:
+    return [sum(read_ints(calories)) for calories in source.split("\n\n")]
+
+
 def part_1(source):
-    return None
+    return max(sum_foods(source))
 
 
 def part_2(source):
-    return None
+    foods = sorted(sum_foods(source))
+    return sum(foods[-3:])
 
 
 class UnitTests(unittest.TestCase):
@@ -41,20 +46,33 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_data("""1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(24000, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(70374, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(45000, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(204610, part_2(self.source))
 
 
 if __name__ == '__main__':
