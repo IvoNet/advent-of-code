@@ -43,6 +43,25 @@ it will:
 - now the ivonet package is accessible from all the years when running in the
   virtual environment.
 
+# `.session` file
+
+in order to download the input data from the adventofcode.com site you need to login in a browser
+and get the session information from that browser.
+
+- go into developer tools
+- go to the network tab
+- go to the `adventofcode.com` site
+- Look for a cookie called `session`
+- copy the value of that cookie (only the value)
+- create a file called `.session` in the root of this project
+- paste the value of the cookie in that file
+- now the `aoc_input.py` script will be able to download the input data for you.
+
+```shell
+# python ./aoc_input.py <YEAR> <DAY>
+python ./aoc_input.py 2022 1
+```
+
 # What is completed...
 
 ## 2021
