@@ -61,13 +61,13 @@ state = {
 circle = [ROCK, PAPER, SCISSORS]
 
 
-def calc_rps(opponent, you) -> tuple[int, int]:
+def calc_rps(opponent, you) -> int:
     plusminus = 0
     if you == "X":  # lose
         plusminus = -1
     if you == "Z":  # win
         plusminus = 1
-    return shape[opponent], circle[(circle.index(shape[opponent]) + plusminus) % 3]
+    return circle[(circle.index(shape[opponent]) + plusminus) % 3]
 
 
 def rock_paper_scissors(source):
@@ -82,9 +82,9 @@ def part_1(source):
 def part_2(source):
     score = 0
     for opponent, you in [x.split(" ") for x in source]:
-        rps = calc_rps(opponent, you)
-        _(rps)
-        score += state[rules_from_your_pov[rps]] + rps[1]
+        move = calc_rps(opponent, you)
+        _(move)
+        score += state[rules_from_your_pov[shape[opponent], move]] + move
     return score
 
 
