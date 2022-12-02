@@ -18,7 +18,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -58,6 +58,17 @@ state = {
     "loss": 0,
 }
 
+circle = [ROCK, PAPER, SCISSORS]
+
+
+def calc_rps(opponent, you) -> tuple[int, int]:
+    plusminus = 0
+    if you == "X":  # lose
+        plusminus = -1
+    if you == "Z":  # win
+        plusminus = 1
+    return shape[opponent], circle[(circle.index(shape[opponent]) + plusminus) % 3]
+
 
 def rock_paper_scissors(source):
     return sum(
@@ -69,7 +80,12 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    score = 0
+    for opponent, you in [x.split(" ") for x in source]:
+        rps = calc_rps(opponent, you)
+        _(rps)
+        score += state[rules_from_your_pov[rps]] + rps[1]
+    return score
 
 
 class UnitTests(unittest.TestCase):
@@ -90,10 +106,10 @@ C Z""")
         self.assertEqual(8933, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(12, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(11998, part_2(self.source))
 
 
 if __name__ == '__main__':
