@@ -32,8 +32,8 @@ def _(*args, end="\n"):
 
 def part_1(source):
     priority = 0
-    for x in source:
-        for char in common_elements(groupify(x, len(x) // 2)):
+    for line in source:
+        for char in common_elements(groupify(line, len(line) // 2)):
             priority += letters.index(char) + 1
     return priority
 
