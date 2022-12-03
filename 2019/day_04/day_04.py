@@ -34,14 +34,15 @@ def is_valid_password(password: int, simple=True) -> bool:
     for digit in digits[1:]:
         if digit < current:
             return False
-        elif digit > current:
-            if not simple and adjacent == 2:
+        if not double:
+            if digit == current:
+                adjacent += 1
+            if digit > current:
+                if not simple and adjacent == 2:
+                    double = True
+                adjacent = 1
+            if simple and adjacent >= 2:
                 double = True
-            adjacent = 1
-        else:
-            adjacent += 1
-        if simple and adjacent >= 2:
-            double = True
         current = digit
     return double or (not simple and adjacent == 2)
 
