@@ -7,21 +7,21 @@ __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """"""
 
+import math
 import os
 import sys
 import unittest
 from pathlib import Path
-from typing import Callable
 
 from ivonet.files import read_rows
-from ivonet.grid import Location
+from ivonet.grid import Location, manhattan_distance
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
 DEBUG = True
 
-directions = {
+DIRECTIONS = {
     "U": Location(0, 1),
     "D": Location(0, -1),
     "L": Location(-1, 0),
@@ -35,42 +35,34 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def manhattan_distance(goal: Location) -> Callable[[Location], float]:
-    def distance(ml: Location) -> float:
-        xdist: int = abs(ml.col - goal.col)
-        ydist: int = abs(ml.row - goal.row)
-        return xdist + ydist
-
-    return distance
-
-
-# def in_between(loc1: Location, loc2: Location) -> list[Location]:
-#     """Returns all locations in between the two locations"""
-#     return [Location(row=r, col=c) for r in rangei(loc1.row, loc2.row, -1 if loc1.row > loc2.row else 1) for c in
-#             rangei(loc1.col, loc2.col, -1 if loc1.row > loc2.row else 1)]
-
-
-def parse(value: str, delimiter: str = ",") -> set[Location]:
+def parse(value: str, delimiter: str = ",") -> list[Location]:
     """Parse the input into a list of lists of strings and ints"""
-    dirs = [(directions[x[0]], int(x[1:])) for x in value.split(delimiter)]
     base = Location(0, 0)
     all_locations = []
-    for location, times in dirs:
+    for location, times in [(DIRECTIONS[x[0]], int(x[1:])) for x in value.split(delimiter)]:
         for __ in range(times):
             base += location
             all_locations.append(base)
-    return set(all_locations)
+    return all_locations
 
 
 def part_1(source):
     md = manhattan_distance(Location(0, 0))
     line1 = parse(source[0])
     line2 = parse(source[1])
-    return min(md(x) for x in line1.intersection(line2))
+    return min(md(x) for x in set(line1).intersection(line2))
 
 
 def part_2(source):
-    return None
+    line1 = parse(source[0])
+    line2 = parse(source[1])
+    intersections = set(line1).intersection(line2)
+    current = math.inf
+    for intersection in intersections:
+        steps1 = line1.index(intersection) + 1
+        steps2 = line2.index(intersection) + 1
+        current = min(current, steps1 + steps2)
+    return current
 
 
 class UnitTests(unittest.TestCase):
@@ -96,10 +88,12 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7""")
         self.assertEqual(403, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(30, part_2(self.test_source))
+        self.assertEqual(610, part_2(self.test_source2))
+        self.assertEqual(410, part_2(self.test_source3))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(4158, part_2(self.source))
 
 
 if __name__ == '__main__':

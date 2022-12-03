@@ -7,7 +7,7 @@ __license__ = "Apache 2.0"
 from collections import defaultdict
 from enum import Enum
 from itertools import product
-from typing import NamedTuple
+from typing import NamedTuple, Callable
 
 from ivonet.iter import flatten, max_idx
 
@@ -36,6 +36,17 @@ DIRECTIONS = {
     "W": Location(0, -1),
     "NW": Location(-1, -1),
 }
+
+
+def manhattan_distance(goal: Location) -> Callable[[Location], float]:
+    """https://en.wikipedia.org/wiki/Taxicab_geometry"""
+
+    def distance(ml: Location) -> float:
+        xdist: int = abs(ml.col - goal.col)
+        ydist: int = abs(ml.row - goal.row)
+        return xdist + ydist
+
+    return distance
 
 
 def neighbors(grid: list[list[any]], coord: Location, diagonal=True) -> list[Location]:
