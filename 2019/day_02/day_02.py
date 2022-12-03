@@ -17,7 +17,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 ADD = 1
 MULTIPLY = 2
@@ -30,27 +30,69 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
-def program(source):
-    for instruction in range(0, len(source), 4):
-        opcode, left, right, position = source[instruction:instruction + 4]
+class IntCodeComputer(object):
+    INSTRUCTIONS = {
+        ADD: lambda left, right: left + right,
+        MULTIPLY: lambda left, right: left * right,
+    }
+
+    def __init__(self, source, noun=None, verb=None) -> None:
+        self.source = source.copy()
+        self.noun = noun
+        self.verb = verb
+        self.halt = False
+        self.instruction_pointer = 0
+        self.memory = None
+        self.reset(self.noun, self.verb)
+
+    def run(self) -> IntCodeComputer:
+        while not self.halt:
+            self.step()
+        return self
+
+    def step(self):
+        opcode = self.address(self.instruction_pointer)
         if opcode == HALT:
-            break
-        if opcode == ADD:
-            source[position] = source[left] + source[right]
-        if opcode == MULTIPLY:
-            source[position] = source[left] * source[right]
-        _(source)
-    return source[0]
+            self.halt = True
+            self.instruction_pointer += 1
+            return
+        left = self.memory[self.memory[self.instruction_pointer + 1]]
+        right = self.memory[self.memory[self.instruction_pointer + 2]]
+        position = self.memory[self.instruction_pointer + 3]
+        self.memory[position] = IntCodeComputer.INSTRUCTIONS[opcode](left, right)
+        self.instruction_pointer += 4
+
+    def address(self, position: int, indexed=0) -> int:
+        return self.memory[position - indexed]
+
+    def match(self, value: int, noun: int, verb: int) -> bool:
+        try:
+            self.reset(noun, verb).run()
+        except KeyError:
+            return False
+        return self.memory[0] == value
+
+    def reset(self, noun=None, verb=None) -> IntCodeComputer:
+        self.memory = self.source.copy()
+        self.instruction_pointer = 0
+        self.halt = False
+        self.memory[1] = noun if noun is not None else self.memory[1]
+        self.memory[2] = verb if verb is not None else self.memory[2]
+        return self
 
 
 def part_1(source):
-    source[1] = 12
-    source[2] = 2
-    return program(source)
+    return IntCodeComputer(source, noun=12, verb=2).run().address(0)
 
 
-def part_2(source):
-    return None
+def part_2(source, value=19690720):
+    intcode = IntCodeComputer(source)
+    for noun in range(100 if len(source) > 100 else len(source)):
+        for verb in range(100 if len(source) > 100 else len(source)):
+            if intcode.match(value, noun, verb):
+                _(noun, verb)
+                return 100 * noun + verb
+    raise ValueError("No match found")
 
 
 class UnitTests(unittest.TestCase):
@@ -67,20 +109,20 @@ class UnitTests(unittest.TestCase):
         self.test_source5 = read_ints("""1,1,1,4,99,5,6,0,99,0,0,0""", delimiter=",")
 
     def test_example_data_part_1(self):
-        self.assertEqual(3500, program(self.test_source))
-        self.assertEqual(2, program(self.test_source2))
-        self.assertEqual(2, program(self.test_source3))
-        self.assertEqual(2, program(self.test_source4))
-        self.assertEqual(30, program(self.test_source5))
+        self.assertEqual(3500, IntCodeComputer(self.test_source).run().address(0))
+        self.assertEqual(2, IntCodeComputer(self.test_source2).run().address(0))
+        self.assertEqual(2, IntCodeComputer(self.test_source3).run().address(0))
+        self.assertEqual(2, IntCodeComputer(self.test_source4).run().address(0))
+        self.assertEqual(30, IntCodeComputer(self.test_source5).run().address(0))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(10566835, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertTrue(1202, part_2(self.source, 10566835))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(2347, part_2(self.source))
 
 
 if __name__ == '__main__':
