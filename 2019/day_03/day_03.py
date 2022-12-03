@@ -50,7 +50,7 @@ def manhattan_distance(goal: Location) -> Callable[[Location], float]:
 #             rangei(loc1.col, loc2.col, -1 if loc1.row > loc2.row else 1)]
 
 
-def parse(value: str, delimiter: str = ",") -> list[Location]:
+def parse(value: str, delimiter: str = ",") -> set[Location]:
     """Parse the input into a list of lists of strings and ints"""
     dirs = [(directions[x[0]], int(x[1:])) for x in value.split(delimiter)]
     base = Location(0, 0)
@@ -59,14 +59,14 @@ def parse(value: str, delimiter: str = ",") -> list[Location]:
         for __ in range(times):
             base += location
             all_locations.append(base)
-    return list(set(all_locations))
+    return set(all_locations)
 
 
 def part_1(source):
     md = manhattan_distance(Location(0, 0))
     line1 = parse(source[0])
     line2 = parse(source[1])
-    return min(md(x) for x in line1 if x in line2)
+    return min(md(x) for x in line1.intersection(line2))
 
 
 def part_2(source):
@@ -93,7 +93,7 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7""")
         self.assertEqual(135, part_1(self.test_source3))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(403, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
