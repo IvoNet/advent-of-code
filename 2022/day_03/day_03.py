@@ -12,14 +12,16 @@ import sys
 import unittest
 from pathlib import Path
 
+from ivonet.alphabet import alphabet
 from ivonet.files import read_rows
-from ivonet.iter import ints
+from ivonet.iter import ints, groupify
+from ivonet.str import common_elements
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
-alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+letters = alphabet() + alphabet(True)
 
 
 # noinspection DuplicatedCode
@@ -31,21 +33,17 @@ def _(*args, end="\n"):
 def part_1(source):
     priority = 0
     for x in source:
-        middle = len(x) // 2
-        common_chars = list(set(x[middle:]) & set(x[:middle]))
-        for char in common_chars:
-            priority += alphabet.index(char) + 1
-        _(common_chars)
+        for char in common_elements(groupify(x, len(x) // 2)):
+            priority += letters.index(char) + 1
     return priority
 
 
 def part_2(source):
-    groups = zip(*(iter(source),) * 3)
+    groups = groupify(source, 3)
     priority = 0
     for group in groups:
-        common_chars = list(set(group[0]) & set(group[1]) & set(group[2]))
-        for char in common_chars:
-            priority += alphabet.index(char) + 1
+        for char in common_elements(group):
+            priority += letters.index(char) + 1
     return priority
 
 

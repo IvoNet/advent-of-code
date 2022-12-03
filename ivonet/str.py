@@ -167,6 +167,14 @@ def str_minus_len(s1, s2):
     return len(str_minus_str(s1, s2))
 
 
+def common_elements(interable) -> list:
+    """return the common elements of a list of iterables
+    >>> common_elements([range(10), range(5, 15), range(8, 18)])
+    [8, 9]
+    """
+    return list(set.intersection(*map(set, interable)))
+
+
 def read_european_number(european_number):
     """Transform a European number into a float."""
     try:

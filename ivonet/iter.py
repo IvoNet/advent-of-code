@@ -157,6 +157,33 @@ def dictify(iterable):
     return ret
 
 
+def groupify(iterable, group_size: int = 2) -> list[list]:
+    """Groupify a string into a list of chunk length sizes
+
+    >>> groupify("abcdefghijklmnopqrstuvwxyz", 5)
+    ['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy', 'z']
+    >>> groupify("(){}[]<>")
+    ['()', '{}', '[]', '<>']
+    >>> groupify(list("(){}[]<>"))
+    [['(', ')'], ['{', '}'], ['[', ']'], ['<', '>']]
+    """
+    #
+    return [iterable[i:i + group_size] for i in range(0, len(iterable), group_size)]
+
+
+def groupify_as_lists(iterable, group_size: int = 2) -> list[list]:
+    """Groupify a string into a list of chunk length sizes
+
+    >>> groupify_as_lists("abcdefghijklmnopqrstuvwxyz", 5)
+    [('a', 'b', 'c', 'd', 'e'), ('f', 'g', 'h', 'i', 'j'), ('k', 'l', 'm', 'n', 'o'), ('p', 'q', 'r', 's', 't'), ('u', 'v', 'w', 'x', 'y')]
+    >>> groupify_as_lists("(){}[]<>")
+    [('(', ')'), ('{', '}'), ('[', ']'), ('<', '>')]
+    >>> groupify_as_lists(list("(){}[]<>"))
+    [('(', ')'), ('{', '}'), ('[', ']'), ('<', '>')]
+    """
+    return list(zip(*(iter(iterable),) * group_size))
+
+
 def multimap(items):
     """Given (key, val) pairs, return {key: [val, ....], ...}.
     >>> multimap([("a", "b"),("a", "c"),("a", "d"),("b", "a"),("b", "c"),])
