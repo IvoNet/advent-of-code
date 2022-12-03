@@ -11,7 +11,7 @@ import sys
 import unittest
 from collections import defaultdict
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Callable
 
 from ivonet.files import read_data
 from ivonet.iter import ints
