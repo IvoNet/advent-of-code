@@ -5,7 +5,11 @@ from __future__ import annotations
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+If a part of the code is not part of the gist it is probably 
+code I found reusable and I may have moved it to my 'ivonet' library.
+you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
+"""
 
 import os
 import sys
@@ -13,7 +17,7 @@ import unittest
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, groupify, rangei
+from ivonet.iter import ints, groupify, rangei, positive_ints
 
 sys.dont_write_bytecode = True
 
@@ -36,7 +40,7 @@ def expand_group(group):
 def part_1(source):
     full_container = []
     for x in source:
-        group1, group2 = groupify([abs(y) for y in ints(x)], 2)
+        group1, group2 = groupify(positive_ints(x), 2)
         start1, stop1 = group1
         start2, stop2 = group2
         if start1 >= start2 and stop1 <= stop2:
@@ -53,7 +57,7 @@ def part_1(source):
 def part_2(source):
     overlaps = []
     for x in source:
-        group1, group2 = groupify([abs(y) for y in ints(x)], 2)
+        group1, group2 = groupify(positive_ints(x), 2)
         start1, stop1 = group1
         start2, stop2 = group2
         if start2 <= start1 <= stop2 or stop2 >= stop1 >= start2:

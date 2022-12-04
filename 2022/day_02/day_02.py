@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 __author__ = "Ivo Woltring"
-__copyright__ = "Copyright (c) 2021 Ivo Woltring"
+__copyright__ = "Copyright (c) 2023 Ivo Woltring"
 __license__ = "Apache 2.0"
-__doc__ = """"""
+__doc__ = """
+If a part of the code is not part of the gist it is probably 
+code I found reusable and I may have moved it to my 'ivonet' library.
+you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
+"""
 
 import os
 import sys
