@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# convenience script to gistify the current year.
+# Adjust these to your needs
+TITLE="AoC2022"
+YEAR="2022"
+
+if [ -z "$VIRTUAL_ENV" ]; then
+    echo "Please start the virtual env first..."
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "Please provide a day number to gistify..."
+    exit 1
+fi
+
+python ./gistify.py --title "${TITLE}" --year "${YEAR}" --day "$1"

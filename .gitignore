@@ -15,4 +15,4 @@ out
 *.pickle
 .ipynb_checkpoints
 *.output
-.gist
+.gist*
