@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 from __future__ import annotations
-
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2021 Ivo Woltring"
 __license__ = "Apache 2.0"

@@ -19,10 +19,6 @@ sys.dont_write_bytecode = True
 
 DEBUG = False
 
-ADD = 1
-MULTIPLY = 2
-HALT = 99
-
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
@@ -30,7 +26,11 @@ def _(*args, end="\n"):
         print(" ".join(str(x) for x in args), end=end)
 
 
+# noinspection DuplicatedCode
 class IntCodeComputer(object):
+    ADD = 1
+    MULTIPLY = 2
+    HALT = 99
     INSTRUCTIONS = {
         ADD: lambda left, right: left + right,
         MULTIPLY: lambda left, right: left * right,
@@ -52,7 +52,7 @@ class IntCodeComputer(object):
 
     def step(self):
         opcode = self.address(self.instruction_pointer)
-        if opcode == HALT:
+        if opcode == IntCodeComputer.HALT:
             self.halt = True
             self.instruction_pointer += 1
             return
