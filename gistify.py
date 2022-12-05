@@ -59,14 +59,16 @@ def get_aoc_id(title: str) -> str:
 
 def update_gist(gist_id, year, day, verbose=False):
     # noinspection DuplicatedCode
-    filename = f"./{year}/day_{day.zfill(2)}/day_{day.zfill(2)}"
-    with open(f"{filename}.py", "r") as py:
+    filename = f"./{year}/day_{day.zfill(2)}/day_{day.zfill(2)}.py"
+    with open(f"{filename}", "r") as py:
         py_content = py.read()
         if not py_content:
-            raise ValueError(f"File {filename}.py is empty or dose not exist.")
+            raise ValueError(f"File {filename} is empty or dose not exist.")
         output_py_filename = f"{day}_1.py"
         payload = json.dumps({'files': {output_py_filename: {"content": py_content},
-                                        f"{day}_2.py": {"content": f"\n\n__doc__= '''See {output_py_filename}'''"}}})
+                                        f"{day}_2.py":
+                                            {
+                                                "content": f"\n\n__doc__= '''See {output_py_filename} \nor \nhttps://github.com/IvoNet/advent-of-code/tree/master/{year}/day_{day.zfill(2)}/day_{day.zfill(2)}.py'''"}}})
         resp = requests.patch(f"https://api.github.com/gists/{gist_id}",
                               headers=headers("application/vnd.github+json"),
                               data=payload)
