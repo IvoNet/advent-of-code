@@ -43,7 +43,6 @@ def parse_stacks(source):
                 if row[i] != " ":
                     stacks[s + 1].push(row[i])
             except IndexError:
-                _(i, "no more stacks")
                 break
     return stacks
 
@@ -64,11 +63,7 @@ def part_1(source):
         for _ in range(times):
             stacks[to_].push(stacks[from_].pop())
 
-    ret = ""
-    for i in sorted(stacks.keys()):
-        ret += stacks[i].pop()
-
-    return ret
+    return "".join(stacks[i].pop() for i in sorted(stacks.keys()))
 
 
 def part_2(source):
@@ -81,11 +76,7 @@ def part_2(source):
         for _ in range(times):
             stacks[to_].push(temp.pop())
 
-    ret = ""
-    for i in sorted(stacks.keys()):
-        ret += stacks[i].pop()
-
-    return ret
+    return "".join(stacks[i].pop() for i in sorted(stacks.keys()))
 
 
 class UnitTests(unittest.TestCase):
