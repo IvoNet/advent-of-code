@@ -33,25 +33,34 @@ def _(*args, end="\n"):
 
 
 def parse_stacks(source):
+    """parse the gameboard
+    - decide how many stacks there are (last row on the game board)
+    - from the first index every 4th index is a stack entry and if not there are no more stacks in that row
+    - parse every row backwards to get the stacks in the right order
+    """
     rows = source.split("\n")
-    no_stacks = max(ints(rows[-1]))
+    no_of_stacks = max(ints(rows[-1])) * 4
     stacks = defaultdict(Stack)
-    rows = rows[:-1][::-1]
+    rows = rows[:-1][::-1]  # reverse without the last numbered row
     for row in rows:
-        for s, i in enumerate(rangei(1, no_stacks * 4, 4)):
+        for stack, i in enumerate(rangei(1, no_of_stacks, 4), 1):
             try:
                 if row[i] != " ":
-                    stacks[s + 1].push(row[i])
+                    stacks[stack].push(row[i])
             except IndexError:
+                # no more stacks in this row
                 break
     return stacks
 
 
 def parse_moves(source):
+    """As the ints are all in the same order of times, from and to we can just filter out
+    all the ints and ignore the rest"""
     return [ints(x) for x in read_rows(source)]
 
 
 def parse_input(source):
+    """stacks and instructions are separated by a double blank line"""
     stacks, instructions = source.split("\n\n")
     return parse_stacks(stacks), parse_moves(instructions)
 
@@ -67,6 +76,9 @@ def part_1(source):
 
 
 def part_2(source):
+    """I could have used slicing but as I already had the Stack class I used that
+    and an in between stack will make it in the right order again :-)
+    This is NOT an example of the best code out there :-)"""
     stacks, moves = parse_input(source)
 
     for times, from_, to_ in moves:
