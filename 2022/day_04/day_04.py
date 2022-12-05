@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 __author__ = "Ivo Woltring"
-__copyright__ = "Copyright (c) 2021 Ivo Woltring"
+__copyright__ = "Copyright (c) 2022 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
 If a part of the code is not part of the gist it is probably 
