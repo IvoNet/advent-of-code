@@ -9,6 +9,10 @@ __doc__ = """
 If a part of the code is not part of the post it is probably 
 code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
+
+Notes:
+    This is NOT an example of the best code out there. It is just a solution to the problem.
+    It took me more time to parse the "game board" than to solve the puzzle :-)
 """
 
 import os
@@ -78,7 +82,8 @@ def part_1(source):
 def part_2(source):
     """I could have used slicing but as I already had the Stack class I used that
     and an in between stack will make it in the right order again :-)
-    This is NOT an example of the best code out there :-)"""
+
+    """
     stacks, moves = parse_input(source)
 
     for times, from_, to_ in moves:
