@@ -167,7 +167,6 @@ def groupify(iterable, group_size: int = 2) -> list[list]:
     >>> groupify(list("(){}[]<>"))
     [['(', ')'], ['{', '}'], ['[', ']'], ['<', '>']]
     """
-    #
     return [iterable[i:i + group_size] for i in range(0, len(iterable), group_size)]
 
 

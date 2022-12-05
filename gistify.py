@@ -67,8 +67,18 @@ def update_gist(gist_id, year, day, verbose=False):
         output_py_filename = f"{day}_1.py"
         payload = json.dumps({'files': {output_py_filename: {"content": py_content},
                                         f"{day}_2.py":
-                                            {
-                                                "content": f"\n\n__doc__= '''See {output_py_filename} \nor \nhttps://github.com/IvoNet/advent-of-code/tree/master/{year}/day_{day.zfill(2)}/day_{day.zfill(2)}.py'''"}}})
+                                            {"content": f"""# Day {day}
+See:
+
+- the {output_py_filename} code. It contains the code for part 1 and 2.
+- on my github: https://github.com/IvoNet/advent-of-code/tree/master/{year}/day_{day.zfill(2)}
+
+# IvoNet Library
+
+My python library used for AOC can be found here:
+- https://github.com/IvoNet/advent-of-code/tree/master/ivonet
+
+"""}}})
         resp = requests.patch(f"https://api.github.com/gists/{gist_id}",
                               headers=headers("application/vnd.github+json"),
                               data=payload)
