@@ -66,17 +66,22 @@ def update_gist(gist_id, year, day, verbose=False):
             raise ValueError(f"File {filename} is empty or dose not exist.")
         output_py_filename = f"{day}_1.py"
         payload = json.dumps({'files': {output_py_filename: {"content": py_content},
-                                        f"{day}_2.py":
+                                        f"{day}_2.md":
                                             {"content": f"""# Day {day}
-See:
+## Day Solutions:
 
 - the {output_py_filename} code. It contains the code for part 1 and 2.
-- on my github: https://github.com/IvoNet/advent-of-code/tree/master/{year}/day_{day.zfill(2)}
+- [IvoNet GitHub - Day {day}](https://github.com/IvoNet/advent-of-code/tree/master/{year}/day_{day.zfill(2)})
 
-# IvoNet Library
+## IvoNet Library
 
 My python library used for AOC can be found here:
-- https://github.com/IvoNet/advent-of-code/tree/master/ivonet
+- [IvoNet Library](https://github.com/IvoNet/advent-of-code/tree/master/ivonet)
+
+## IvoNet Advent of Code
+
+All my solutions for all the years can be found here:
+- [IvoNet advent-of-code](https://github.com/IvoNet/advent-of-code)
 
 """}}})
         resp = requests.patch(f"https://api.github.com/gists/{gist_id}",
