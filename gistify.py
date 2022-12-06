@@ -75,7 +75,7 @@ def update_gist(gist_id, year, day, verbose=False):
 
 ## IvoNet Library
 
-My python library used for AOC can be found here:
+My python library with reusable code, algorithms and just cool functions I wrote for AOC can be found here:
 - [IvoNet Library](https://github.com/IvoNet/advent-of-code/tree/master/ivonet)
 
 ## IvoNet Advent of Code
