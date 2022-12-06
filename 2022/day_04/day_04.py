@@ -17,24 +17,17 @@ import unittest
 from pathlib import Path
 
 from ivonet.files import read_rows
-from ivonet.iter import ints, groupify, rangei, positive_ints
+from ivonet.iter import ints, groupify, positive_ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
 def _(*args, end="\n"):
     if DEBUG:
         print(" ".join(str(x) for x in args), end=end)
-
-
-def expand_group(group):
-    ret = ""
-    for x in rangei(group[0], group[1]):
-        ret += str(x)
-    return ret
 
 
 def part_1(source):
