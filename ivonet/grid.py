@@ -82,14 +82,14 @@ def neighbor_values(grid: list[list[any]], coord: Location, diagonal=True) -> li
     [9, 8, 5, 6, 7, 8, 9, 8, 9, 2], \
     [8, 7, 6, 7, 8, 9, 6, 7, 8, 9], \
     [9, 8, 9, 9, 9, 6, 5, 6, 7, 8]], Location(2, 6))
-    [9, 4, 9, 8, 8, 9, 6, 7]
+    [4, 9, 8, 7, 6, 9, 8, 9]
     >>> neighbor_values([\
     [2, 1, 9, 9, 9, 4, 3, 2, 1, 0], \
     [3, 9, 8, 7, 8, 9, 4, 9, 2, 1], \
     [9, 8, 5, 6, 7, 8, 9, 8, 9, 2], \
     [8, 7, 6, 7, 8, 9, 6, 7, 8, 9], \
     [9, 8, 9, 9, 9, 6, 5, 6, 7, 8]], Location(0, 1), diagonal=False)
-    [2, 9, 9]
+    [9, 9, 2]
     """
     nb = neighbors(grid, coord, diagonal=diagonal)
     return [grid[h][w] for h, w in nb]
@@ -452,6 +452,74 @@ def max_height(matrix: defaultdict) -> int:
        dict[(x,y)] = value
     """
     return max_idx(list(matrix.keys()), 1) + 1
+
+
+def walk_direction(grid, loc: Location, direction, value=False):  # Note untested yet!
+    """
+    Walks in a direction until it hits a wall or the edge of the grid.
+    :param grid: the grid to walk on
+    :param loc: the location to start walking from
+    :param direction: the direction to walk in
+    :param value: if True return the value at the location
+    :return: a list of locations
+    """
+    r, c = loc
+    if direction == "N":
+        for i in range(r - 1, -1, -1):
+            if value:
+                yield i, c, grid[i][c]
+            else:
+                yield i, c
+    elif direction == "S":
+        for i in range(r + 1, len(grid)):
+            if value:
+                yield i, c, grid[i][c]
+            else:
+                yield i, c
+    elif direction == "E":
+        for i in range(c + 1, len(grid[r])):
+            if value:
+                yield r, i, grid[r][i]
+            else:
+                yield r, i
+    elif direction == "W":
+        for i in range(c - 1, -1, -1):
+            if value:
+                yield r, i, grid[r][i]
+            else:
+                yield r, i
+    elif direction == "NE":
+        for i in range(1, len(grid[r])):
+            if r - i < 0 or c + i >= len(grid[r]):
+                break
+            if value:
+                yield r - i, c + i, grid[r - i][c + i]
+            else:
+                yield r - i, c + i
+    elif direction == "NW":
+        for i in range(1, len(grid[r])):
+            if r - i < 0 or c - i < 0:
+                break
+            if value:
+                yield r - i, c - i, grid[r - i][c - i]
+            else:
+                yield r - i, c - i
+    elif direction == "SE":
+        for i in range(1, len(grid[r])):
+            if r + i >= len(grid) or c + i >= len(grid[r]):
+                break
+            if value:
+                yield r + i, c + i, grid[r + i][c + i]
+            else:
+                yield r + i, c
+    elif direction == "SW":
+        for i in range(1, len(grid[r])):
+            if r + i >= len(grid) or c - i < 0:
+                break
+            if value:
+                yield r + i, c - i, grid[r + i][c - i]
+            else:
+                yield r + i, c - i
 
 
 class Cell(str, Enum):
