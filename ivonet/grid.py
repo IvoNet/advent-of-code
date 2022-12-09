@@ -7,7 +7,7 @@ __license__ = "Apache 2.0"
 from collections import defaultdict
 from enum import Enum
 from itertools import product
-from typing import NamedTuple, Callable, Iterator
+from typing import NamedTuple, Callable
 
 from ivonet.iter import flatten, max_idx
 
@@ -143,7 +143,7 @@ def diagonals(grid: list[list[any]], coord: Location, merged: bool = False) -> l
     return diags
 
 
-def direction(grid: list[list[any]], coord: Location, to: tuple[int, int] = (-1, 1)) -> Iterator[int, int]:
+def direction(grid: list[list[any]], coord: Location, to: tuple[int, int] = (-1, 1)):
     """Direction in a grid based on its starting point and direction.
     """
     vertical, horizontal = to
@@ -161,8 +161,7 @@ def direction(grid: list[list[any]], coord: Location, to: tuple[int, int] = (-1,
         ww += horizontal
 
 
-def nw(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                       Iterator[tuple[tuple[int, int], int]]:
+def nw(grid: list[list[any]], coord: Location, value: bool = False):
     """North-West direction based on coord in the grid
 
     >>> list(nw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(4,4)))
@@ -179,8 +178,7 @@ def nw(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[
             yield x
 
 
-def sw(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                       Iterator[tuple[tuple[int, int], int]]:
+def sw(grid: list[list[any]], coord: Location, value: bool = False):
     """South-West direction based on coord in the grid
 
     >>> list(sw([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(0,4)))
@@ -197,8 +195,7 @@ def sw(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[
             yield x
 
 
-def se(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                       Iterator[tuple[tuple[int, int], int]]:
+def se(grid: list[list[any]], coord: Location, value: bool = False):
     """South-East direction based on coord in the grid
 
     >>> list(se([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(0,0)))
@@ -215,8 +212,7 @@ def se(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[
             yield x
 
 
-def ne(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                       Iterator[tuple[tuple[int, int], int]]:
+def ne(grid: list[list[any]], coord: Location, value: bool = False):
     """Nort-East direction based on coord in the grid
 
     >>> list(ne([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(4,0)))
@@ -233,8 +229,7 @@ def ne(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[
             yield x
 
 
-def north(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                          Iterator[tuple[tuple[int, int], int]]:
+def north(grid: list[list[any]], coord: Location, value: bool = False):
     """Nort direction based on coord in the grid
 
     >>> list(north([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(3,3)))
@@ -251,8 +246,7 @@ def north(grid: list[list[any]], coord: Location, value: bool = False) -> Iterat
             yield x
 
 
-def east(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                         Iterator[tuple[tuple[int, int], int]]:
+def east(grid: list[list[any]], coord: Location, value: bool = False):
     """East direction based on coord in the grid
 
     >>> list(east([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(3,2)))
@@ -269,8 +263,7 @@ def east(grid: list[list[any]], coord: Location, value: bool = False) -> Iterato
             yield x
 
 
-def south(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                          Iterator[tuple[tuple[int, int], int]]:
+def south(grid: list[list[any]], coord: Location, value: bool = False):
     """
     Nort direction based on coord in the grid
 
@@ -288,8 +281,7 @@ def south(grid: list[list[any]], coord: Location, value: bool = False) -> Iterat
             yield x
 
 
-def west(grid: list[list[any]], coord: Location, value: bool = False) -> Iterator[tuple[int, int]] | \
-                                                                         Iterator[tuple[tuple[int, int], int]]:
+def west(grid: list[list[any]], coord: Location, value: bool = False):
     """West direction based on coord in the grid
 
     >>> list(west([[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],[0,1,2,3,4],], Location(3,3)))
