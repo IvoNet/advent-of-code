@@ -15,12 +15,21 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Set, Dict, Any, Optional, Protocol
+from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Any, Optional, Protocol
 
 from ivonet.collection import PriorityQueue, Stack, Queue
 
 T = TypeVar('T')
 C = TypeVar("C", bound="Comparable")
+
+
+def manhattan_distance(goal: Location) -> Callable[[Location], float]:
+    def distance(ml: Location) -> float:
+        xdist: int = abs(ml.col - goal.col)
+        ydist: int = abs(ml.row - goal.row)
+        return xdist + ydist
+
+    return distance
 
 
 def linear_contains(iterable: Iterable[T], key: T) -> bool:
@@ -113,8 +122,9 @@ def node_to_path(node: Node[T]) -> List[T]:
 def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]]) -> Optional[Node[T]]:
     """Breath first search
 
-    See for a nice implementation with performance optimizations and a non standard successors function
+    See for a nice implementation with extra's see:
     - Year 2016 day 11
+    - Year 2022 day 12
     """
     # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
