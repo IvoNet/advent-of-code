@@ -97,7 +97,7 @@ def part_2(source):
     as we already wrote a compare function we can use that to sort the packets,
     but now we have a challenge as I know python can sort by key but
     can it also sort with a compare function? -> YES -> functools.cmp_to_key
-    Note that the indexes are 1 indexed not 0 indexed
+    found a good explanation here: https://learnpython.com/blog/python-custom-sort-function/
     """
     packets = parse(source)
     packs = []
