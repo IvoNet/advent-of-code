@@ -25,9 +25,9 @@ DEBUG = True
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n"):
+def _(*args, end="\n", sep=" "):
     if DEBUG:
-        print(" ".join(str(x) for x in args), end=end)
+        print(sep.join(str(x) for x in args), end=end)
 
 
 def part_1(source):
