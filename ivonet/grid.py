@@ -355,7 +355,7 @@ class Matrix(defaultdict):
         return total
 
     def print(self, end="", sign_on="#", sign_off=" "):
-        print("-" * 50)
+        print("-" * self.width())
         for y in range(self.height()):
             for x in range(self.width()):
                 try:
@@ -363,7 +363,18 @@ class Matrix(defaultdict):
                 except KeyError:
                     print(f"key error x={x}, y={y}")
             print()
-        print("-" * 50)
+        print("-" * self.width())
+
+    def print_sand(self, end="", sign_on="#", sign_off=" ", sign_sand="o"):
+        print("-" * self.width())
+        for y in range(self.height()):
+            for x in range(self.width()):
+                try:
+                    print(sign_on if self[(x, y)] == 1 else sign_sand if self[(x, y)] == 2 else sign_off, end=end)
+                except KeyError:
+                    print(f"key error x={x}, y={y}")
+            print()
+        print("-" * self.width())
 
 
 def create_grid(width, height, initial="0"):
