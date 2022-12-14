@@ -132,7 +132,7 @@ class ReservoirResearch:
             elif p in self.flowing:
                 return '|'
             else:
-                return '.'
+                return ' '
 
         both = self.flowing & self.still
         return '\n'.join(''.join(char(Location(x, y)) for x in rangei(300, 700)) for y in rangei(0, 1600))

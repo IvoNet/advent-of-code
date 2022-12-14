@@ -22,7 +22,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -32,19 +32,23 @@ def _(*args, end="\n", sep=" "):
 
 
 def create_matrix(source):
+    """Create a matrix with the source data.
+    Every line of the source represents a line of rocks in the matrix.
+    The rocks are represented by 1's and the empty spaces with 0's.
+    """
     matrix = Matrix()
     for line in source:
         previous = None
         for dot in line.split(" -> "):
             col, row = ints(dot)
-            if previous is not None:
+            if previous:
                 delta_col = col - previous[0]
                 delta_row = row - previous[1]
                 length = max(abs(delta_col), abs(delta_row))
                 for i in range(length + 1):
                     c = previous[0] + i * (1 if delta_col > 0 else (-1 if delta_col < 0 else 0))
                     r = previous[1] + i * (1 if delta_row > 0 else (-1 if delta_row < 0 else 0))
-                    matrix[(c, r)] = 1
+                    matrix[c, r] = 1
             previous = (col, row)
     return matrix
 
@@ -52,22 +56,21 @@ def create_matrix(source):
 def part_1(source, part2=False):
     matrix = create_matrix(source)
     floor = matrix.max_h + 2
-    for x in range(-100, matrix.max_w + 200):
+    _("floor:", floor)
+    _("max_width:", matrix.max_w)
+    for x in range(0, matrix.max_w + 200):
         matrix[x, floor] = 1
     if DEBUG:
         matrix.print()
     i = 0
-    part_1_done = False
     while True:
         col, row = (500, 0)
         while True:
-            if row + 1 >= floor and not part_1_done:
-                if not part2:
-                    if DEBUG:
-                        matrix.print_sand()
-                    return i
-                part_1_done = True
-            if matrix[(col, row + 1)] == 0:
+            if row + 1 >= floor and not part2:
+                if DEBUG:
+                    matrix.print_sand()
+                return i
+            if matrix[col, row + 1] == 0:
                 row += 1
             elif matrix[col - 1, row + 1] == 0:
                 col -= 1
