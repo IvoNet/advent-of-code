@@ -64,8 +64,7 @@ def part_1(source, part2=False):
             if row + 1 >= floor and not part_1_done:
                 if not part2:
                     if DEBUG:
-                        matrix.print()
-                    matrix.print()
+                        matrix.print_sand()
                     return i
                 part_1_done = True
             if matrix[(col, row + 1)] == 0:
@@ -78,11 +77,11 @@ def part_1(source, part2=False):
                 row += 1
             else:
                 break
-        matrix[(col, row)] = 1
+        matrix[(col, row)] = 2
         i += 1
         if col == 500 and row == 0:
             if DEBUG:
-                matrix.print()
+                matrix.print_sand()
             return i
 
 
