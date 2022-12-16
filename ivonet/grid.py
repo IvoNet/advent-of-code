@@ -25,6 +25,9 @@ class Location(NamedTuple):
     def __mul__(self, other):
         return Location(self.row * other.row, self.col * other.col)
 
+    def __floordiv__(self, other):
+        return Location(self.row // other.row, self.col // other.col)
+
 
 DIRECTIONS = {
     "N": Location(-1, 0),
@@ -38,13 +41,13 @@ DIRECTIONS = {
 }
 
 
-def manhattan_distance(goal: Location) -> Callable[[Location], float]:
+def manhattan_distance(goal: Location) -> Callable[[Location], int]:
     """https://en.wikipedia.org/wiki/Taxicab_geometry"""
 
-    def distance(ml: Location) -> float:
+    def distance(ml: Location) -> int:
         xdist: int = abs(ml.col - goal.col)
         ydist: int = abs(ml.row - goal.row)
-        return xdist + ydist
+        return int(xdist + ydist)
 
     return distance
 

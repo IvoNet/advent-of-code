@@ -23,15 +23,6 @@ T = TypeVar('T')
 C = TypeVar("C", bound="Comparable")
 
 
-def manhattan_distance(goal: Location) -> Callable[[Location], float]:
-    def distance(ml: Location) -> float:
-        xdist: int = abs(ml.col - goal.col)
-        ydist: int = abs(ml.row - goal.row)
-        return xdist + ydist
-
-    return distance
-
-
 def linear_contains(iterable: Iterable[T], key: T) -> bool:
     for item in iterable:
         if item == key:
