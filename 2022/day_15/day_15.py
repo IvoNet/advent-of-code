@@ -72,7 +72,7 @@ def part_2(source, maximum=4000000, frequency=4000000):
             delta_row += 1
             md -= 1
 
-    for answer_row in range(maximum + 1):
+    for answer_row in rangei(0, maximum):
         x_coordinates = row_memory[answer_row]
         if not x_coordinates:
             continue
