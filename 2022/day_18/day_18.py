@@ -62,23 +62,25 @@ class Obsidian:
             (x, y, z - 1)
         }
 
-    def has_outside(self, cube, flood_size=1500):
+    def has_outside(self, cube, flood_size=1500, optimize=True):
         """this one is for part 2 of the puzzle.
         - it is a flood fill algorithm.
         - it is a breadth first search algorithm.
+        - added a bit of memoization to speed it up a lot I solved it without the "optimize" though.
         - note that the flood_size is a bit of a hack to prevent infinite loops.
         - I had to find this out by trial and error (took me 3 tries to get it big enough)
         - the assumption is that a flood fill on the outside can continue indefinitely,
           but on the inside it will be finite.
         - in the end I just made it a very large number.
-        - I had time to tune it a bit more and 1500 proved to be enough
+        - I had time to tune it a bit more and 1500 proved to be enough for my input.
         - I think I can adopt this algorithm to solve it for both parts of the puzzle,
           but I don't wanna :-)
         """
-        if cube in self.outside:
-            return True
-        if cube in self.inside:
-            return False
+        if optimize:
+            if cube in self.outside:
+                return True
+            if cube in self.inside:
+                return False
         explored = set()
         frontier = Queue()
         frontier.push(cube)
@@ -94,8 +96,12 @@ class Obsidian:
             for successor in self.sides(*cube):
                 if successor not in explored:
                     frontier.push(successor)
-        for cube in explored:
-            self.inside.add(cube)
+        if optimize:
+            # hmm all 3 below work but the last one is the most efficient, why is that?
+            # self.inside = self.inside & explored
+            # self.inside.union(explored)
+            for cube in explored:
+                self.inside.add(cube)
         return False
 
     def outside_surface_area(self):
@@ -109,11 +115,11 @@ class Obsidian:
                     surface_area += 1
         return surface_area
 
-    def calc_outside_surface_area(self):
+    def calc_outside_surface_area(self, optimize=True):
         surface_area = 0
         for cube in self.cubes:
             for side in self.sides(*cube):
-                if self.has_outside(side):
+                if self.has_outside(side, optimize=optimize):
                     surface_area += 1
         return surface_area
 
@@ -123,7 +129,7 @@ def part_1(source):
 
 
 def part_2(source):
-    return Obsidian(source).calc_outside_surface_area()
+    return Obsidian(source).calc_outside_surface_area(optimize=True)
 
 
 class UnitTests(unittest.TestCase):
