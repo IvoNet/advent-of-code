@@ -55,7 +55,7 @@ class Tunnelator:
         """Took me ages to come up with a working cost function."""
         cost = {}
         for i, node in enumerate(self.high_pressure_valves):
-            cost[node] = 2 ** i
+            cost[node] = 2 ** i  # Just a power of 2
         return cost
 
     def __extract_high_pressure_valves(self) -> dict[str, int]:
@@ -94,25 +94,25 @@ class Tunnelator:
                     floyd_warhall[i][j] = min(floyd_warhall[i][j], floyd_warhall[i][k] + floyd_warhall[k][j])
         return floyd_warhall
 
-    def traverse(self, start: str, states: dict, time: int = 30, state: int = 0, pressure_released: int = 0) -> \
+    def traverse(self, start: str, results: dict, time: int = 30, state: int = 0, pressure_released: int = 0) -> \
             dict[int, int]:
         """Traverse all the high pressure valves and calculate the pressure release for all of them
         within the given time frame.
         """
-        states[state] = max(states.get(state, 0), pressure_released)
+        results[state] = max(results.get(state, 0), pressure_released)
         for valve in self.high_pressure_valves:
             # _(valve, states)
             time_left = time - self.floyd_warhall[start][valve] - 1
-            if time_left <= 0:
+            if time_left <= 0:  # no time left
                 continue
-            if self.cost[valve] & state:
+            if self.cost[valve] & state:  # already traversed
                 continue
             self.traverse(valve,
-                          states,
+                          results,
                           time_left,
                           state | self.cost[valve],
                           pressure_released + time_left * self.high_pressure_valves[valve])
-        return states
+        return results
 
     def find_highest_pressure_release(self, start: str = 'AA', time: int = 30) -> int:
         explored = self.traverse(start, {}, time=time)
