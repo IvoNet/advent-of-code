@@ -22,7 +22,7 @@ from ivonet.iter import ints, rangei
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -43,6 +43,7 @@ def part_1(source, watch_row=2000000):
             watch_beacon_row.add(beacon.col)
         md = manhattan_distance(sensor)(beacon)
         md_threshold_distance = md - abs(watch_row - sensor.row)
+        _(sensor, beacon, md, md_threshold_distance)
 
         for col in range(sensor.col - md_threshold_distance, sensor.col + md_threshold_distance):
             filled.add(col)
@@ -59,6 +60,7 @@ def part_2(source, maximum=4000000, frequency=4000000):
         sensor = Location(sensor_row, sensor_col)
         beacon = Location(beacon_row, beacon_col)
         md = manhattan_distance(sensor)(beacon)
+        _(sensor, beacon, md)
         delta_row = 0
         while md > 0:
             col_left = max(0, sensor.col - md)
@@ -77,10 +79,6 @@ def part_2(source, maximum=4000000, frequency=4000000):
             continue
         x_coordinates = sorted(x_coordinates)
 
-        if x_coordinates[0][0] != 0:
-            answer_col = 0
-            break
-
         latest = x_coordinates[0][1]
         for x in range(1, len(x_coordinates)):
             if latest >= x_coordinates[x][0] - 1:
@@ -90,6 +88,7 @@ def part_2(source, maximum=4000000, frequency=4000000):
 
         if latest != maximum:
             answer_col = latest + 1
+            _("!", answer_row, answer_col)
             break
     return frequency * answer_col + answer_row
 
