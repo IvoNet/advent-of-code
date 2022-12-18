@@ -14,7 +14,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Optional
 
-from ivonet.collection import Queue
+from ivonet.collection import Queue, PriorityQueue
 from ivonet.search import Node
 
 V = TypeVar('V')  # type of the vertices in the graph
@@ -50,7 +50,7 @@ class WeightedEdge(Edge):
 class Graph(Generic[V]):
     def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
-        self._edges: list[list[Edge]] = [[] for _ in self._vertices]
+        self._edges: list[list[Edge | WeightedEdge]] = [[] for _ in self._vertices]
 
     @property
     def vertex_count(self) -> int:
@@ -68,7 +68,7 @@ class Graph(Generic[V]):
 
     # This is an undirected graph,
     # so we always add edges in both directions
-    def add_edge(self, edge: Edge) -> None:
+    def add_edge(self, edge: Edge | WeightedEdge) -> None:
         self._edges[edge.u].append(edge)
         self._edges[edge.v].append(edge.reversed())
 
@@ -100,11 +100,11 @@ class Graph(Generic[V]):
         return self.neighbors_for_index(self.index_of(vertex))
 
     # Return all of the edges associated with a vertex at some index
-    def edges_for_index(self, index: int) -> list[Edge]:
+    def edges_for_index(self, index: int) -> list[Edge] | list[WeightedEdge]:
         return self._edges[index]
 
     # Lookup the index of a vertex and return its edges (convenience method)
-    def edges_for_vertex(self, vertex: V) -> list[Edge]:
+    def edges_for_vertex(self, vertex: V) -> list[Edge] | list[WeightedEdge]:
         return self.edges_for_index(self.index_of(vertex))
 
     def connected_components(self, initial: V) -> set[V]:
@@ -168,10 +168,53 @@ class WeightedGraph(Generic[V], Graph[V]):
         distance_tuples: list[tuple[V, float]] = []
         for edge in self.edges_for_index(index):
             distance_tuples.append((self.vertex_at(edge.v), edge.weight))
-        return distance_tuples
+        return list(set(distance_tuples))
+
+    def neighbors_for_vertex_with_weights(self, vertex: V) -> list[tuple[V, float]]:
+        return self.neighbors_for_index_with_weights(self.index_of(vertex))
 
     def __str__(self) -> str:
         desc: str = ""
         for i in range(self.vertex_count):
             desc += f"{self.vertex_at(i)} -> {self.neighbors_for_index_with_weights(i)}\n"
         return desc
+
+
+WeightedPath = list[WeightedEdge]
+
+
+def total_weight(wp: WeightedPath) -> float:
+    return sum([e.weight for e in wp])
+
+
+def mst(wg: WeightedGraph[V], start: int = 0) -> Optional[WeightedPath]:
+    if start > (wg.vertex_count - 1) or start < 0:
+        return None
+    result: WeightedPath = []  # holds the final MST
+    pq: PriorityQueue[WeightedEdge] = PriorityQueue()
+    visited: list[bool] = [False] * wg.vertex_count  # where we've been
+
+    def visit(index: int):
+        visited[index] = True  # mark as visited
+        for edge in wg.edges_for_index(index):
+            # add all edges coming from here to pq
+            if not visited[edge.v]:
+                pq.push(edge)
+
+    visit(start)  # the first vertex is where everything begins
+
+    while not pq.empty:  # keep going while there are edges to process
+        edge = pq.pop()
+        if visited[edge.v]:
+            continue  # don't ever revisit
+        # this is the current smallest, so add it to solution
+        result.append(edge)
+        visit(edge.v)  # visit where this connects
+
+    return result
+
+
+def print_weighted_path(wg: WeightedGraph, wp: WeightedPath) -> None:
+    for edge in wp:
+        print(f"{wg.vertex_at(edge.u)} {edge.weight}> {wg.vertex_at(edge.v)}")
+    print(f"Total Weight: {total_weight(wp)}")

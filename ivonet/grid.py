@@ -26,7 +26,25 @@ class Location(NamedTuple):
         return Location(self.row * other.row, self.col * other.col)
 
     def __floordiv__(self, other):
-        return Location(self.row // other.row, self.col // other.col)
+        return Location(self.row // other, self.col // other)
+
+    def __eq__(self, other):
+        return self.row == other.row and self.col == other.col
+
+    def __lt__(self, other):
+        return self.row < other.row and self.col < other.col
+
+    def __gt__(self, other):
+        return self.row > other.row and self.col > other.col
+
+    def __ge__(self, other):
+        return self.row >= other.row and self.col >= other.col
+
+    def __le__(self, other):
+        return self.row <= other.row and self.col <= other.col
+
+    def __iter__(self):
+        return iter([self.row, self.col])
 
 
 DIRECTIONS = {
