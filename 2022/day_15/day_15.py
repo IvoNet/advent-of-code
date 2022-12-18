@@ -81,10 +81,9 @@ def part_2(source, maximum=4000000, frequency=4000000):
 
         latest = x_coordinates[0][1]
         for x in range(1, len(x_coordinates)):
-            if latest >= x_coordinates[x][0] - 1:
-                latest = max(latest, x_coordinates[x][1])
-            else:
+            if latest < x_coordinates[x][0] - 1:
                 break
+            latest = max(latest, x_coordinates[x][1])
 
         if latest != maximum:
             answer_col = latest + 1
