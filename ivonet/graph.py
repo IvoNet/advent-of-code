@@ -83,28 +83,32 @@ class Graph(Generic[V]):
         v: int = self._vertices.index(second)
         self.add_edge_by_indices(u, v)
 
-    # Find the vertex at a specific index
     def vertex_at(self, index: int) -> V:
+        """Return the vertex at the given index"""
         return self._vertices[index]
 
-    # Find the index of a vertex in the graph
+    def at_vertex(self, vertex: V) -> V:
+        """Return the vertex by name"""
+        return self.vertex_at(self.index_of(vertex))
+
     def index_of(self, vertex: V) -> int:
+        """Find the index of a vertex in the graph"""
         return self._vertices.index(vertex)
 
-    # Find the vertices that a vertex at some index is connected to
     def neighbors_for_index(self, index: int) -> list[V]:
+        """Find the vertices that a vertex at some index is connected to"""
         return list(map(self.vertex_at, [e.v for e in self._edges[index]]))
 
-    # Lookup a vertice's index and find its neighbors (convenience method)
     def neighbors_for_vertex(self, vertex: V) -> list[V]:
+        """Lookup a vertice's index and find its neighbors (convenience method)"""
         return self.neighbors_for_index(self.index_of(vertex))
 
-    # Return all of the edges associated with a vertex at some index
     def edges_for_index(self, index: int) -> list[Edge] | list[WeightedEdge]:
+        """Return all of the edges associated with a vertex at some index"""
         return self._edges[index]
 
-    # Lookup the index of a vertex and return its edges (convenience method)
     def edges_for_vertex(self, vertex: V) -> list[Edge] | list[WeightedEdge]:
+        """Lookup the index of a vertex and return its edges (convenience method)"""
         return self.edges_for_index(self.index_of(vertex))
 
     def connected_components(self, initial: V) -> set[V]:
@@ -153,7 +157,7 @@ class Graph(Generic[V]):
 class WeightedGraph(Generic[V], Graph[V]):
     def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
-        self._edges: list[list[WeightedEdge]] = [[] for _ in vertices]
+        self._edges: list[list[WeightedEdge]] = [[] for _ in self._vertices]
 
     def add_edge_by_indices(self, u: int, v: int, weight: float) -> None:
         edge: WeightedEdge = WeightedEdge(u, v, weight)

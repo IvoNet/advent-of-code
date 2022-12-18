@@ -16,3 +16,4 @@ out
 .ipynb_checkpoints
 *.output
 .gist*
+*.zip
