@@ -72,9 +72,8 @@ def part_2(source, maximum=4000000, frequency=4000000):
             delta_row += 1
             md -= 1
 
-    for row in range(maximum + 1):
-        answer_row = row
-        x_coordinates = row_memory[row]
+    for answer_row in range(maximum + 1):
+        x_coordinates = row_memory[answer_row]
         if not x_coordinates:
             continue
         x_coordinates = sorted(x_coordinates)
