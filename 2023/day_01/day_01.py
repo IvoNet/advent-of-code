@@ -22,11 +22,13 @@ import sys
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
+NOT_FOUND = -1
+
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
-DIGITS = {
+WRITTEN = {
     "one": "1",
     "two": "2",
     "three": "3",
@@ -65,23 +67,24 @@ def part_1(source):
 def part_2(source):
     total = 0
     for line in source:
-        numbers = []
-        for d in digits:
-            idx = line.find(d)
-            if idx != -1:
-                numbers.append((idx, d))
-            idx = line.rfind(d)
-            if idx != -1:
-                numbers.append((idx, d))
-        for d, v in DIGITS.items():
-            idx = line.find(d)
-            if idx != -1:
-                numbers.append((idx, v))
-            idx = line.rfind(d)
-            if idx != -1:
-                numbers.append((idx, v))
+        numbers = set()
+        for digit in digits:
+            idx = line.find(digit)
+            if idx != NOT_FOUND:
+                numbers.add((idx, digit))
+            idx = line.rfind(digit)
+            if idx != NOT_FOUND:
+                numbers.add((idx, digit))
+        for digit, value in WRITTEN.items():
+            idx = line.find(digit)
+            if idx != NOT_FOUND:
+                numbers.add((idx, value))
+            idx = line.rfind(digit)
+            if idx != NOT_FOUND:
+                numbers.add((idx, value))
         _(numbers)
-        numbers.sort()
+        numbers = list(numbers)
+        numbers.sort(key=lambda x: x[0])
         _(numbers)
         total += int(f"{numbers[0][1]}{numbers[-1][1]}")
     return total
