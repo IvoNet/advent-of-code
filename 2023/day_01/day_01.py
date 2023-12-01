@@ -12,6 +12,7 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import os
+import re
 import unittest
 from pathlib import Path
 
@@ -31,8 +32,21 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+def combine_first_last_digits(line):
+    digits = re.findall(r'\d', line)
+    if len(digits) >= 2:
+        return int(digits[0] + digits[-1])
+    elif len(digits) == 1:
+        return int(digits[0] + digits[0])
+    else:
+        _("error")
+        return None
+
 def part_1(source):
-    return None
+    total = 0
+    for line in source:
+        total += combine_first_last_digits(line)
+    return total
 
 
 def part_2(source):
@@ -46,13 +60,16 @@ class UnitTests(unittest.TestCase):
             print()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""""")
+        self.test_source = read_rows("""1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(142, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(55712, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
