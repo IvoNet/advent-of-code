@@ -15,6 +15,7 @@ import os
 import re
 import unittest
 from pathlib import Path
+from string import digits
 
 import sys
 
@@ -23,7 +24,19 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
+
+DIGITS = {
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+}
 
 
 # noinspection DuplicatedCode
@@ -39,8 +52,8 @@ def combine_first_last_digits(line):
     elif len(digits) == 1:
         return int(digits[0] + digits[0])
     else:
-        _("error")
-        return None
+        return 0
+
 
 def part_1(source):
     total = 0
@@ -50,7 +63,28 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    total = 0
+    for line in source:
+        numbers = []
+        for d in digits:
+            idx = line.find(d)
+            if idx != -1:
+                numbers.append((idx, d))
+            idx = line.rfind(d)
+            if idx != -1:
+                numbers.append((idx, d))
+        for d, v in DIGITS.items():
+            idx = line.find(d)
+            if idx != -1:
+                numbers.append((idx, v))
+            idx = line.rfind(d)
+            if idx != -1:
+                numbers.append((idx, v))
+        _(numbers)
+        numbers.sort()
+        _(numbers)
+        total += int(f"{numbers[0][1]}{numbers[-1][1]}")
+    return total
 
 
 class UnitTests(unittest.TestCase):
@@ -64,6 +98,14 @@ class UnitTests(unittest.TestCase):
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet""")
+        self.test_source2 = read_rows("""two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen""")
+        self.test_source3 = read_rows("""31onem18pcqkzsrnhqone1""")
 
     def test_example_data_part_1(self):
         self.assertEqual(142, part_1(self.test_source))
@@ -72,10 +114,10 @@ treb7uchet""")
         self.assertEqual(55712, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(281, part_2(self.test_source2))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(55413, part_2(self.source))
 
 
 if __name__ == '__main__':

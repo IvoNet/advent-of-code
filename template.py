@@ -12,9 +12,10 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import os
-import sys
 import unittest
 from pathlib import Path
+
+import sys
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -46,6 +47,7 @@ class UnitTests(unittest.TestCase):
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source = read_rows("""""")
+        self.test_source2 = read_rows("""""")
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))
@@ -54,7 +56,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(None, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(None, part_2(self.test_source2))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
