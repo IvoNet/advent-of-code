@@ -12,9 +12,10 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import os
-import sys
 import unittest
 from pathlib import Path
+
+import sys
 
 from ivonet.files import read_rows
 from ivonet.grid import Matrix
@@ -22,7 +23,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode

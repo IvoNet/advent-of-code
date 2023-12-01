@@ -13,9 +13,10 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import os
 import re
-import sys
 import unittest
 from pathlib import Path
+
+import sys
 
 from ivonet import infinite
 from ivonet.files import read_rows
@@ -41,6 +42,7 @@ class Tunnelator:
         self.high_pressure_valves = self.__extract_high_pressure_valves()
         self.cost = self.__calc_cost()
         self.floyd_warhall = self.__floyd_warhall()
+        self.explored = set()
 
     def __define_groups(self) -> dict[str, list[str]]:
         """Define the groups of nodes that are connected to each other."""
@@ -99,8 +101,11 @@ class Tunnelator:
         """Traverse all the high pressure valves and calculate the pressure release for all of them
         within the given time frame.
         """
+
         results[state] = max(results.get(state, 0), pressure_released)
+
         for valve in self.high_pressure_valves:
+
             # _(valve, states)
             time_left = time - self.floyd_warhall[start][valve] - 1
             if time_left <= 0:  # no time left
@@ -112,6 +117,7 @@ class Tunnelator:
                           time_left,
                           state | self.cost[valve],
                           pressure_released + time_left * self.high_pressure_valves[valve])
+
         return results
 
     def find_highest_pressure_release(self, start: str = 'AA', time: int = 30) -> int:
