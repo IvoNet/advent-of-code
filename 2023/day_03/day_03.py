@@ -57,7 +57,6 @@ def check_neighbor_symbol(pos, sd):
         for a, b in NEIGHBORS:
             if (x + a, y + b) in sd:
                 return True
-
     return False
 
 
@@ -67,7 +66,7 @@ def check_neighbor_gears(gear_cords, number_with_positions):
     for number, positions in number_with_positions:
         for row, col in NEIGHBORS:
             if (xg + row, yg + col) in positions:
-                options.append(int(number))
+                options.append(number)
                 break
     if len(options) == 2:
         return options[0] * options[1]
@@ -83,55 +82,44 @@ def gear_coordinates(source):
     return gears
 
 
-def part_1(source):
-    ans = 0
-    sd = create_matrix(source)
-
-    tmp_nr = ''
-    pos = []
-    for col, line in enumerate(source):
-        if tmp_nr:
-            if check_neighbor_symbol(pos, sd):
-                ans += int(tmp_nr)
-            tmp_nr = ''
-            pos = []
-        for row, character in enumerate(line):
-            if character in SYMBOLS or character == '.':
-                if check_neighbor_symbol(pos, sd):
-                    ans += int(tmp_nr)
-                tmp_nr = ''
-                pos = []
-            if character in digits:
-                tmp_nr += character
-                pos.append((col, row))
-
-    return ans
-
-
-def part_2(source):
-    answer = 0
-    gears = gear_coordinates(source)
-    numbers_with_positions = []
+def number_coordinates(source: list[str]) -> list[tuple[int, list[tuple]]]:
+    """Returns a list of tuples with the number and the coordinates of the number"""
+    numbers_with_positions: list[tuple[str, list[tuple]]] = []
     tmp_nr = ''
     pos = []
     # prepare the number with positions
     for row, line in enumerate(source):
         if tmp_nr:
-            numbers_with_positions.append((tmp_nr, pos))
+            numbers_with_positions.append((int(tmp_nr), pos))
             tmp_nr = ''
             pos = []
         for col, character in enumerate(line):
             if tmp_nr and character not in digits:
-                numbers_with_positions.append((tmp_nr, pos))
+                numbers_with_positions.append((int(tmp_nr), pos))
                 tmp_nr = ''
                 pos = []
             if character in digits:
                 tmp_nr += character
                 pos.append((row, col))
+    return numbers_with_positions
 
-    for gear in gears:
-        answer += check_neighbor_gears(gear, numbers_with_positions)
 
+def part_1(source) -> int:
+    matrix = create_matrix(source)
+    numbers_with_coordinates = number_coordinates(source)
+    answer = 0
+    for number, positions in numbers_with_coordinates:
+        if check_neighbor_symbol(positions, matrix):
+            answer += number
+    return answer
+
+
+def part_2(source) -> int:
+    numbers_with_coordinates = number_coordinates(source)
+    gear_locations = gear_coordinates(source)
+    answer = 0
+    for gear in gear_locations:
+        answer += check_neighbor_gears(gear, numbers_with_coordinates)
     return answer
 
 
