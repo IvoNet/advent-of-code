@@ -20,19 +20,12 @@ from string import digits
 import sys
 
 from ivonet.files import read_rows
+from ivonet.grid import DIRECTIONS, Location
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
-
-SYMBOLS = {'#', '$', '%', '&', '*', '+', '-', '/', '=', '@'}
-
-NEIGHBORS = [
-    (-1, -1), (0, -1), (1, -1),
-    (-1, 0), (1, 0),
-    (-1, 1), (0, 1), (1, 1)
-]
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -41,31 +34,44 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def create_matrix(source, symbols=None):
-    if symbols is None:
-        symbols = SYMBOLS
-    sd = defaultdict(bool)
+def parse_symbols(source):
+    """Returns a list of all the symbols in the grid"""
+    symbols = ""
+    for line in source:
+        for c in line:
+            if c not in digits + '.':
+                symbols += c
+    return symbols
+
+
+def symbol_matrix(source) -> defaultdict:
+    """Returns a matrix of all the symbols in the grid"""
+    matrix: defaultdict = defaultdict(bool)
+    symbols = parse_symbols(source)
     for i, line in enumerate(source):
         for j, c in enumerate(line):
             if c in symbols:
-                sd[(i, j)] = True
-    return sd
+                matrix[Location(i, j)] = True  # faster than list
+    return matrix
 
 
-def check_neighbor_symbol(pos, sd):
-    for x, y in pos:
-        for a, b in NEIGHBORS:
-            if (x + a, y + b) in sd:
+def check_neighbor_to_symbol(positions: list[Location], matrix: defaultdict):
+    """Checks if any of the neighbors of the positions are in the matrix.
+    The idea is that if even one of the coordinates is next to a symbol it is a valid part number."""
+    for pos in positions:
+        for direction in DIRECTIONS.values():
+            if matrix[pos + direction]:
                 return True
     return False
 
 
-def check_neighbor_gears(gear_cords, number_with_positions):
-    options = []
-    xg, yg = gear_cords
+def check_gear(gear: Location,
+               number_with_positions: list[tuple[int, list[Location]]]):
+    """Checks if the gear is next to exactly two numbers and returns the multiplication of those numbers if true"""
+    options: list[int] = []
     for number, positions in number_with_positions:
-        for row, col in NEIGHBORS:
-            if (xg + row, yg + col) in positions:
+        for neighbor in DIRECTIONS.values():
+            if gear + neighbor in positions:
                 options.append(number)
                 break
     if len(options) == 2:
@@ -74,20 +80,20 @@ def check_neighbor_gears(gear_cords, number_with_positions):
 
 
 def gear_coordinates(source):
-    gears = []
+    """Returns a list of all the gears with their coordinates in the grid"""
+    gears: defaultdict = defaultdict(bool)
     for row, line in enumerate(source):
         for col, c in enumerate(line):
             if c == '*':
-                gears.append((row, col))
+                gears[(Location(row, col))] = True  # faster than list
     return gears
 
 
-def number_coordinates(source: list[str]) -> list[tuple[int, list[tuple]]]:
-    """Returns a list of tuples with the number and the coordinates of the number"""
-    numbers_with_positions: list[tuple[str, list[tuple]]] = []
-    tmp_nr = ''
-    pos = []
-    # prepare the number with positions
+def number_coordinates(source: list[str]) -> list[tuple[int, list[Location]]]:
+    """Returns a list of all the numbers with their coordinates in the grid"""
+    numbers_with_positions: list[tuple[int, list[Location]]] = []
+    tmp_nr: str = ''
+    pos: list[Location] = []
     for row, line in enumerate(source):
         if tmp_nr:
             numbers_with_positions.append((int(tmp_nr), pos))
@@ -100,16 +106,16 @@ def number_coordinates(source: list[str]) -> list[tuple[int, list[tuple]]]:
                 pos = []
             if character in digits:
                 tmp_nr += character
-                pos.append((row, col))
+                pos.append(Location(row, col))
     return numbers_with_positions
 
 
 def part_1(source) -> int:
-    matrix = create_matrix(source)
     numbers_with_coordinates = number_coordinates(source)
+    matrix = symbol_matrix(source)
     answer = 0
     for number, positions in numbers_with_coordinates:
-        if check_neighbor_symbol(positions, matrix):
+        if check_neighbor_to_symbol(positions, matrix):
             answer += number
     return answer
 
@@ -119,7 +125,7 @@ def part_2(source) -> int:
     gear_locations = gear_coordinates(source)
     answer = 0
     for gear in gear_locations:
-        answer += check_neighbor_gears(gear, numbers_with_coordinates)
+        answer += check_gear(gear, numbers_with_coordinates)
     return answer
 
 
