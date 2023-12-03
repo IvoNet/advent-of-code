@@ -9,7 +9,7 @@ __doc__ = """
 After solving it the first way I was thinking about it and came to the conclusion that 
 creating a real maze was totally unnessesary as we already have a formula for knowing if 
 we have an open space or not.
-I also already had a function for finding neigbors and doing a bfs search.
+I also already had a function for finding neighbors and doing a bfs search.
 So combining the successors function with the is_empty test and voila a virtual grid.
 
 I still like my first solution a lot more as it can actually print a representation of its state
@@ -20,11 +20,12 @@ The first solution is also more generic except for the fact that I could not inc
 """
 
 import os
-import sys
 import unittest
 from pathlib import Path
 from queue import Queue
 from typing import Optional, Set, NamedTuple, TypeVar
+
+import sys
 
 from ivonet.collection import Queue
 from ivonet.files import read_data
