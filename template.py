@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 __author__ = "Ivo Woltring"
-__copyright__ = "Copyright (c) 2022 Ivo Woltring"
+__copyright__ = "Copyright (c) 2023 Ivo Woltring"
 __license__ = "Apache 2.0"
 __doc__ = """
 If a part of the code is not part of the post it is probably 
@@ -56,7 +56,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(None, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source2))
+        self.assertEqual(None, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
