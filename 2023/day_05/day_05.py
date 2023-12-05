@@ -19,11 +19,11 @@ from pathlib import Path
 
 from ivonet import infinite
 from ivonet.files import read_rows
-from ivonet.iter import ints, lmap
+from ivonet.iter import ints, lmap, chunkify
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -62,11 +62,16 @@ class Almanac(object):
     def convert(self, source, number):
         return self.maps[source].get(number, number)
 
-    def find_min_location(self):
+    def find_min_location(self, seeds=None):
         result = infinite
+        overlap = []
         txt = ""
-        for seed in self.seeds:
-            txt += f"Seed {seed:3d} "
+        seeds = seeds or self.seeds
+        for seed in seeds:
+            if seed in overlap:
+                continue
+            overlap.append(seed)
+            txt += f"Seed {seed} "
             soil = self.find(self.ranges['seed', 'soil'], seed)
             txt += f"-> Soil {soil:3d} "
             fertilizer = self.find(self.ranges['soil', 'fertilizer'], soil)
@@ -87,6 +92,11 @@ class Almanac(object):
             txt = ""
         return result
 
+    def find_range_seeds(self):
+        seeds = [item for sublist in [range(start, start + length - 1) for start, length in chunkify(self.seeds, 2)] for
+                 item in sublist]
+        return self.find_min_location(seeds)
+
 
 def part_1(source):
     almanac = Almanac(source)
@@ -94,7 +104,8 @@ def part_1(source):
 
 
 def part_2(source):
-    return None
+    almanac = Almanac(source)
+    return almanac.find_range_seeds()
 
 
 class UnitTests(unittest.TestCase):
@@ -143,10 +154,10 @@ humidity-to-location map:
         self.assertEqual(35, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(26273516, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(46, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
