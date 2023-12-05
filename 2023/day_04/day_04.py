@@ -12,11 +12,10 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import os
+import sys
 import unittest
 from pathlib import Path
 from queue import Queue
-
-import sys
 
 from ivonet.collection import Queue
 from ivonet.files import read_rows
@@ -43,7 +42,7 @@ def part_1(source):
         card = []
         crd = True
         ret = 0
-        for v in line.strip().split(":")[1].strip().split(" "):
+        for v in line.strip().split(":")[1].strip().split(" "):  # Ignoring the card id
             if v.isdigit() and crd:
                 card.append(int(v))
                 continue
@@ -57,7 +56,6 @@ def part_1(source):
                     else:
                         ret = double_it(ret)
         answer += ret
-
     return answer
 
 
@@ -68,11 +66,11 @@ def part_2(source):
 
     for line in source:
         card_id, numbers = line.split(':')
-        card_id = int(card_id[4:])
-        winner, ours = numbers.split('|')
-        ws = set(winner.split())
-        us = set(ours.split())
-        matches = ws & us
+        card_id = int(card_id[len("Card "):])
+        winner, our = numbers.split('|')
+        winners = set(winner.split())
+        ours = set(our.split())
+        matches = winners & ours
         card_dict[card_id] = len(matches)
         q.push(card_id)
 
