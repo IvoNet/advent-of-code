@@ -14,16 +14,15 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 import os
 import sys
 import unittest
-from collections import defaultdict
 from pathlib import Path
+from typing import NamedTuple
 
-from ivonet import infinite
-from ivonet.files import read_rows
+from ivonet.files import read_rows, read_data
 from ivonet.iter import ints, lmap, chunkify
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -32,80 +31,163 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+class Range(NamedTuple):
+    """
+    Represents a range
+    """
+    destination: int
+    source: int
+    length: int
+
+
+class Seed(NamedTuple):
+    start: int
+    end: int
+
+
 class Almanac(object):
+    """
+    The Almanac is a collection of maps that can be used to transform a seed into a location.
+    The trouble is that the ranges are much too big to iterate over, so we need to find a way to
+    find the location in a more efficient way.
+    """
 
     def __init__(self, source):
-        super().__init__()
-        self.start = "seed"
-        self.seeds = []
-        self.ranges = defaultdict(list)
-        self.lines = self.parse_input(source)
+        """
+        The source is a text containing blocks. The first block is the seeds block and the rest are
+        the maps.
+        :param source:
+        """
+        seeds, *blocks = source.split("\n\n")
+        self.maps = blocks
+        self.seeds = lmap(int, seeds.split(":")[1].split())
 
-    def find(self, ranges, num):
-        res = infinite
-        for dst, src, length in ranges:
-            if src <= num < src + length:
-                res = num - src + dst
-        return res if res != infinite else num
+    @staticmethod
+    def parse_ranges(block) -> list[Range]:
+        """
+        This method parses the ranges for a given block.
+        """
+        ranges = []
+        # skip the first line as it contains the map name, and we do not need it.
+        for line in block.splitlines()[1:]:
+            ranges.append(Range(*lmap(int, line.split())))
+        _(ranges)
+        return ranges
 
-    def parse_input(self, source):
-        for line in source:
-            if line.startswith("seeds:"):
-                self.seeds = lmap(int, line.split(": ")[1].split())
-                continue
-            if "map:" in line:
-                src, dst = line.split(" ")[0].split("-to-")
-                continue
-            if line.strip():
-                self.ranges[src, dst].append(lmap(int, line.split(' ')))
+    def find_nearest_seed_location(self):
+        """
+        This method will find the nearest seed location for the given seed.
+        it does this by iterating over the maps and transforming the seed into a location.
+        - parse the ranges for the map
+        - iterate over the seed locations
+        - iterate over the ranges
+        - if the location is in the range then transform to the new mapping and break
+        - else keep the location as the seed location
 
-    def convert(self, source, number):
-        return self.maps[source].get(number, number)
+        the offset is calculated:
+        e.g. 50 98 2
+        50 is the destination start
+        98 is the source start
+        2 is the length of the ranges
+        so seed 98 corresponds to 50 and 99 corresponds to 51
+        so the offset is 98 - 50 = 48 so the formula is:
+        location - source + destination = offset
+        """
+        locations = self.seeds
+        for block in self.maps:
+            _(block)
+            ranges: list[Range] = self.parse_ranges(block)
+            new_seed: list[Seed] = []
+            for location in locations:
+                for rng in ranges:
+                    if location in range(rng.source, rng.source + rng.length):  # dst <= location <  dst + length:
+                        # transform by calculating the offset
+                        new_seed.append(location - rng.source + rng.destination)
+                        # can be in only one range so
+                        break
+                else:
+                    # no transformation so keep the seed
+                    new_seed.append(location)
+            _(new_seed)
+            locations = new_seed
+        return min(locations)
 
-    def find_min_location(self, seeds=None):
-        result = infinite
-        overlap = []
-        txt = ""
-        seeds = seeds or self.seeds
-        for seed in seeds:
-            if seed in overlap:
-                continue
-            overlap.append(seed)
-            txt += f"Seed {seed} "
-            soil = self.find(self.ranges['seed', 'soil'], seed)
-            txt += f"-> Soil {soil:3d} "
-            fertilizer = self.find(self.ranges['soil', 'fertilizer'], soil)
-            txt += f"-> Fertilizer {fertilizer:3d} "
-            water = self.find(self.ranges['fertilizer', 'water'], fertilizer)
-            txt += f"-> Water {water:3d} "
-            light = self.find(self.ranges['water', 'light'], water)
-            txt += f"-> Light {light:3d} "
-            temperature = self.find(self.ranges['light', 'temperature'], light)
-            txt += f"-> Temperature {temperature:3d} "
-            humidity = self.find(self.ranges['temperature', 'humidity'], temperature)
-            txt += f"-> Humidity {humidity:3d} "
-            location = self.find(self.ranges['humidity', 'location'], humidity)
-            txt += f"-> Location {location:3d} "
-            result = min(result, location)
-            txt += f"-> Result {result:3d} "
-            _(txt)
-            txt = ""
-        return result
+    def find_nearest_ranged_seed_location(self):
+        """
+        This method will find the nearest seed location for the given seed ranges.
+        - first lets split the seeds into ranges and give them a clear start and end
+          transform the seeds into a list of tuples (start, end) instead of a start and a length.
+          so now seeds = [(start, end), (start, end), ...] this is better than creating all the
+          individual seeds as the ranges are way too big.
+        - Trouble is that we can not apply the entire range of the seed to the maps as the ranges as it not
+          guaranteed that it will be in the range. The mappings may not
+          e.g.
+             range_mappings: -------------               ----------------------
+             seed_range:              -------------------------
+                                      ^^^^~~~~~~~~~~~~~~~^^^^^^
+             overlaps (^) and not overlaps (~)
+          so we need to split the seed range into smaller segments to be able to apply the mappings.
+          - the first set of ^^^ will be mapped to the left mapping
+          - the second set of ^^^ will be mapped to the right mapping
+          - the ~~~ will not be mapped
+        - we will do the segmentation by using the seeds as a kind of queue (not a real one) and process seeds
+          as long as we have seeds to process.
+        - we first have to find the overlapping ranges for the seed range and the mapping range.
+          e.g.
+          seed_range:      min_s-------------------------max_s
+          mapping_range:                min_r----------------------max_r
+          overlap:                           ------------
+          so the start of an overlap is the max of the min_s and min_r
+          and the end of an overlap is the min of the max_s and max_r (max_r is the source + length)
+        (this took me ages to figure out)
+        - There is only an overlap if the start of the overlap is smaller than the end of the overlap.
+          if not then there is no overlap, and we can skip the mapping.
+        - if there is a seed before the overlap then we add it to the queue for further processing
+        - if there is a seed after the overlap then we add it to the queue for further processing
+        - and if there was no overlap then we add the seed to the new seeds list as is
+        """
 
-    def find_range_seeds(self):
-        seeds = [item for sublist in [range(start, start + length - 1) for start, length in chunkify(self.seeds, 2)] for
-                 item in sublist]
-        return self.find_min_location(seeds)
+        seeds: list[Seed] = [Seed(start, start + length - 1) for start, length in chunkify(self.seeds, 2)]
+        _(seeds)
+
+        for block in self.maps:
+            _(block)
+            ranges: list[Range] = self.parse_ranges(block)
+            new_seeds: list[Seed] = []
+            while seeds:
+                seed = seeds.pop()
+                _(seed)
+                for r in ranges:
+                    overlap_start = max(seed.start, r.source)
+                    overlap_end = min(seed.end, r.source + r.length)
+                    if overlap_start < overlap_end:  # there is an overlap
+                        # transform by calculating the offset (as in the find_nearest_seed_location method)
+                        new_seeds.append(
+                            Seed(
+                                overlap_start - r.source + r.destination,
+                                overlap_end - r.source + r.destination
+                            )
+                        )
+                        if overlap_end < seed.end:  # there is a seed after the overlap
+                            # add the new seed range to the queue for further processing
+                            seeds.append(Seed(overlap_end, seed.end))
+                        if seed.start < overlap_start:  # there is a seed before the overlap
+                            # add the new seed range to the queue for further processing
+                            seeds.append(Seed(seed.start, overlap_start))
+                        break
+                else:  # no overlap
+                    new_seeds.append(seed)
+            seeds = new_seeds
+
+        return min(seeds)[0]
 
 
 def part_1(source):
-    almanac = Almanac(source)
-    return almanac.find_min_location()
+    return Almanac(source).find_nearest_seed_location()
 
 
 def part_2(source):
-    almanac = Almanac(source)
-    return almanac.find_range_seeds()
+    return Almanac(source).find_nearest_ranged_seed_location()
 
 
 class UnitTests(unittest.TestCase):
@@ -114,8 +196,8 @@ class UnitTests(unittest.TestCase):
         if DEBUG:
             print()
         day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""seeds: 79 14 55 13
+        self.source = read_data(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+        self.test_source = read_data("""seeds: 79 14 55 13
 
 seed-to-soil map:
 50 98 2
@@ -160,7 +242,7 @@ humidity-to-location map:
         self.assertEqual(46, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(34039469, part_2(self.source))
 
 
 if __name__ == '__main__':
