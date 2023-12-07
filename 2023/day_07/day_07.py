@@ -70,22 +70,19 @@ class Hand(object):
     def parse(self):
         for c in self.cards:
             self.type[c].append(c)
-        if self.joker:
-            if "J" in self.type:
-                if len(self.type["J"]) >= 4:
-                    self.hand = (5,)
-                else:
-                    js = len(self.type["J"])
-                    del self.type["J"]
-                    self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
-                    self.hand = tuple(sorted([self.hand[0] + js, *self.hand[1:]], reverse=True))
-                    pass
-            else:
-                self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
-                pass
+        if self.joker and "J" in self.type:
+            self.handle_joker()
         else:
             self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
-        # self.hand = tuple(x for x in self.hand if x != 0)
+
+    def handle_joker(self):
+        joker_count = len(self.type["J"])
+        if len(self.type["J"]) >= 4:
+            self.hand = (5,)
+            return
+        del self.type["J"]
+        self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
+        self.hand = tuple(sorted([self.hand[0] + joker_count, *self.hand[1:]], reverse=True))
 
     def __lt__(self, other):
         if not isinstance(other, Hand):
