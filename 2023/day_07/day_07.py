@@ -57,14 +57,21 @@ class Hand(object):
 
     def __init__(self, cards: str, bid: int, joker: bool = False):
         self.joker = joker
+        if self.joker:
+            self.cmp_cards = self.CARDS_JOKER
+        else:
+            self.cmp_cards = self.CARDS
         self.cards = cards
         self.bid = bid
         self.type = defaultdict(list)
+        self.hand: tuple = ()
+        self.parse()
+
+    def parse(self):
         for c in self.cards:
             self.type[c].append(c)
-        if joker:
-            self.cmp_cards = self.CARDS_JOKER
-            if len(self.type["J"]) > 0:
+        if self.joker:
+            if "J" in self.type:
                 if len(self.type["J"]) >= 4:
                     self.hand = (5,)
                 else:
@@ -72,28 +79,13 @@ class Hand(object):
                     del self.type["J"]
                     self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
                     self.hand = tuple(sorted([self.hand[0] + js, *self.hand[1:]], reverse=True))
+                    pass
             else:
                 self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
+                pass
         else:
-            self.cmp_cards = self.CARDS
             self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
-        self.hand = tuple(x for x in self.hand if x != 0)
-
-    def __repr__(self):
-        return f"Hand: {self.cards}, bid:{self.bid:5d}, strength: {self.STRENGTH[self.hand]}, type: {self.TYPES[self.hand]:15}"
-
-    def __str__(self):
-        return self.__repr__()
-
-    def __eq__(self, other):
-        if not isinstance(other, Hand):
-            return False
-        return self.cards == other.cards
-
-    def __ne__(self, other):
-        if not isinstance(other, Hand):
-            return False
-        return self.cards != other.cards
+        # self.hand = tuple(x for x in self.hand if x != 0)
 
     def __lt__(self, other):
         if not isinstance(other, Hand):
@@ -105,35 +97,8 @@ class Hand(object):
                 return self.cmp_cards.index(self.cards[i]) < self.cmp_cards.index(other.cards[i])
         return self.STRENGTH[self.hand] < self.STRENGTH[other.hand]
 
-    def __le__(self, other):
-        if not isinstance(other, Hand):
-            return False
-        if self.STRENGTH[self.hand] == self.STRENGTH[other.hand]:
-            for i in range(len(self.cards)):
-                if self.cmp_cards.index(self.cards[i]) == self.cmp_cards.index(other.cards[i]):
-                    continue
-                return self.cmp_cards.index(self.cards[i]) <= self.cmp_cards.index(other.cards[i])
-        return self.STRENGTH[self.hand] <= self.STRENGTH[other.hand]
-
-    def __gt__(self, other):
-        if not isinstance(other, Hand):
-            return False
-        if self.STRENGTH[self.hand] == self.STRENGTH[other.hand]:
-            for i in range(len(self.cards)):
-                if self.cmp_cards.index(self.cards[i]) == self.cmp_cards.index(other.cards[i]):
-                    continue
-                return self.cmp_cards.index(self.cards[i]) > self.cmp_cards.index(other.cards[i])
-        return self.STRENGTH[self.hand] > self.STRENGTH[other.hand]
-
-    def __ge__(self, other):
-        if not isinstance(other, Hand):
-            return False
-        if self.STRENGTH[self.hand] == self.STRENGTH[other.hand]:
-            for i in range(len(self.cards)):
-                if self.cmp_cards.index(self.cards[i]) == self.cmp_cards.index(other.cards[i]):
-                    continue
-                return self.cmp_cards.index(self.cards[i]) >= self.cmp_cards.index(other.cards[i])
-        return self.STRENGTH[self.hand] >= self.STRENGTH[other.hand]
+    def __repr__(self):
+        return f"Hand: {self.cards}, bid:{self.bid:5d}, strength: {self.STRENGTH[self.hand]}, type: {self.TYPES[self.hand]:15}"
 
 
 class CamelCards(object):
