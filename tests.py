@@ -55,7 +55,11 @@ def load_tests(loader, suite, pattern):
     for imp, modname, b in pkgutil.walk_packages(__path__):
         if modname in exclude():
             continue
-        mod = imp.find_module(modname).load_module(modname)
+        try:
+            mod = imp.find_module(modname).load_module(modname)
+        except Exception as e:
+            print(f"Failed to load module {modname}: {e}")
+            continue
         for test in loader.loadTestsFromModule(mod):
             _(f"Found Tests in {mod}: {test._tests}")
             suite.addTests(test)

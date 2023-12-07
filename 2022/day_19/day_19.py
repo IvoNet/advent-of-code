@@ -12,10 +12,9 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import os
+import sys
 import unittest
 from pathlib import Path
-
-import sys
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -74,8 +73,6 @@ class Factory:
             time_left, ore_available, clay_available, obsidian_available, geode_available = time_left - 1, ore_available + ore_robot, clay_available + clay_robot, obsidian_available + obsidian_robot, geode_available + geode_robot
         self.max = max(self.max, geode_available)
 
-    def run(self):
-        for
 
 
 def part_1(source):
