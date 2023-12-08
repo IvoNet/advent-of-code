@@ -22,7 +22,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -52,10 +52,17 @@ class Hand(object):
         (1, 1, 1, 1, 1): 1
     }
 
-    CARDS = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
-    CARDS_JOKER = ["J", "2", "3", "4", "5", "6", "7", "8", "9", "T", "Q", "K", "A"]
+    CARDS = "23456789TJQKA"
+    CARDS_JOKER = "J23456789TQKA"
 
     def __init__(self, cards: str, bid: int, joker: bool = False):
+        """
+        Initialize a Hand object.
+
+        :param cards: A string representing the cards in the hand.
+        :param bid: An integer representing the bid.
+        :param joker: A boolean indicating whether the hand contains a joker.
+        """
         self.joker = joker
         if self.joker:
             self.cmp_cards = self.CARDS_JOKER
@@ -65,26 +72,38 @@ class Hand(object):
         self.bid = bid
         self.type = defaultdict(list)
         self.hand: tuple = ()
-        self.parse()
+        self.__parse()
 
-    def parse(self):
+    def __parse(self):
+        """
+        Parse the cards in the hand.
+        """
         for c in self.cards:
             self.type[c].append(c)
         if self.joker and "J" in self.type:
-            self.handle_joker()
+            self.__handle_joker()
         else:
             self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
 
-    def handle_joker(self):
+    def __handle_joker(self):
+        """
+        Handle the case when the hand contains a joker.
+        """
         joker_count = len(self.type["J"])
-        if len(self.type["J"]) >= 4:
+        if joker_count > 3:  # if more than 3 jokers it is always a five of a kind of Jokers
             self.hand = (5,)
             return
         del self.type["J"]
-        self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))
-        self.hand = tuple(sorted([self.hand[0] + joker_count, *self.hand[1:]], reverse=True))
+        self.hand = tuple(sorted([len(v) for v in self.type.values()], reverse=True))  # group without jokers
+        self.hand = (self.hand[0] + joker_count, *self.hand[1:])  # add jokers
 
     def __lt__(self, other):
+        """
+        Compare this hand with another hand.
+
+        :param other: Another Hand object.
+        :return: True if this hand is less than the other hand, False otherwise.
+        """
         if not isinstance(other, Hand):
             return False
         if self.STRENGTH[self.hand] == self.STRENGTH[other.hand]:
@@ -95,17 +114,21 @@ class Hand(object):
         return self.STRENGTH[self.hand] < self.STRENGTH[other.hand]
 
     def __repr__(self):
+        """
+        Represent the Hand object as a string.
+
+        :return: A string representation of the Hand object.
+        """
         return f"Hand: {self.cards}, bid:{self.bid:5d}, strength: {self.STRENGTH[self.hand]}, type: {self.TYPES[self.hand]:15}"
 
 
 class CamelCards(object):
 
-    def __init__(self, source, joker: bool = False):
+    def __init__(self, source: list[str], joker: bool = False):
         self.source = source
-        self.hands = [Hand(cards, int(bid), joker=joker) for cards, bid in [line.split() for line in source]]
-        self.hands.sort()
+        self.hands = sorted(Hand(cards, int(bid), joker=joker) for cards, bid in [line.split() for line in source])
 
-    def play_1(self):
+    def play(self):
         answer = 0
         for i, hand in enumerate(self.hands, 1):
             answer += hand.bid * i
@@ -114,13 +137,11 @@ class CamelCards(object):
 
 
 def part_1(source):
-    cc = CamelCards(source)
-    return cc.play_1()
+    return CamelCards(source).play()
 
 
 def part_2(source):
-    cc = CamelCards(source, True)
-    return cc.play_1()
+    return CamelCards(source, True).play()
 
 
 class UnitTests(unittest.TestCase):
