@@ -329,6 +329,9 @@ def zip_list(iterable):
     return list(map(list, zip(*iterable)))
 
 
+def lzip(iterable):
+    return zip_list(iterable)
+
 def pretty(iterable, sort_keys=True, indent=2):
     """Pretty print an iterable
     >>> pretty([1,2,3])

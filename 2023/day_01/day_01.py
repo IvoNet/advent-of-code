@@ -28,17 +28,9 @@ sys.dont_write_bytecode = True
 
 DEBUG = True
 
-WRITTEN = {
-    "one": "1",
-    "two": "2",
-    "three": "3",
-    "four": "4",
-    "five": "5",
-    "six": "6",
-    "seven": "7",
-    "eight": "8",
-    "nine": "9",
-}
+WRITTEN_DIGITS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+
+WRITTEN = {written: digit for digit, written in enumerate(WRITTEN_DIGITS, 1)}
 
 
 # noinspection DuplicatedCode
@@ -49,12 +41,7 @@ def _(*args, end="\n", sep=" "):
 
 def combine_first_last_digits(line):
     digits = re.findall(r'\d', line)
-    if len(digits) >= 2:
-        return int(digits[0] + digits[-1])
-    elif len(digits) == 1:
-        return int(digits[0] + digits[0])
-    else:
-        return 0
+    return int(digits[0] + digits[-1])
 
 
 def part_1(source):
@@ -70,20 +57,20 @@ def part_2(source):
         numbers = set()
         for digit in digits:
             idx = line.find(digit)
-            if idx != NOT_FOUND:
+            if idx > NOT_FOUND:
                 numbers.add((idx, digit))
             idx = line.rfind(digit)
-            if idx != NOT_FOUND:
+            if idx > NOT_FOUND:
                 numbers.add((idx, digit))
         for digit, value in WRITTEN.items():
             idx = line.find(digit)
-            if idx != NOT_FOUND:
+            if idx > NOT_FOUND:
                 numbers.add((idx, value))
             idx = line.rfind(digit)
-            if idx != NOT_FOUND:
+            if idx > NOT_FOUND:
                 numbers.add((idx, value))
-        _(numbers)
         numbers = list(numbers)
+        _(numbers)
         numbers.sort(key=lambda x: x[0])
         _(numbers)
         total += int(f"{numbers[0][1]}{numbers[-1][1]}")

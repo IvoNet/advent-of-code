@@ -12,11 +12,12 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import os
-import sys
 import unittest
 from collections import defaultdict
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Type
+
+import sys
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -40,6 +41,21 @@ class Node(NamedTuple):
         return f"Node(left: {self.left}, right: {self.right})"
 
 
+def parse_v1(source):
+    """
+    Parse the source to create a dictionary of nodes and return the instructions and nodes.
+
+    :param source: The source data to parse.
+    :return: A tuple containing the instructions and nodes.
+    """
+    nodes = defaultdict(Type[Node])
+    instructions = source[0]
+    for line in source[2:]:
+        name, targets = line.split(" = ")
+        nodes[name] = Node(*(targets[1:-1].split(", ")))
+    return instructions, nodes
+
+
 def parse(source):
     """
     Parse the source to create a dictionary of nodes and return the instructions and nodes.
@@ -47,13 +63,13 @@ def parse(source):
     :param source: The source data to parse.
     :return: A tuple containing the instructions and nodes.
     """
-    nodes = defaultdict(Node)
-    instructions = source[0]
-    for line in source[2:]:
-        name, rest = line.split(" = ")
-        left, right = rest.replace("(", "").replace(")", "").split(", ")
-        nodes[name] = Node(left, right)
-    return instructions, nodes
+    nodes = {
+        name: Node(left, right)
+        for line in source[2:]
+        for name, rest in [line.split(" = ")]
+        for left, right in [rest[1:-1].split(", ")]
+    }
+    return source[0], nodes
 
 
 def gcd(a, b):
@@ -96,6 +112,15 @@ def lcm_list(numbers: list[int]):
     return result
 
 
+def rotate(instructions):
+    """
+    Rotate the instructions one step to the left to make it continues
+    """
+    return instructions[1:] + instructions[0]
+    return instructions[1:] + instructions[0]
+
+
+
 def part_1(source):
     """
     Calculate the number of steps it takes to reach a node named 'ZZZ'.
@@ -104,19 +129,13 @@ def part_1(source):
     """
     instructions, nodes = parse(source)
 
-    answer = 0
-    idx = 0
-    step = "AAA"
-    while idx < 100:
-        idx += 1
-        for direction in instructions:
-            if direction == "L":
-                step = nodes[step].left
-            else:
-                step = nodes[step].right
-            answer += 1
-            if step == "ZZZ":
-                return answer
+    current = "AAA"
+    steps = 0
+    while current != "ZZZ":
+        steps += 1
+        current = nodes[current].left if instructions[0] == "L" else nodes[current].right
+        instructions = rotate(instructions)
+    return steps
 
 
 def part_2(source):
@@ -130,19 +149,16 @@ def part_2(source):
 
     current_nodes = [name for name in nodes if name.endswith('A')]
     steps = [0 for _ in current_nodes]
-    num_steps = -1
+    num_steps = 0
     while not all(steps):
-        for direction in instructions:
-            num_steps += 1
-            for idx, name in enumerate(current_nodes):
-                if name.endswith("Z") and not steps[idx]:
-                    steps[idx] = num_steps
-                    if all(steps):
-                        return lcm_list(steps)  # can be replaced with math.lcm function
-            if direction == "L":
-                current_nodes = [nodes[node].left for node in current_nodes]
-            else:
-                current_nodes = [nodes[node].right for node in current_nodes]
+        for idx, name in enumerate(current_nodes):
+            if name.endswith("Z") and not steps[idx]:
+                steps[idx] = num_steps
+                if all(steps):
+                    return lcm_list(steps)  # can be replaced with math.lcm function
+        current_nodes = [nodes[node].left if instructions[0] == "L" else nodes[node].right for node in current_nodes]
+        instructions = rotate(instructions)
+        num_steps += 1
 
 
 class UnitTests(unittest.TestCase):

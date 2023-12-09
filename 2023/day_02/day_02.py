@@ -23,7 +23,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -40,7 +40,7 @@ GAME = {
 }
 
 
-def parse_input(source):
+def parse_input_v1(source):
     games = {}
     for line in source:
         l = line.split(":")
@@ -52,18 +52,32 @@ def parse_input(source):
     return games
 
 
+def parse_input(source):
+    """ see the parse_input_v1 function for the original code
+
+    this dict comprehension does the same thing, but I doubt it is more readable
+    """
+    return {
+        int(game_id): [[cube.strip().split(" ") for cube in s.strip().split(",")] for s in sets]
+        for line in source
+        for gid, rest in [line.split(":")]
+        for _, game_id in [gid.strip().split(" ")]
+        for sets in [rest.strip().split(";")]
+    }
+
+
 def part_1(source):
     answer = 0
-    bad_once = set()
+    bad_ones = set()
     games = parse_input(source)
     for game_id, game in games.items():
         answer += game_id
         for round in game:
             for amount, color in round:
                 if int(amount) > GAME[color]:
-                    bad_once.add(game_id)
+                    bad_ones.add(game_id)
                     break
-    return answer - sum(bad_once)
+    return answer - sum(bad_ones)
 
 
 def part_2(source):
