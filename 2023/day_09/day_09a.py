@@ -11,6 +11,7 @@ code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
 """
 
+import operator
 import os
 import unittest
 from pathlib import Path
@@ -31,68 +32,53 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def parse_input(source):
-    return [list(map(int, line.strip().split())) for line in source]
-
-
-def generate_differences(sequence):
-    sequences = [sequence]
-    while any(sequences[-1]):
-        sequences.append([j - i for i, j in zip(sequences[-1][:-1], sequences[-1][1:])])
-    return list(reversed(sequences))
-
-
-def sum_differences_after(lst):
-    result = 0
-    for num in lst:
-        result += num
-    return result
-
-
-def sum_differences_before(seqs):
+def extrapolate(sequence: list[int], after: bool = True) -> int:
     """
-    formula for single step: result = seqs[i + 1] - before
-    :param seqs:
-    :return:
+    This function calculates the next number in a sequence based on the differences between consecutive numbers.
+
+    Parameters:
+    sequence (list): A list of integers representing the sequence.
+    after (bool): A boolean value indicating whether to extrapolate after the last number in the sequence (True)
+                  or before the first number in the sequence (False). Default is True.
+
+    Returns:
+    int: The extrapolated number.
+
+    The function works as follows:
+    - If all numbers in the sequence are 0, it returns 0.
+    - It calculates the differences between consecutive numbers in the sequence and stores them in a list
+      called 'deltas'.
+    - It recursively calls itself with 'deltas' as the new sequence until all numbers in the sequence are 0.
+    - It then adds or subtracts (based on the 'after' parameter) the last calculated difference from the last
+      number in the original sequence and returns this as the extrapolated number.
     """
-    before = 0
-    for i in range(len(seqs) - 1):
-        before = seqs[i + 1] - before
-    return before
+    if all(x == 0 for x in sequence):
+        return 0
+
+    deltas = [y - k for k, y in zip(sequence, sequence[1:])]  # zip the sequence of itself with itself offset by 1
+    diff = extrapolate(deltas, after=after)  # recursive call
+    op = operator.add if after else operator.sub
+    return op(sequence[-1 if after else 0], diff)
 
 
-def extrapolate_next(sequence):
-    """
-    formula for single step: result = seqs[i] + before
-    :param sequence:
-    :return:
-    """
-    seqs = [x[-1] for x in generate_differences(sequence)]
-    return sum_differences_after(seqs)
+def process_v1(source, after=True):
+    total = 0
+    for line in source:
+        numbers = list(map(int, line.split()))
+        total += extrapolate(numbers, after=after)
+    return total
 
 
-def extrapolate_before(sequence):
-    seqs = [x[0] for x in generate_differences(sequence)]
-    _(seqs)
-    return sum_differences_before(seqs)
-
-
-def sum_extrapolated_next(sequences):
-    return sum(list(extrapolate_next(sequence) for sequence in sequences))
-
-
-def sum_extrapolated_before(sequences):
-    return sum(list(extrapolate_before(sequence) for sequence in sequences))
+def process(source, after=True):
+    return sum(extrapolate(list(map(int, line.split())), after=after) for line in source)
 
 
 def part_1(source):
-    sequences = parse_input(source)
-    return sum_extrapolated_next(sequences)
+    return process(source)
 
 
 def part_2(source):
-    sequences = parse_input(source)
-    return sum_extrapolated_before(sequences)
+    return process(source, after=False)
 
 
 class UnitTests(unittest.TestCase):
