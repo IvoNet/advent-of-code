@@ -11,12 +11,14 @@ code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
 """
 
+import collections
 import os
+import sys
 import unittest
+
+collections.Callable = collections.abc.Callable
 from collections import deque
 from pathlib import Path
-
-import sys
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -35,7 +37,9 @@ def _(*args, end="\n", sep=" "):
 class PipeMaze:
     NEIGHBORS = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
-    ALLOWED_NEIGHBORS: dict[tuple[int, int], list[str]] = {
+    POSSIBLE_START_CHARS = {"|", "-", "J", "L", "7", "F"}
+
+    ALLOWED_NEIGHBORS = {
         (0, -1): {'|', 'F', '7'},  # up
         (0, 1): {'|', 'L', 'J'},  # down
         (-1, 0): {'-', 'F', 'L'},  # left
@@ -49,115 +53,107 @@ class PipeMaze:
         (1, 0): {'-', 'F', 'L'}  # when going right, you can continue on these tiles
     }
 
+    PIPE_TYPES = {
+        "|": ["n", "s"],
+        "-": ["w", "e"],
+        "L": ["n", "e"],
+        "J": ["n", "w"],
+        "7": ["s", "w"],
+        "F": ["s", "e"],
+        'S': ["n", "s", "w", "e"],
+    }
+
     def __init__(self, source):
         self.source = source
-        self.visited = set()
-        self.board = {}
-        self.start = None
-        self.__create_board(source)
-        self.possible_s = {"|", "-", "J", "L", "7", "F"}
-        self.bfs()
-        self.start_char = list(self.possible_s)[0] if len(self.possible_s) == 1 else None
-        if self.start_char is None:
-            raise RuntimeError("No start character found")
+        self.board, self.start = self.__create_board(source)
+        self.visited = {}
+        self.__bfs()
 
-    def __create_board(self, source):
+    @staticmethod
+    def __create_board(source):
+        board = {}
+        start = None
         for row, line in enumerate(source):
             for col, c in enumerate(line):
-                self.board[(col, row)] = c
+                board[(col, row)] = c
                 if c == 'S':
-                    self.start = (col, row)
+                    start = (col, row)
+        return board, start
 
-    def bfs(self):
-        queue = deque([self.start])
-        self.visited = {self.start}
+    @property
+    def start_char(self):
+        possible_s = self.POSSIBLE_START_CHARS.copy()
+        position = self.start
+        for n in self.NEIGHBORS:
+            neighbor_pos = (position[0] + n[0], position[1] + n[1])
+            if neighbor_pos not in self.board:
+                continue
+            if self.board[neighbor_pos] in self.ALLOWED_NEIGHBORS[n]:
+                possible_s &= self.MAPPING[n]
+        start_ch = list(possible_s)[0] if len(possible_s) == 1 else None
+        if start_ch is None:
+            raise RuntimeError("No start character found")
+        return start_ch
+
+    @property
+    def start_neighbors(self):
+        start_neighbors = []
+        position = self.start
+        for n in self.NEIGHBORS:
+            neighbor_pos = (position[0] + n[0], position[1] + n[1])
+            if neighbor_pos not in self.board:
+                continue
+            if self.board[neighbor_pos] in self.ALLOWED_NEIGHBORS[n]:
+                start_neighbors.append((neighbor_pos, 1))
+        return start_neighbors
+
+    def __bfs(self):
+        """Breath first search (bfs) to find the furthest point in a loop"""
+        queue = deque([(self.start, 0)])
+        self.visited[self.start] = 0
         while queue:
-            position = queue.popleft()
-            if position == self.start:
-                for n in self.NEIGHBORS:
-                    neighbor_pos = (position[0] + n[0], position[1] + n[1])
-                    if neighbor_pos not in self.board:
-                        continue
-                    if self.board[neighbor_pos] in self.ALLOWED_NEIGHBORS[n]:
-                        queue.append(neighbor_pos)
-                        self.possible_s &= self.MAPPING[n]  # only one possible start character should be left after bfs
+            position, distance = queue.popleft()
+            [queue.append(p) for p in self.start_neighbors if position == self.start]
             if position in self.visited:
                 continue
+            self.visited[position] = distance
             for n in self.NEIGHBORS:
                 neighbor_pos = (position[0] + n[0], position[1] + n[1])
                 if neighbor_pos not in self.board:
                     continue
-                self.visited.add(position)
                 if self.board[position] in self.MAPPING[n] and self.board[neighbor_pos] in self.ALLOWED_NEIGHBORS[n]:
-                    queue.append(neighbor_pos)
-
-    def bfs2(self):
-        queue = deque([self.start])
-        self.visited = {self.start}
-        while queue:
-            position = queue.popleft()
-            if position == self.start:
-                for n in self.NEIGHBORS:
-                    neighbor_pos = (position[0] + n[0], position[1] + n[1])
-                    if neighbor_pos not in self.board:
-                        continue
-                    if self.board[neighbor_pos] in self.ALLOWED_NEIGHBORS[n]:
-                        queue.append(neighbor_pos)
-                        self.possible_s &= self.MAPPING[n]  # only one possible start character should be left after bfs
-            if position in self.visited:
-                continue
-            for n in self.NEIGHBORS:
-                neighbor_pos = (position[0] + n[0], position[1] + n[1])
-                if neighbor_pos not in self.board:
-                    continue
-                self.visited.add(position)
-                if self.board[position] in self.MAPPING[n] and self.board[neighbor_pos] in self.ALLOWED_NEIGHBORS[n]:
-                    queue.append(neighbor_pos)
+                    queue.append((neighbor_pos, distance + 1))
 
     def furthest(self):
-        """
-        The Maze is a loop so the furthest point of the loop is half the length of the loop
-        """
-        return len(self.visited) // 2
+        return max(self.visited.values())
 
     def enclosed(self):
-        pass
+        board = [[c for c in line.strip()] for line in self.source]
+        board[self.start[1]][self.start[0]] = self.start_char
 
-    def enclosed_wrong(self):
-        _("\n".join(self.source))
-        grid = [row.replace("S", self.start_char) for row in self.source]
-        _("\n".join(grid))
-        grid = ["".join(ch if (r, c) in self.visited else "." for c, ch in enumerate(row)) for r, row in
-                enumerate(grid)]
-        _("\n".join(grid))
+        if DEBUG:
+            for line in board:
+                print("".join(line))
 
-        outside = set()
-
-        for r, row in enumerate(grid):
-            within = False
-            up = None
-            for c, ch in enumerate(row):
-                if ch == "|":
-                    assert up is None
-                    within = not within
-                elif ch == "-":
-                    assert up is not None
-                elif ch in "LF":
-                    assert up is None
-                    up = ch == "L"
-                elif ch in "7J":
-                    assert up is not None
-                    if ch != ("J" if up else "7"):
-                        within = not within
-                    up = None
-                elif ch == ".":
-                    pass
+        for i, row in enumerate(board):
+            norths = 0
+            for j, place in enumerate(row):
+                if (j, i) in self.visited:
+                    pipe_directions = self.PIPE_TYPES[place]
+                    if "n" in pipe_directions:
+                        norths += 1
+                    continue
+                if norths % 2 == 0:
+                    board[i][j] = "O"
                 else:
-                    raise RuntimeError(f"unexpected character (horizontal): {ch}")
-                if not within:
-                    outside.add((r, c))
+                    board[i][j] = "I"
 
-        return len(grid) * len(grid[0]) - len(outside | self.visited)
+        if DEBUG:
+            for line in board:
+                print("".join(line))
+
+        inside_count = "\n".join(["".join(line) for line in board]).count("I")
+        return inside_count
 
 
 def part_1(source):
@@ -213,16 +209,16 @@ L--J.L7...LJS7F-7L7.
 .....|FJLJ|FJ|F7|.LJ
 ....FJL-7.||.||||...
 ....L---J.LJ.LJLJ...""")
-        self.test_source6 = read_rows(""".F----7F7F7F7F-7....
-.|F--7||||||||FJ....
-.||.FJ||||||||L7....
-FJL7L7LJLJ||LJ.L-7..
-L--J.L7...LJS7F-7L7.
-....F-J..F7FJ|L7L7L7
-....L7.F7||L7|.L7L7|
-.....|FJLJ|FJ|F7|.LJ
-....FJL-7.||.||||...
-....L---J.LJ.LJLJ...""")
+        self.test_source6 = read_rows("""FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L""")
 
     def test_example_data_part_1(self):
         self.assertEqual(8, part_1(self.test_source))
