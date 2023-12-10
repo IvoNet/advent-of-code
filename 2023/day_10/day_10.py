@@ -128,6 +128,28 @@ class PipeMaze:
         return max(self.visited.values())
 
     def enclosed(self):
+        """
+        The `enclosed` method in the `PipeMaze` class is used to calculate the number of enclosed spaces in the
+        pipe maze. Here's a step-by-step explanation of what happens in this method:
+
+        1. The method first creates a 2D list `board` from the `source` attribute of the `PipeMaze` object.
+           This `board` represents the pipe maze. It also replaces the 'S' character in the `board` with the
+           appropriate start character determined by the `start_char` property.
+
+        2. It then iterates over each cell in the `board`. For each cell, it checks if the cell is visited
+          (i.e., is in the `visited` dictionary). If it is visited, it counts the number of north ("n") directions
+          in the pipe at the cell. If the cell is not visited, it checks if the number of north directions is even.
+          If it is even, it marks the cell as outside ("O"); otherwise, it marks the cell as inside ("I").
+          The trick here is that if you walk vertically (col based) and you are in an enclosed space the number of lines
+          you cross is always odd. If you are in an open space it is always even.
+          This took me ages to figure out. (and a small hint from the internet)
+        3. After marking all cells as either inside or outside, it counts the number of inside cells and returns
+          this count.
+
+        The purpose of this method is to find the number of cells that are enclosed by the pipe maze, i.e., the
+        cells that are not reachable from the start cell. The method uses the Breadth-First Search (BFS) algorithm
+        to visit all reachable cells from the start cell and then counts the number of cells that are not visited.
+        """
         board = [[c for c in line.strip()] for line in self.source]
         board[self.start[1]][self.start[0]] = self.start_char
 
@@ -135,18 +157,18 @@ class PipeMaze:
             for line in board:
                 print("".join(line))
 
-        for i, row in enumerate(board):
+        for row, line in enumerate(board):
             norths = 0
-            for j, place in enumerate(row):
-                if (j, i) in self.visited:
-                    pipe_directions = self.PIPE_TYPES[place]
+            for col, ch in enumerate(line):
+                if (col, row) in self.visited:
+                    pipe_directions = self.PIPE_TYPES[ch]
                     if "n" in pipe_directions:
                         norths += 1
                     continue
-                if norths % 2 == 0:
-                    board[i][j] = "O"
-                else:
-                    board[i][j] = "I"
+                if norths % 2 == 1:
+                    board[row][col] = "I"
+                else:  # unnecessary else but nice for visual
+                    board[row][col] = "O"
 
         if DEBUG:
             for line in board:
