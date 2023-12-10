@@ -25,7 +25,7 @@ from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -60,12 +60,12 @@ class PipeMaze:
         "J": ["n", "w"],
         "7": ["s", "w"],
         "F": ["s", "e"],
-        'S': ["n", "s", "w", "e"],
     }
 
     def __init__(self, source):
         self.source = source
         self.board, self.start = self.__create_board(source)
+        _(self.start)
         self.visited = {}
         self.__bfs()
 
@@ -140,9 +140,7 @@ class PipeMaze:
           (i.e., is in the `visited` dictionary). If it is visited, it counts the number of north ("n") directions
           in the pipe at the cell. If the cell is not visited, it checks if the number of north directions is even.
           If it is even, it marks the cell as outside ("O"); otherwise, it marks the cell as inside ("I").
-          The trick here is that if you walk vertically (col based) and you are in an enclosed space the number of lines
-          you cross is always odd. If you are in an open space it is always even.
-          This took me ages to figure out. (and a small hint from the internet)
+
         3. After marking all cells as either inside or outside, it counts the number of inside cells and returns
           this count.
 
@@ -150,13 +148,14 @@ class PipeMaze:
         cells that are not reachable from the start cell. The method uses the Breadth-First Search (BFS) algorithm
         to visit all reachable cells from the start cell and then counts the number of cells that are not visited.
         """
-        board = [[c for c in line.strip()] for line in self.source]
-        board[self.start[1]][self.start[0]] = self.start_char
+        board = [[c for c in line.strip()] for line in self.source]  # create board from source
+        board[self.start[1]][self.start[0]] = self.start_char  # replace S with start_char
 
         if DEBUG:
             for line in board:
                 print("".join(line))
 
+        inside_count = 0
         for row, line in enumerate(board):
             norths = 0
             for col, ch in enumerate(line):
@@ -166,6 +165,7 @@ class PipeMaze:
                         norths += 1
                     continue
                 if norths % 2 == 1:
+                    inside_count += 1
                     board[row][col] = "I"
                 else:  # unnecessary else but nice for visual
                     board[row][col] = "O"
@@ -174,7 +174,6 @@ class PipeMaze:
             for line in board:
                 print("".join(line))
 
-        inside_count = "\n".join(["".join(line) for line in board]).count("I")
         return inside_count
 
 
