@@ -59,10 +59,18 @@ and get the session information from that browser.
 
 ```shell
 # python ./aoc_input.py <YEAR> <DAY>
-python ./aoc_input.py 2022 1
+python ./aoc_input.py 2023 1
 ```
 
 # What is completed...
+
+## 2023
+
+- 22 stars
+
+## 2022
+
+- 38 stars
 
 ## 2021
 
@@ -70,15 +78,15 @@ python ./aoc_input.py 2022 1
 
 ## 2020
 
-- days 1..11
-- 12 part 1
-- 17, 24
+- 27 stars
 
 ## 2019
-- None yet
+
+- 8 stars
 
 ## 2018
-- 1..20
+
+- 43 stars
 
 ## 2017
 

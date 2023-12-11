@@ -11,17 +11,14 @@ code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
 """
 
-import collections
 import itertools
 import os
 import sys
 import unittest
 from pathlib import Path
 
-from ivonet.grid import Location
-
-collections.Callable = collections.abc.Callable
 from ivonet.files import read_rows
+from ivonet.grid import Location
 from ivonet.iter import ints
 
 sys.dont_write_bytecode = True
