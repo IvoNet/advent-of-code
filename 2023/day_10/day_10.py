@@ -111,9 +111,9 @@ class PipeMaze:
         """Breath first search (bfs) to find the furthest point in a loop"""
         queue = deque([(self.start, 0)])
         self.visited[self.start] = 0
+        [queue.append(p) for p in self.start_neighbors]
         while queue:
             position, distance = queue.popleft()
-            [queue.append(p) for p in self.start_neighbors if position == self.start]
             if position in self.visited:
                 continue
             self.visited[position] = distance

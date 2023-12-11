@@ -11,9 +11,12 @@ code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
 """
 
+import collections
 import os
 import unittest
 from pathlib import Path
+
+collections.Callable = collections.abc.Callable
 
 import sys
 
