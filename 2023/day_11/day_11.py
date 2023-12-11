@@ -46,11 +46,11 @@ def manhattan(expand_columns: list[int], expand_rows: list[int], galaxy_left: Lo
 
     for x in expand_columns:
         if (galaxy_left.row <= x <= galaxy_right.row) or (galaxy_left.row > x > galaxy_right.row):
-            total += 1 + 0 if expand_times == 0 else expand_times - 1
+            total += 1 + 0 if expand_times == 0 else expand_times - 1  # a one of thingy
 
     for y in expand_rows:
         if (galaxy_left.col <= y <= galaxy_right.col) or (galaxy_left.col > y > galaxy_right.col):
-            total += 1 + 0 if expand_times == 0 else expand_times - 1
+            total += 1 + 0 if expand_times == 0 else expand_times - 1  # a one of thingy
 
     return total
 
@@ -118,15 +118,15 @@ def galaxy_distances(source, expand_times=1000000):
     return total
 
 
-def part_1(source):
+def part_1(source, times=0):
     """
     - expand universe
     - find galaxies
     - find pairs of galaxies
-    - find shortest path between pairs of galaxies (manhattan distance with a twist)
+    - find the shortest path between pairs of galaxies (manhattan distance with an expansion twist)
     - What is the sum of these lengths?
     """
-    return galaxy_distances(source, 0)
+    return galaxy_distances(source, times)
 
 
 def part_2(source, times=1000000):
