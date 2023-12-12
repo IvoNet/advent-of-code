@@ -14,6 +14,7 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 import os
 import sys
 import unittest
+from functools import cache
 from pathlib import Path
 
 from ivonet.files import read_rows
@@ -30,53 +31,10 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def valid(springs: str, parity: tuple[int, ...]):
-    """
-    check if the springs are valid according to the parity list
-    - the numbers in the parity list correspond to groups of "#" in the springs list
-    - every group must be separated by at least one . to be a group
-    - ? is a wildcard and can be either "#" or "."
-    - check if a group is valid by checking if the number of # in the group is equal to the number in the parity list
-      and their length is equal to the parity
-    """
-    broken = [x for x in springs.split(".") if x != ""]
-    if len(broken) != len(parity):
-        return False
-    for i, group in enumerate(broken):
-        if len(group) != parity[i]:
-            return False
-        if group.count("#") != parity[i]:
-            return False
-    return True
-
-
-def generate_combinations(s):
-    """
-    This function generates all possible combinations of a string where "?" can be either "#" or ".".
-
-    It uses a recursive approach to replace each "?" in the string with "#" and ".", generating two new strings.
-    This process is repeated until there are no "?" left in the string.
-    The function then yields each possible combination.
-
-    Parameters:
-    s (str): The input string with "?" placeholders.
-
-    Yields:
-    str: The next combination of the input string where "?" has been replaced with "#" or ".".
-
-    NOTE: this is a very slow implementation (not used in the final solution) but illustrates my thinking process
-    """
-    if '?' not in s:
-        yield s
-    else:
-        yield from generate_combinations(s.replace('?', '#', 1))
-        yield from generate_combinations(s.replace('?', '.', 1))
-
-
 def parse(source):
     """
     parse the source:
-    - every line contains springs and a parity list of numbers
+    - every line contains pattern and a groups list of numbers
     - the two are separated by a space
     """
     for line in source:
@@ -84,64 +42,129 @@ def parse(source):
         yield springs, tuple(ints(parity))
 
 
-def multiply_string(s, n, separator):
-    return separator.join([s] * n)
+class HotSprings(object):
+    def __init__(self, source, fold=1):
+        self.source = source
+        self.cache = {}
+        self.fold = fold
 
+    @cache
+    def count_valid_combinations(self, pattern, groups, damage_count=0):
+        """
+        Recursively counts the number of valid arrangements of operational and broken springs
+        that meet the given criteria in each row.
 
-def combinations(left, parity, memo=None):
-    if memo is None:
-        memo = {}
+        Parameters:
+        pattern (str): A string representing the current state of the springs in a row.
+        groups (tuple): A tuple of integers representing the size of each contiguous group of damaged springs.
+        damage_count (int, optional): An integer representing the current damage_count of contiguous damaged springs. Defaults to 0.
 
-    if (left, parity) in memo:
-        return memo[(left, parity)]
+        Returns:
+        int: The number of valid arrangements of springs.
 
-    result = 0
+        :param pattern: is a string representing the current state of the springs in a
+                        row, where each spring can be operational ('.'), damaged ('#'),
+                        or unknown ('?').
+        :param groups: is a tuple of integers representing the size of each contiguous group of damaged springs
+                       in the order they appear in the row.
+        :param damage_count: is an integer representing the current damage_count of contiguous damaged springs.
+                      It is optional and defaults to 0.
+        :return:
+        """
+        # All pattern accounted for
+        if not pattern and damage_count > 0:  # Last spring was damaged
+            if len(groups) == 1 and damage_count == groups[0]:
+                return 1
+            else:
+                return 0
+        if not pattern and damage_count == 0:  # Last spring was operational
+            if len(groups) == 0:
+                return 1
+            else:
+                return 0
 
-    # Termination case 1: if left is an empty string
-    if left == "":
-        # If parity is also empty, increment result by 1, else do nothing
-        result += 1 if not parity else 0
-    elif not parity:
-        # If there is a "#" in left, do nothing, else increment result by 1
-        result += 0 if "#" in left else 1
-    else:
-        # If the first character of left is "." or "?"
-        if left[0] in ".?":
-            # Recursively calculate the result for the next state
-            result += combinations(left[1:], parity, memo)
+        # We saw more damaged pattern in a row than there
+        # should be according to the groups so it is not valid
+        if damage_count > 0 and (not groups or damage_count > groups[0]):
+            return 0
 
-        # If the first character of left is "#" or "?"
-        if left[0] in "#?":
-            # If the length of left is greater than or equal to the first integer in parity
-            # and there is no "." in the first parity[0] characters of left
-            # and the parity[0]th character of left is not "#"
-            if len(left) >= parity[0] and "." not in left[:parity[0]] and (
-                    parity[0] == len(left) or left[parity[0]] != "#"):
-                # Recursively calculate the result for the next state
-                result += combinations(left[parity[0] + 1:], parity[1:], memo)
+        # So far everything's good but we have more pattern to see
+        first, rest = pattern[0], pattern[1:]
+        match first:
+            case '.':
+                if damage_count > 0:  # We finished a run of damaged pattern
+                    if damage_count != groups[0]:
+                        return 0
+                    else:  # Last spring was also operational
+                        groups = groups[1:]
+                return self.count_valid_combinations(rest, groups, 0)
+            case '#':
+                # Increase damage damage_count
+                return self.count_valid_combinations(rest, groups, damage_count + 1)
+            case '?':
+                if not groups or damage_count == groups[0]:  # We finished a run of damaged pattern
+                    return self.count_valid_combinations(rest, groups[1:], 0)
 
-    memo[(left, parity)] = result
-    return result
+                if damage_count > 0:
+                    # We are in the middle of a run of damaged pattern
+                    return self.count_valid_combinations(rest, groups, damage_count + 1)
+                else:
+                    # This unknown could be a . or # so let's damage_count both options
+                    return (self.count_valid_combinations(rest, groups, damage_count + 1) +
+                            self.count_valid_combinations(rest, groups, damage_count))
+
+    @cache
+    def __combinations(self, pattern, groups):
+
+        if not pattern:
+            return 0 if groups else 1
+
+        if not groups:
+            return 0 if "#" in pattern else 1
+
+        result = 0
+
+        if pattern[0] in ".?":
+            result += self.count(pattern[1:], groups)
+
+        if pattern[0] in "#?":
+            if groups[0] <= len(pattern) and "." not in pattern[:groups[0]] and (
+                    groups[0] == len(pattern) or pattern[groups[0]] != "#"):
+                result += self.count(pattern[groups[0] + 1:], groups[1:])
+
+        return result
+
+    def get_from_cache_or_compute(self, pattern, groups):
+        key = (pattern, groups)
+        if key in self.cache:
+            return self.cache[key]
+
+        else:
+            result = self.__combinations(pattern, groups)
+            self.cache[key] = result
+            return result
+
+    # @cache
+    def count(self, pattern, groups):
+        # return self.__combinations(pattern, groups)
+        return self.get_from_cache_or_compute(pattern, groups)
+        # return self.count_valid_combinations(pattern, groups)
+
+    def run(self):
+        answer = 0
+        for patterns, groups in parse(self.source):
+            s = "?".join([patterns] * self.fold)
+            g = groups * self.fold
+            answer += self.count_valid_combinations(s, g)
+        return answer
 
 
 def part_1(source):
-    answer = 0
-    for springs, parity in parse(source):
-        count = 0
-        for spring in generate_combinations(springs):
-            if valid(spring, parity):
-                count += 1
-        answer += count
-    return answer
+    return HotSprings(source).run()
 
 
 def part_2(source, times=5):
-    answer = 0
-    for springs, parity in parse(source):
-        s = multiply_string(springs, times, "?")
-        p = parity * times
-        answer += combinations(s, p, {})
-    return answer
+    return HotSprings(source, times).run()
 
 
 class UnitTests(unittest.TestCase):
@@ -166,11 +189,6 @@ class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self):
         self.assertEqual(21, part_1(self.test_source))
-
-    def test_example_data_part_1_valid(self):
-        for springs, parity in parse(self.test_source2):
-            self.assertEqual(True, valid(springs, parity))
-        self.assertEqual(False, valid("###.###", (1, 1, 3)))
 
     def test_part_1(self):
         self.assertEqual(7173, part_1(self.source))
