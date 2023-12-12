@@ -88,36 +88,39 @@ def multiply_string(s, n, separator):
     return separator.join([s] * n)
 
 
-def combinations(left, parity):
-    stack = [(left, parity)]
+def combinations(left, parity, memo=None):
+    if memo is None:
+        memo = {}
+
+    if (left, parity) in memo:
+        return memo[(left, parity)]
+
     result = 0
 
-    while stack:
-        left, parity = stack.pop()
+    # Termination case 1: if left is an empty string
+    if left == "":
+        # If parity is also empty, increment result by 1, else do nothing
+        result += 1 if not parity else 0
+    elif not parity:
+        # If there is a "#" in left, do nothing, else increment result by 1
+        result += 0 if "#" in left else 1
+    else:
+        # If the first character of left is "." or "?"
+        if left[0] in ".?":
+            # Recursively calculate the result for the next state
+            result += combinations(left[1:], parity, memo)
 
-        # Termination case 1: if left is an empty string
-        if left == "":
-            # If parity is also empty, increment result by 1, else do nothing
-            result += 1 if not parity else 0
-        elif not parity:
-            # If there is a "#" in left, do nothing, else increment result by 1
-            result += 0 if "#" in left else 1
-        else:
-            # If the first character of left is "." or "?"
-            if left[0] in ".?":
-                # Add the next state to the stack
-                stack.append((left[1:], parity))
+        # If the first character of left is "#" or "?"
+        if left[0] in "#?":
+            # If the length of left is greater than or equal to the first integer in parity
+            # and there is no "." in the first parity[0] characters of left
+            # and the parity[0]th character of left is not "#"
+            if len(left) >= parity[0] and "." not in left[:parity[0]] and (
+                    parity[0] == len(left) or left[parity[0]] != "#"):
+                # Recursively calculate the result for the next state
+                result += combinations(left[parity[0] + 1:], parity[1:], memo)
 
-            # If the first character of left is "#" or "?"
-            if left[0] in "#?":
-                # If the length of left is greater than or equal to the first integer in parity
-                # and there is no "." in the first parity[0] characters of left
-                # and the parity[0]th character of left is not "#"
-                if len(left) >= parity[0] and "." not in left[:parity[0]] and (
-                        parity[0] == len(left) or left[parity[0]] != "#"):
-                    # Add the next state to the stack
-                    stack.append((left[parity[0] + 1:], parity[1:]))
-
+    memo[(left, parity)] = result
     return result
 
 
@@ -137,7 +140,7 @@ def part_2(source, times=5):
     for springs, parity in parse(source):
         s = multiply_string(springs, times, "?")
         p = parity * times
-        answer += combinations(s, p)
+        answer += combinations(s, p, {})
     return answer
 
 
@@ -176,7 +179,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(525152, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(29826669191291, part_2(self.source))
 
 
 if __name__ == '__main__':
