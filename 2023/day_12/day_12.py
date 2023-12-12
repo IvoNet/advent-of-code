@@ -84,6 +84,43 @@ def parse(source):
         yield springs, tuple(ints(parity))
 
 
+def multiply_string(s, n, separator):
+    return separator.join([s] * n)
+
+
+def combinations(left, parity):
+    stack = [(left, parity)]
+    result = 0
+
+    while stack:
+        left, parity = stack.pop()
+
+        # Termination case 1: if left is an empty string
+        if left == "":
+            # If parity is also empty, increment result by 1, else do nothing
+            result += 1 if not parity else 0
+        elif not parity:
+            # If there is a "#" in left, do nothing, else increment result by 1
+            result += 0 if "#" in left else 1
+        else:
+            # If the first character of left is "." or "?"
+            if left[0] in ".?":
+                # Add the next state to the stack
+                stack.append((left[1:], parity))
+
+            # If the first character of left is "#" or "?"
+            if left[0] in "#?":
+                # If the length of left is greater than or equal to the first integer in parity
+                # and there is no "." in the first parity[0] characters of left
+                # and the parity[0]th character of left is not "#"
+                if len(left) >= parity[0] and "." not in left[:parity[0]] and (
+                        parity[0] == len(left) or left[parity[0]] != "#"):
+                    # Add the next state to the stack
+                    stack.append((left[parity[0] + 1:], parity[1:]))
+
+    return result
+
+
 def part_1(source):
     answer = 0
     for springs, parity in parse(source):
@@ -95,8 +132,13 @@ def part_1(source):
     return answer
 
 
-def part_2(source):
-    return None
+def part_2(source, times=5):
+    answer = 0
+    for springs, parity in parse(source):
+        s = multiply_string(springs, times, "?")
+        p = parity * times
+        answer += combinations(s, p)
+    return answer
 
 
 class UnitTests(unittest.TestCase):
@@ -131,7 +173,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(7173, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(525152, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
