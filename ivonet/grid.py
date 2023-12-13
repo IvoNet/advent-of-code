@@ -554,6 +554,24 @@ def walk_direction(grid, loc: Location, direction_: str, value=False):  # Note u
                 yield r + i, c - i
 
 
+def transpose(grid: list[list[any]]) -> list[list[any]]:
+    """
+    Every vertical col becomes a horizontal row and vice versa
+    grid = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+    ]
+
+    transposed = [
+    (1, 4, 7),
+    (2, 5, 8),
+    (3, 6, 9)
+    ]
+    """
+    return list(zip(*grid))
+
+
 class Cell(str, Enum):
     EMPTY = "."
     BLOCKED = "#"
