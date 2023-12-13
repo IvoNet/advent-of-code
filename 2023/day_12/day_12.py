@@ -77,18 +77,18 @@ class HotSprings(object):
                 return 1
             else:
                 return 0
-        if not pattern and damage_count == 0:  # Last spring was operational
-            if len(groups) == 0:
+        if not pattern and not damage_count:  # Last spring was operational
+            if not len(groups):
                 return 1
             else:
                 return 0
 
         # We saw more damaged pattern in a row than there
-        # should be according to the groups so it is not valid
+        # should be according to the groups, so it is not valid
         if damage_count > 0 and (not groups or damage_count > groups[0]):
             return 0
 
-        # So far everything's good but we have more pattern to see
+        # So far everything's good, but we have more pattern to see
         first, rest = pattern[0], pattern[1:]
         match first:
             case '.':
@@ -112,43 +112,6 @@ class HotSprings(object):
                     # This unknown could be a . or # so let's damage_count both options
                     return (self.count_valid_combinations(rest, groups, damage_count + 1) +
                             self.count_valid_combinations(rest, groups, damage_count))
-
-    @cache
-    def __combinations(self, pattern, groups):
-
-        if not pattern:
-            return 0 if groups else 1
-
-        if not groups:
-            return 0 if "#" in pattern else 1
-
-        result = 0
-
-        if pattern[0] in ".?":
-            result += self.count(pattern[1:], groups)
-
-        if pattern[0] in "#?":
-            if groups[0] <= len(pattern) and "." not in pattern[:groups[0]] and (
-                    groups[0] == len(pattern) or pattern[groups[0]] != "#"):
-                result += self.count(pattern[groups[0] + 1:], groups[1:])
-
-        return result
-
-    def get_from_cache_or_compute(self, pattern, groups):
-        key = (pattern, groups)
-        if key in self.cache:
-            return self.cache[key]
-
-        else:
-            result = self.__combinations(pattern, groups)
-            self.cache[key] = result
-            return result
-
-    # @cache
-    def count(self, pattern, groups):
-        # return self.__combinations(pattern, groups)
-        return self.get_from_cache_or_compute(pattern, groups)
-        # return self.count_valid_combinations(pattern, groups)
 
     def run(self):
         answer = 0
