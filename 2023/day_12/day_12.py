@@ -72,16 +72,12 @@ class HotSprings(object):
         :return:
         """
         # All pattern accounted for
-        if not pattern and damage_count > 0:  # Last spring was damaged
+        if not pattern and damage_count:  # Last spring was damaged
             if len(groups) == 1 and damage_count == groups[0]:
                 return 1
-            else:
-                return 0
+            return 0
         if not pattern and not damage_count:  # Last spring was operational
-            if not len(groups):
-                return 1
-            else:
-                return 0
+            return 1 if not groups else 0
 
         # We saw more damaged pattern in a row than there
         # should be according to the groups, so it is not valid
@@ -91,21 +87,20 @@ class HotSprings(object):
         # So far everything's good, but we have more pattern to see
         first, rest = pattern[0], pattern[1:]
         match first:
-            case '.':
-                if damage_count > 0:  # We finished a run of damaged pattern
-                    if damage_count != groups[0]:
-                        return 0
-                    else:  # Last spring was also operational
-                        groups = groups[1:]
-                return self.count_valid_combinations(rest, groups, 0)
             case '#':
                 # Increase damage damage_count
                 return self.count_valid_combinations(rest, groups, damage_count + 1)
+            case '.':
+                if damage_count:  # We finished a run of damaged pattern
+                    if damage_count != groups[0]:
+                        return 0
+                    # Last spring was also operational
+                    groups = groups[1:]
+                return self.count_valid_combinations(rest, groups, 0)
             case '?':
                 if not groups or damage_count == groups[0]:  # We finished a run of damaged pattern
                     return self.count_valid_combinations(rest, groups[1:], 0)
-
-                if damage_count > 0:
+                if damage_count:
                     # We are in the middle of a run of damaged pattern
                     return self.count_valid_combinations(rest, groups, damage_count + 1)
                 else:
