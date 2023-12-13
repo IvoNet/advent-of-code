@@ -52,16 +52,6 @@ def manhattan(expand_columns: list[int], expand_rows: list[int], galaxy_left: Lo
     return total
 
 
-def galaxy_distances_v1(source, expand_times=1000000):
-    """ same as galaxy_distances but with a lot of list comprehension implementation """
-    universe = [line.strip() for line in source]
-    galaxies = [Location(x, y) for y, line in enumerate(universe) for x, ch in enumerate(line) if ch == '#']
-    expand_columns = [j for j in range(len(universe[0])) if len(set(x[j] for x in universe)) == 1]
-    expand_rows = [j for j, line in enumerate(universe) if "#" not in line]
-    return sum(manhattan(expand_columns, expand_rows, p[0], p[1], expand_times) for p in
-               itertools.combinations(galaxies, 2))
-
-
 def galaxy_distances(source, expand_times=1000000):
     """
     This function calculates the total distance between all pairs of galaxies in the given universe.
