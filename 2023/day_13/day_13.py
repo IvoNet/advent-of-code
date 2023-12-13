@@ -37,11 +37,6 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-class ValleyOf:
-    ASH = '.'  # False / 0
-    ROCK = '#'  # True / 1
-
-
 def parse(source) -> list[list[list[Any]]]:
     grids = []
     for block in source.split("\n\n"):
