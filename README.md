@@ -66,7 +66,7 @@ python ./aoc_input.py 2023 1
 
 ## 2023
 
-- 22 stars
+- 26 stars
 
 ## 2022
 
