@@ -76,9 +76,10 @@ rulez deduced from the example:
     - if col_to_check < width - col_to_check: # left side is smaller than right side 
          - check if left[0:col_to_check][::-1] == right[0:col_to_check] for every row
 
-for r, row in enumerate(grid):
-   for c, col in enumerate(row):
-      
+Part2
+so if I check the whole thing only one discrepancy is allowed
+just do kinda de same as with the first part but now do a cell by cell check and count the discrepancies
+if there is only one discrepancy then it is a valid mirror with a smudge, otherwise it is not a valid mirror.
 
 """
 
