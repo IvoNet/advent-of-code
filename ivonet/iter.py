@@ -228,7 +228,7 @@ def make_hashable(iterable):
     """Make the iterable hashable.
     Useful when using it as a key.
     """
-    if isinstance(iterable, list):
+    if isinstance(iterable, (list, tuple)):
         return tuple(map(make_hashable, iterable))
     if isinstance(iterable, dict):
         iterable = set(iterable.items())

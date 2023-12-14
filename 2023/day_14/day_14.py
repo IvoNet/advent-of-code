@@ -23,11 +23,11 @@ collections.Callable = collections.abc.Callable
 import sys
 
 from ivonet.files import read_rows
-from ivonet.iter import ints
+from ivonet.iter import ints, make_hashable
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -51,9 +51,9 @@ class SpinCycle:
 
     def __init__(self, source):
         self.source = source
-        self.grid = source
+        self.grid: list[list] = source
 
-    def flip(self):
+    def flip(self) -> SpinCycle:
         """
         This method performs a flip operation on the grid. The steps are as follows:
 
@@ -61,8 +61,6 @@ class SpinCycle:
         2. Sort each group in each row: The grid is iterated row by row. Each row is split into groups by the "#" character.
          Each group is sorted in descending order and then joined back together with the "#" character.
         3. Transpose the grid back: The grid is transposed back to its original orientation.
-        4. Calculate and return the score: The score is calculated as the sum of the count of "O" characters in each row,
-         multiplied by the difference between the total number of rows and the current row index.
 
         :return: The score after performing the cycle operation.
         """
@@ -70,6 +68,20 @@ class SpinCycle:
         # Transpose the grid because it is easier ti work with rows than cols
         self.grid = transpose(self.grid)
 
+        # Sort each group in each row
+        self.roll_rounded_rocks()
+
+        # Transpose the grid back
+        self.grid = transpose(self.grid)
+        return self
+
+    def roll_rounded_rocks(self):
+        """
+        This method sorts each group in each row of the grid. The grid is iterated row by row.
+        Each row is split into groups by the "#" character. Each group is sorted in descending
+        order and then joined back together with the "#" character. This operation is performed
+        in-place, modifying the current grid.
+        """
         # Sort each group in each row
         for i in range(len(self.grid)):
             row = "".join(self.grid[i]).split("#")
@@ -79,18 +91,60 @@ class SpinCycle:
                 sorted_row.append(sorted_group)
             self.grid[i] = "#".join(sorted_row)
 
-        # Transpose the grid back
-        self.grid = transpose(self.grid)
+    def score(self):
+        # Calculate and return the score
+        score = 0
+        for r, row in enumerate(self.grid):
+            # the second part of this formula calculates the difference between the total number of rows and the
+            # current row index.
+            score += row.count("O") * (len(self.grid) - r)
+        return score
 
-        return sum(row.count("O") * (len(self.grid) - r) for r, row in enumerate(self.grid))
+    def cycle(self) -> SpinCycle:
+        """
+        rotate counterclockwise 90 degrees 4 times to do a full cycle
+        - north -> west -> south -> east (counterclockwise)
+        so this method does that with a transpose and a reverse
+        we of course do the whole rolling of rounded rocks here too
+        """
+        for _ in range(4):
+            self.grid = transpose([list(row) for row in self.grid])
+            self.roll_rounded_rocks()
+            self.grid = list(list(reversed(row)) for row in self.grid)
+            p(self.grid)
+        return self
+
+    def cycles(self, iterations=1_000_000_000) -> SpinCycle:
+        """
+        Does iterations Cycle and then calculates the load on the north beam
+        but 1 billion times is a bit much and a pattern will probably emerge sooner
+        remember enough cycles and the pattern will repeat itself
+        """
+        explored = {make_hashable(self.grid)}
+        grids = [self.grid]
+        cycled = 0
+        while True:
+            cycled += 1
+            self.cycle()
+            if make_hashable(self.grid) in explored:
+                break
+            explored.add(make_hashable(self.grid))
+            grids.append(self.grid)
+
+        _(f"Found a pattern after {cycled} cycles")
+        pattern_idx = grids.index(self.grid)
+        _(f"First occurrence at {pattern_idx}")
+
+        self.grid = grids[(iterations - pattern_idx) % (cycled - pattern_idx) + pattern_idx]
+        return self
 
 
 def part_1(source):
-    return SpinCycle(source).flip()
+    return SpinCycle(source).flip().score()
 
 
-def part_2(source):
-    return None
+def part_2(source, times=1_000_000_000):
+    return SpinCycle(source).cycles().score()
 
 
 class UnitTests(unittest.TestCase):
@@ -122,7 +176,7 @@ O.#..O.#.#
         self.assertEqual(64, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(83516, part_2(self.source))
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ __license__ = "Apache 2.0"
 from collections import defaultdict
 from enum import Enum
 from itertools import product
-from typing import NamedTuple, Callable
+from typing import NamedTuple, Callable, Any
 
 from ivonet.iter import flatten, max_idx
 
@@ -554,7 +554,7 @@ def walk_direction(grid, loc: Location, direction_: str, value=False):  # Note u
                 yield r + i, c - i
 
 
-def transpose(grid: list[list[any]]) -> list[list[any]]:
+def transpose(grid: list[list[Any]] | tuple[list[Any]]) -> list[list[any]]:
     """
     Every vertical col becomes a horizontal row and vice versa
     grid = [
