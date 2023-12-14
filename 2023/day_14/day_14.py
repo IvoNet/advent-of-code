@@ -53,7 +53,20 @@ class SpinCycle:
         self.source = source
         self.grid = source
 
-    def cycle(self):
+    def flip(self):
+        """
+        This method performs a flip operation on the grid. The steps are as follows:
+
+        1. Transpose the grid: This is done because it's easier to work with rows than columns.
+        2. Sort each group in each row: The grid is iterated row by row. Each row is split into groups by the "#" character.
+         Each group is sorted in descending order and then joined back together with the "#" character.
+        3. Transpose the grid back: The grid is transposed back to its original orientation.
+        4. Calculate and return the score: The score is calculated as the sum of the count of "O" characters in each row,
+         multiplied by the difference between the total number of rows and the current row index.
+
+        :return: The score after performing the cycle operation.
+        """
+
         # Transpose the grid because it is easier ti work with rows than cols
         self.grid = transpose(self.grid)
 
@@ -73,7 +86,7 @@ class SpinCycle:
 
 
 def part_1(source):
-    return SpinCycle(source).cycle()
+    return SpinCycle(source).flip()
 
 
 def part_2(source):
@@ -106,7 +119,7 @@ O.#..O.#.#
         self.assertEqual(110821, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(64, part_2(self.test_source))
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
