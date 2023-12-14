@@ -97,7 +97,10 @@ class SpinCycle:
         for r, row in enumerate(self.grid):
             # the second part of this formula calculates the difference between the total number of rows and the
             # current row index.
-            score += row.count("O") * (len(self.grid) - r)
+            round_rocks_count = row.count("O") * (len(self.grid) - r)
+            _(f"Row {r} has {row.count('O')} rounded rocks and a score of {round_rocks_count}")
+            score += round_rocks_count
+        _(f"Total score: {score:>31}")
         return score
 
     def cycle(self) -> SpinCycle:
@@ -123,7 +126,7 @@ class SpinCycle:
         explored = {make_hashable(self.grid)}
         grids = [self.grid]
         cycled = 0
-        while True:
+        while True or cycled < iterations:  # just to be sure :-) (this is not needed)
             cycled += 1
             self.cycle()
             if make_hashable(self.grid) in explored:
