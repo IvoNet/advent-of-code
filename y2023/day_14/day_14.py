@@ -13,8 +13,9 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
-import unittest
 from pathlib import Path
+
+import pytest
 
 from ivonet.grid import transpose
 
@@ -127,7 +128,7 @@ class SpinCycle:
         explored = {make_hashable(self.grid)}
         grids = [self.grid]
         cycled = 0
-        while True or cycled < iterations:  # just to be sure :-) (this is not needed)
+        while cycled < iterations:
             cycled += 1
             self.cycle()
             if make_hashable(self.grid) in explored:
@@ -148,40 +149,25 @@ def part_1(source):
 
 
 def part_2(source, times=1_000_000_000):
-    return SpinCycle(source).cycles().score()
+    return SpinCycle(source).cycles(times).score()
+
+def test_puzzle(test_source, source):
+    assert part_1(test_source) == 136
+    assert part_1(source) == 110821
+    assert part_2(test_source) == 64
+    assert part_2(source) == 83516
 
 
-class UnitTests(unittest.TestCase):
-
-    def setUp(self) -> None:
-        if DEBUG:
-            print()
-        day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows("""O....#....
-O.OO#....#
-.....##...
-OO.#O....O
-.O.....O#.
-O.#..O.#.#
-..O..#O..O
-.......O..
-#....###..
-#OO..#....""")
-        self.test_source2 = read_rows("""""")
-
-    def test_example_data_part_1(self):
-        self.assertEqual(136, part_1(self.test_source))
-
-    def test_part_1(self):
-        self.assertEqual(110821, part_1(self.source))
-
-    def test_example_data_part_2(self):
-        self.assertEqual(64, part_2(self.test_source))
-
-    def test_part_2(self):
-        self.assertEqual(83516, part_2(self.source))
+@pytest.fixture
+def day():
+    return str(ints(Path(__file__).name)[0])
 
 
-if __name__ == '__main__':
-    unittest.main()
+@pytest.fixture
+def source(day):
+    return read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
+
+
+@pytest.fixture
+def test_source(day):
+    return read_rows(f"{os.path.dirname(__file__)}/test_{day.zfill(2)}.input")
