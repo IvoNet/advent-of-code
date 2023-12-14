@@ -110,7 +110,7 @@ class SpinCycle:
         for _ in range(4):
             self.grid = transpose([list(row) for row in self.grid])
             self.roll_rounded_rocks()
-            self.grid = list(list(reversed(row)) for row in self.grid)
+            self.grid = [row[::-1] for row in self.grid]
             p(self.grid)
         return self
 
