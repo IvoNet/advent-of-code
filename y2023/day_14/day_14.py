@@ -151,6 +151,7 @@ def part_1(source):
 def part_2(source, times=1_000_000_000):
     return SpinCycle(source).cycles(times).score()
 
+
 def test_puzzle(test_source, source):
     assert part_1(test_source) == 136
     assert part_1(source) == 110821

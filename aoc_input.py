@@ -33,9 +33,9 @@ def touch(name):
 
 
 def create_folders(year, day):
-    md(year)
-    md(f"./{year}/day_{day.zfill(2)}")
-    touch(f"./{year}/day_{day.zfill(2)}/__init__.py")
+    md(f"y{year}")
+    md(f"./y{year}/day_{day.zfill(2)}")
+    touch(f"./y{year}/day_{day.zfill(2)}/__init__.py")
 
 
 def get_web_page(year, day):
@@ -92,11 +92,14 @@ def get_solution_template(year, day, filename):
 
 
 def main(year, day):
-    filename = f"./{year}/day_{day.zfill(2)}/day_{day.zfill(2)}"
+    filename = f"./y{year}/day_{day.zfill(2)}/day_{day.zfill(2)}"
+    testfilename = f"./y{year}/day_{day.zfill(2)}/test_{day.zfill(2)}.input"
     create_folders(year, day)
     get_puzzle_input(year, day, filename + ".input")
     get_puzzle_description(year, day, filename + ".txt")
     get_solution_template(year, day, filename + ".py")
+    with open(testfilename, 'w') as file:
+        pass
 
 
 if __name__ == '__main__':
