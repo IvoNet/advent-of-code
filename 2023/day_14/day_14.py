@@ -94,10 +94,11 @@ class SpinCycle:
     def score(self):
         # Calculate and return the score
         score = 0
+        height = len(self.grid)
         for r, row in enumerate(self.grid):
             # the second part of this formula calculates the difference between the total number of rows and the
             # current row index.
-            round_rocks_count = row.count("O") * (len(self.grid) - r)
+            round_rocks_count = row.count("O") * (height - r)
             _(f"Row {r} has {row.count('O')} rounded rocks and a score of {round_rocks_count}")
             score += round_rocks_count
         _(f"Total score: {score:>31}")
@@ -113,7 +114,7 @@ class SpinCycle:
         for _ in range(4):
             self.grid = transpose([list(row) for row in self.grid])
             self.roll_rounded_rocks()
-            self.grid = [row[::-1] for row in self.grid]
+            self.grid = [row[::-1] for row in self.grid]  # turn the grid 1 quarter to the left
             p(self.grid)
         return self
 
