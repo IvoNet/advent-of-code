@@ -13,16 +13,14 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
+import sys
 import unittest
 from pathlib import Path
-
-collections.Callable = collections.abc.Callable
-
-import sys
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
+collections.Callable = collections.abc.Callable
 sys.dont_write_bytecode = True
 
 DEBUG = True
@@ -45,8 +43,7 @@ def part_2(source):
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        if DEBUG:
-            print()
+        _()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source = read_rows(f"{os.path.dirname(__file__)}/test_{day.zfill(2)}.input")

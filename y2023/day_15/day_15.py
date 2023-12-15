@@ -13,16 +13,15 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
+import sys
 import unittest
 from collections import defaultdict
 from pathlib import Path
 
-collections.Callable = collections.abc.Callable
-
-import sys
-
 from ivonet.files import read_rows
 from ivonet.iter import ints
+
+collections.Callable = collections.abc.Callable
 
 sys.dont_write_bytecode = True
 
@@ -35,7 +34,7 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def hash(step):
+def ascii_hash(step):
     current = 0
     for s in step:
         current += ord(s)
@@ -44,33 +43,57 @@ def hash(step):
     return current
 
 
+def hashmap_procedure(steps: list[str]) -> dict:
+    """
+    Processes a list of steps to create a dictionary of boxes. Each box is represented by a
+    dictionary where the keys are labels and the values are focal lengths.
+
+    Parameters:
+    steps (list): A list of strings where each string represents a step. A step can either
+    represent a new lens being added to a box or a lens being removed from a box.
+
+    Returns:
+    dict: A dictionary where each key-value pair represents a box and its lenses. The keys
+    are box indices and the values are dictionaries where the keys are labels and the values
+    are focal lengths.
+    """
+    boxes = defaultdict(dict)
+    for step in steps:
+        if "-" in step:
+            label = step[:-1]
+            box_index = ascii_hash(label)
+            _("-", label, box_index)
+            if label in boxes[box_index]:
+                del boxes[box_index][label]
+        else:
+            label, focal_length = step.split("=")
+            box_index = ascii_hash(label)
+            _("=", label, box_index, focal_length)
+            boxes[box_index][label] = int(focal_length)
+    _(boxes)
+    return boxes
+
+
 def part_1(source):
     steps = source[0].strip().split(",")
-    return sum(hash(step) for step in steps)
+    return sum(ascii_hash(step) for step in steps)
 
 
 def part_2(source):
     steps = source[0].strip().split(',')
-    boxes = defaultdict(dict)
-    for step in steps:
-        if '=' in step:
-            lens, num = step.split('=')
-            boxes[hash(lens)][lens] = int(num)
-        else:
-            lens = step[:-1]
-            boxes[hash(lens)].pop(lens, None)
-    total = 0
+    boxes = hashmap_procedure(steps)
+    total_focal_power = 0
     for box, lenses in boxes.items():
         for index, value in enumerate(lenses.values(), start=1):
-            total += (box + 1) * index * value
-    return total
+            total_focal_power += (box + 1) * index * value
+            _(box, index, value, (box + 1) * index * value)
+    return total_focal_power
 
 
 class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
-        if DEBUG:
-            print()
+        _()
         day = str(ints(Path(__file__).name)[0])
         self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
         self.test_source = read_rows(f"{os.path.dirname(__file__)}/test_{day.zfill(2)}.input")

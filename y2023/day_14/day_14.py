@@ -66,7 +66,7 @@ class SpinCycle:
         :return: The score after performing the cycle operation.
         """
 
-        # Transpose the grid because it is easier ti work with rows than cols
+        # Transpose the grid because it is easier to work with rows than cols
         self.grid = transpose(self.grid)
 
         # Sort each group in each row
