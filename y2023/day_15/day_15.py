@@ -35,7 +35,20 @@ def _(*args, end="\n", sep=" "):
 
 
 def part_1(source):
-    return None
+    steps = source[0].strip().split(",")
+    answer=0
+    for step in steps:
+        current = 0
+        for s in step:
+            ascii = ord(s)
+            current += ascii
+            current *= 17
+            current %= 256
+        answer += current
+    return answer
+
+
+
 
 
 def part_2(source):
@@ -53,10 +66,11 @@ class UnitTests(unittest.TestCase):
         self.test_source2 = read_rows("""""")
 
     def test_example_data_part_1(self):
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(52, part_1(["HASH"]))
+        self.assertEqual(1320, part_1(self.test_source))
 
     def test_part_1(self):
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(497373, part_1(self.source))
 
     def test_example_data_part_2(self):
         self.assertEqual(None, part_2(self.test_source))
