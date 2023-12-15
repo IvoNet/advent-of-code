@@ -14,6 +14,7 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 import collections
 import os
 import unittest
+from collections import defaultdict
 from pathlib import Path
 
 collections.Callable = collections.abc.Callable
@@ -34,25 +35,35 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+def hash(step):
+    current = 0
+    for s in step:
+        current += ord(s)
+        current *= 17
+        current %= 256
+    return current
+
+
 def part_1(source):
     steps = source[0].strip().split(",")
-    answer=0
-    for step in steps:
-        current = 0
-        for s in step:
-            ascii = ord(s)
-            current += ascii
-            current *= 17
-            current %= 256
-        answer += current
-    return answer
-
-
-
+    return sum(hash(step) for step in steps)
 
 
 def part_2(source):
-    return None
+    steps = source[0].strip().split(',')
+    boxes = defaultdict(dict)
+    for step in steps:
+        if '=' in step:
+            lens, num = step.split('=')
+            boxes[hash(lens)][lens] = int(num)
+        else:
+            lens = step[:-1]
+            boxes[hash(lens)].pop(lens, None)
+    total = 0
+    for box, lenses in boxes.items():
+        for index, value in enumerate(lenses.values(), start=1):
+            total += (box + 1) * index * value
+    return total
 
 
 class UnitTests(unittest.TestCase):
@@ -73,10 +84,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(497373, part_1(self.source))
 
     def test_example_data_part_2(self):
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(145, part_2(self.test_source))
 
     def test_part_2(self):
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(259356, part_2(self.source))
 
 
 if __name__ == '__main__':
