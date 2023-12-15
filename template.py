@@ -40,14 +40,8 @@ def part_2(source: str | list[str]) -> int | None:
     return None
 
 
+# noinspection DuplicatedCode
 class UnitTests(unittest.TestCase):
-
-    def setUp(self) -> None:
-        _()
-        day = str(ints(Path(__file__).name)[0])
-        self.source = read_rows(f"{os.path.dirname(__file__)}/day_{day.zfill(2)}.input")
-        self.test_source = read_rows(f"{os.path.dirname(__file__)}/test_{day.zfill(2)}.input")
-        self.test_source2 = read_rows("""""")
 
     def test_example_data_part_1(self):
         self.assertEqual(None, part_1(self.test_source))
@@ -60,6 +54,13 @@ class UnitTests(unittest.TestCase):
 
     def test_part_2(self):
         self.assertEqual(None, part_2(self.source))
+
+    def setUp(self) -> None:
+        _()
+        folder = os.path.dirname(os.path.realpath(__file__))
+        day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
+        self.source = read_rows(f"{folder}/day_{day}.input")
+        self.test_source = read_rows(f"{folder}/test_{day}.input")
 
 
 if __name__ == '__main__':
