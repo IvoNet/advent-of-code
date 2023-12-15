@@ -34,8 +34,18 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def ascii_hash(step):
-    current = 0
+def ascii_hash(step: str) -> int:
+    """
+    Computes a hash value for a given string. The hash value is calculated by iterating over each character in the string,
+    adding its ASCII value to a running total, multiplying the total by 17, and then taking the modulus of 256.
+
+    Parameters:
+    step (str): The string for which to compute the hash value.
+
+    Returns:
+    int: The computed hash value.
+    """
+    current: int = 0
     for s in step:
         current += ord(s)
         current *= 17
@@ -74,14 +84,37 @@ def hashmap_procedure(steps: list[str]) -> dict:
     return boxes
 
 
-def part_1(source):
-    steps = source[0].strip().split(",")
-    return sum(ascii_hash(step) for step in steps)
+def parse(source: list[str]) -> list[str]:
+    """
+    Parses the source list to a list of steps.
+    """
+    return source[0].strip().split(",")
 
 
-def part_2(source):
-    steps = source[0].strip().split(',')
-    boxes = hashmap_procedure(steps)
+def part_1(source: list[str]) -> int:
+    """
+    Computes the sum of the ascii hash values of the steps in the source.
+
+    Parameters:
+    source (list[str]): The source list containing the steps.
+
+    Returns:
+    int: The sum of the ascii hash values of the steps.
+    """
+    return sum(ascii_hash(step) for step in parse(source))
+
+
+def part_2(source: list[str]) -> int:
+    """
+    Computes the total focal power of the boxes.
+
+    Parameters:
+    source (list[str]): The source list containing the steps.
+
+    Returns:
+    int: The total focal power of the boxes.
+    """
+    boxes: dict[int, dict[int, int]] = hashmap_procedure(parse(source))
     total_focal_power = 0
     for box, lenses in boxes.items():
         for index, value in enumerate(lenses.values(), start=1):

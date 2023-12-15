@@ -59,7 +59,7 @@ def get_aoc_id(title: str) -> str:
 
 def update_gist(gist_id, year, day, verbose=False):
     # noinspection DuplicatedCode
-    filename = f"./{year}/day_{day.zfill(2)}/day_{day.zfill(2)}.py"
+    filename = f"./y{year}/day_{day.zfill(2)}/day_{day.zfill(2)}.py"
     with open(f"{filename}", "r") as py:
         py_content = py.read()
         if not py_content:

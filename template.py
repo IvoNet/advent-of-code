@@ -32,11 +32,11 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def part_1(source):
+def part_1(source: str | list[str]) -> int | None:
     return None
 
 
-def part_2(source):
+def part_2(source: str | list[str]) -> int | None:
     return None
 
 
