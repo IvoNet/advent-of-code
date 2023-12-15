@@ -117,8 +117,8 @@ def part_2(source: list[str]) -> int:
     boxes: dict[int, dict[int, int]] = hashmap_procedure(parse(source))
     total_focal_power = 0
     for box, lenses in boxes.items():
-        for index, value in enumerate(lenses.values(), start=1):
-            total_focal_power += (box + 1) * index * value
+        for index, value in enumerate(lenses.values()):
+            total_focal_power += (box + 1) * (index + 1) * value
             _(box, index, value, (box + 1) * index * value)
     return total_focal_power
 

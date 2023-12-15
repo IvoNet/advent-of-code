@@ -83,7 +83,7 @@ def get_puzzle_input(year, day, filename):
         fo.write(resp.text)
 
 
-def get_solution_template(year, day, filename):
+def get_solution_template(filename):
     if os.path.isfile(filename):
         print("Python solution file seems to already exists... leaving it.")
         return
@@ -91,15 +91,15 @@ def get_solution_template(year, day, filename):
     copyfile("./template.py", filename)
 
 
+
 def main(year, day):
     filename = f"./y{year}/day_{day.zfill(2)}/day_{day.zfill(2)}"
-    testfilename = f"./y{year}/day_{day.zfill(2)}/test_{day.zfill(2)}.input"
+    test_filename = f"./y{year}/day_{day.zfill(2)}/test_{day.zfill(2)}.input"
     create_folders(year, day)
     get_puzzle_input(year, day, filename + ".input")
     get_puzzle_description(year, day, filename + ".txt")
-    get_solution_template(year, day, filename + ".py")
-    with open(testfilename, 'w') as file:
-        pass
+    get_solution_template(filename + ".py")
+    touch(test_filename)
 
 
 if __name__ == '__main__':
