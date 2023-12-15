@@ -25,7 +25,7 @@ collections.Callable = collections.abc.Callable
 
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode

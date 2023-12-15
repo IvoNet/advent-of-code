@@ -77,6 +77,8 @@ def extract_top_bottom(grid: list[list[str]], row_index: int) -> tuple[list[list
     bottom: list[list[str]] = grid[row_index:]
 
     # Make sure the top and bottom halves are the same size
+    # beauty of python is that it doesn't care if you go out of bounds of a list so this below just works to
+    # make them even in size. My first version was a lot more code :-)
     top = top[:len(bottom)]
     bottom = bottom[:len(top)]
     return bottom, top
