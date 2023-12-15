@@ -59,14 +59,14 @@ and get the session information from that browser.
 
 ```shell
 # python ./aoc_input.py <YEAR> <DAY>
-python ./aoc_input.py 2023 14
+python ./aoc_input.py 2023 15
 ```
 
 # What is completed...
 
 ## 2023
 
-- 26 stars
+- 30 stars
 
 ## 2022
 
