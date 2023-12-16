@@ -7,27 +7,27 @@ KLINKERS = "aeiouy"
 MEDEKLINKERS = "bcdfghjklmnpqrstvwxz"
 
 
-def alphabet(upper=False):
+def alphabet(upper: bool = False) -> str:
     if upper:
         return ALPHABET.upper()
     return ALPHABET
 
 
-def alphabet_list(upper=False):
+def alphabet_list(upper: bool = False) -> list[str]:
     return list(alphabet(upper))
 
 
-def alphabet_idx(idx, upper=True):
+def alphabet_idx(idx: int, upper: bool = True) -> str:
     if upper:
         return ALPHABET[idx].upper()
     return ALPHABET[idx]
 
 
-def alphabet_loc(letter, indexed=1):
+def alphabet_loc(letter: str, indexed: int = 1) -> int:
     return ALPHABET.index(letter.lower()) + indexed
 
 
-def letter_values_of_word(word, indexed=1):
+def letter_values_of_word(word: str, indexed: int = 1) -> list[int]:
     return [alphabet_loc(x, indexed) for x in word]
 
 
@@ -45,7 +45,7 @@ def product_letter_values_of_word(word, indexed=1) -> int:
     return ret
 
 
-def base_26_encode_string(word):
+def base_26_encode_string(word: str) -> int:
     """Encodes a string to a base 26 encoded string
     A = 0, B = 1, Z = 25, BA = 26, BB = 27, XYZ = 16197
     """

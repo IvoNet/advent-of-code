@@ -17,11 +17,12 @@ import sys
 import unittest
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
-collections.Callable = collections.abc.Callable
+collections.Callable = collections.abc.Callable  # type: ignore
 
 sys.dont_write_bytecode = True
 
@@ -29,7 +30,7 @@ DEBUG = False
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n", sep=" "):
+def _(*args: Any, end: str = "\n", sep: str = " ") -> None:
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
 
@@ -53,7 +54,7 @@ def ascii_hash(step: str) -> int:
     return current
 
 
-def hashmap_procedure(steps: list[str]) -> dict:
+def hashmap_procedure(steps: list[str]) -> dict[int, dict[str, int]]:
     """
     Processes a list of steps to create a dictionary of boxes. Each box is represented by a
     dictionary where the keys are labels and the values are focal lengths.
@@ -67,7 +68,10 @@ def hashmap_procedure(steps: list[str]) -> dict:
     are box indices and the values are dictionaries where the keys are labels and the values
     are focal lengths.
     """
-    boxes = defaultdict(dict)
+    label: str
+    focal_length: str
+    box_index: int
+    boxes: dict[int, dict[str, int]] = defaultdict(dict)
     for step in steps:
         if "-" in step:
             label = step[:-1]
@@ -114,7 +118,7 @@ def part_2(source: list[str]) -> int:
     Returns:
     int: The total focal power of the boxes.
     """
-    boxes: dict[int, dict[int, int]] = hashmap_procedure(parse(source))
+    boxes = hashmap_procedure(parse(source))
     total_focal_power = 0
     for box, lenses in boxes.items():
         for index, value in enumerate(lenses.values()):
@@ -126,17 +130,17 @@ def part_2(source: list[str]) -> int:
 # noinspection DuplicatedCode
 class UnitTests(unittest.TestCase):
 
-    def test_example_data_part_1(self):
+    def test_example_data_part_1(self) -> None:
         self.assertEqual(52, part_1(["HASH"]))
         self.assertEqual(1320, part_1(self.test_source))
 
-    def test_part_1(self):
+    def test_part_1(self) -> None:
         self.assertEqual(497373, part_1(self.source))
 
-    def test_example_data_part_2(self):
+    def test_example_data_part_2(self) -> None:
         self.assertEqual(145, part_2(self.test_source))
 
-    def test_part_2(self):
+    def test_part_2(self) -> None:
         self.assertEqual(259356, part_2(self.source))
 
     def setUp(self) -> None:

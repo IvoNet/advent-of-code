@@ -13,31 +13,29 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
+import sys
 from pathlib import Path
+from typing import Iterable
 
 import pytest
 
-from ivonet.grid import transpose
-
-collections.Callable = collections.abc.Callable
-
-import sys
-
 from ivonet.files import read_rows
+from ivonet.grid import transpose
 from ivonet.iter import ints, make_hashable
 
+collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG: bool = False
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n", sep=" "):
+def _(*args: Iterable, end: str = "\n", sep: str = " ") -> None:
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
 
 
-def p(grid):
+def p(grid: list[list]):
     if DEBUG:
         for row in grid:
             print("".join(row))
@@ -50,8 +48,8 @@ def parse(source):
 
 class SpinCycle:
 
-    def __init__(self, source):
-        self.source = source
+    def __init__(self, source: list[list]):
+        self.source: list[list] = source
         self.grid: list[list] = source
 
     def flip(self) -> SpinCycle:
@@ -144,7 +142,7 @@ class SpinCycle:
         return self
 
 
-def part_1(source):
+def part_1(source) -> int:
     return SpinCycle(source).flip().score()
 
 
