@@ -91,6 +91,7 @@ def part_1(source: list[str]) -> int:
 
 
 def part_2(grid: list[str]) -> int:
+    # TODO NOT WORKING YET
     max_energized = 0
     width = len(grid[0])
     height = len(grid)
