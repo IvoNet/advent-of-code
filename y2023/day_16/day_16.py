@@ -85,13 +85,7 @@ class FloorWillBeLava(object):
 
             current_tile = self.grid[row][col]
 
-            if current_tile == self.EMPTY or (
-                    current_tile == self.V_SPLITTER and direction in [self.UP, self.DOWN]) or (
-                    current_tile == self.H_SPLITTER and direction in [self.LEFT, self.RIGHT]):
-                if (row, col, direction) not in explored:
-                    explored.add((row, col, direction))
-                    queue.append((row, col, direction))
-            elif current_tile == self.FORE_MIRROR:
+            if current_tile == self.FORE_MIRROR:
                 if direction == self.RIGHT:
                     direction = self.UP
                 elif direction == self.UP:
@@ -103,7 +97,9 @@ class FloorWillBeLava(object):
                 if (row, col, direction) not in explored:
                     explored.add((row, col, direction))
                     queue.append((row, col, direction))
-            elif current_tile == self.BACK_MIRROR:
+                continue
+
+            if current_tile == self.BACK_MIRROR:
                 if direction == self.RIGHT:
                     direction = self.DOWN
                 elif direction == self.UP:
@@ -115,16 +111,25 @@ class FloorWillBeLava(object):
                 if (row, col, direction) not in explored:
                     explored.add((row, col, direction))
                     queue.append((row, col, direction))
-            elif current_tile == self.V_SPLITTER:
+                continue
+
+            if current_tile == self.V_SPLITTER and direction in [self.LEFT, self.RIGHT]:
                 for nd in [self.UP, self.DOWN]:
                     if (row, col, nd) not in explored:
                         explored.add((row, col, nd))
                         queue.append((row, col, nd))
-            elif current_tile == self.H_SPLITTER:
+                continue
+
+            if current_tile == self.H_SPLITTER and direction in [self.UP, self.DOWN]:
                 for nd in [self.LEFT, self.RIGHT]:
                     if (row, col, nd) not in explored:
                         explored.add((row, col, nd))
                         queue.append((row, col, nd))
+                continue
+
+            if (row, col, direction) not in explored:
+                explored.add((row, col, direction))
+                queue.append((row, col, direction))
 
         return len({(row, col) for row, col, _ in explored})
 
