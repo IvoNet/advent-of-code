@@ -39,12 +39,12 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def part_1(source: list[str]) -> int:
+def bfs(source: list[str], start: complex, direction: complex) -> int:
     grid = [list(row) for row in source]
     start: complex = 0 - 1j
     explored: set[tuple[complex, complex]] = set()
     queue: deque[tuple[complex, complex]] = deque()
-    queue.append((start, move_right))
+    queue.append((start, direction))
 
     while queue:
         pos, direction = queue.popleft()
@@ -86,8 +86,21 @@ def part_1(source: list[str]) -> int:
     return len({p for p, _ in explored})
 
 
+def part_1(source: list[str]) -> int:
+    return bfs(source, 0 - 1j, move_right)
+
+
 def part_2(grid: list[str]) -> int:
-    return 0
+    max_energized = 0
+    width = len(grid[0])
+    height = len(grid)
+    for row in range(width):
+        max_energized = max(max_energized, bfs(grid, row + 0j, move_right))
+        max_energized = max(max_energized, bfs(grid, row + width * 1j, move_left))
+    for col in range(height):
+        max_energized = max(max_energized, bfs(grid, col * 1j, move_down))
+        max_energized = max(max_energized, bfs(grid, col + height * 1j, move_up))
+    return move_right
 
 
 # noinspection DuplicatedCode
