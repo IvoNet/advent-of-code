@@ -26,7 +26,6 @@ sys.dont_write_bytecode = True
 
 DEBUG = True
 
-
 DIRECTIONS: dict[str, tuple[int, int]] = {
     "right": (0, 1),  # right
     "up": (-1, 0),  # up
@@ -51,6 +50,17 @@ class FloorWillBeLava(object):
     UP = "up"
     LEFT = "left"
     DOWN = "down"
+
+    MIRROR_REFLECTIONS = {
+        (RIGHT, FORE_MIRROR): UP,
+        (UP, FORE_MIRROR): RIGHT,
+        (LEFT, FORE_MIRROR): DOWN,
+        (DOWN, FORE_MIRROR): LEFT,
+        (RIGHT, BACK_MIRROR): DOWN,
+        (UP, BACK_MIRROR): LEFT,
+        (LEFT, BACK_MIRROR): UP,
+        (DOWN, BACK_MIRROR): RIGHT,
+    }
 
     def __init__(self, source: list[str]) -> None:
         self.source: list[str] = source
@@ -82,8 +92,6 @@ class FloorWillBeLava(object):
 
             current_tile = self.grid[row][col]
 
-
-
             if current_tile == self.V_SPLITTER and direction in [self.LEFT, self.RIGHT]:
                 for nd in [self.UP, self.DOWN]:
                     if (row, col, nd) not in explored:
@@ -98,25 +106,8 @@ class FloorWillBeLava(object):
                         queue.append((row, col, nd))
                 continue
 
-            if current_tile == self.FORE_MIRROR:
-                if direction == self.RIGHT:
-                    direction = self.UP
-                elif direction == self.UP:
-                    direction = self.RIGHT
-                elif direction == self.LEFT:
-                    direction = self.DOWN
-                else:
-                    direction = self.LEFT
-
-            if current_tile == self.BACK_MIRROR:
-                if direction == self.RIGHT:
-                    direction = self.DOWN
-                elif direction == self.UP:
-                    direction = self.LEFT
-                elif direction == self.LEFT:
-                    direction = self.UP
-                else:
-                    direction = self.RIGHT
+            if current_tile in [self.FORE_MIRROR, self.BACK_MIRROR]:
+                direction = self.MIRROR_REFLECTIONS[(direction, current_tile)]
 
             if (row, col, direction) not in explored:
                 explored.add((row, col, direction))
@@ -125,19 +116,40 @@ class FloorWillBeLava(object):
         return len({(row, col) for row, col, _ in explored})
 
     def energize(self) -> int:
+        """
+        Initiates the process of energizing the tiles on the grid.
+
+        The method starts a breadth-first search (bfs) from the top-left corner of the grid (position (0, -1))
+        with the initial direction being towards the right. The bfs takes into account the different types of
+        tiles (empty, fore mirror, back mirror, vertical splitter, horizontal splitter) and their effects on
+        the direction of the bfs.
+
+        Returns:
+            int: The number of tiles that can be energized from the starting position.
+        """
         return self.bfs(start=(0, -1), start_direction=self.RIGHT)
 
     def best_config(self):
-        max_val = 0
+        """
+        Calculates the maximum number of tiles that can be energized from any starting position on the grid's perimeter.
 
-        for r in range(self.height):
-            max_val = max(max_val, self.bfs((r, -1), self.RIGHT))
-            max_val = max(max_val, self.bfs((r, self.width), self.LEFT))
+        The method iterates over all possible starting positions on the perimeter of the grid (top, bottom, left, right)
+        and performs a breadth-first search (bfs) from each position. The direction of the bfs is always towards the center
+        of the grid. The bfs takes into account the different types of tiles (empty, fore mirror, back mirror, vertical splitter,
+        horizontal splitter) and their effects on the direction of the bfs.
+
+        Returns:
+            int: The maximum number of tiles that can be energized from any starting position on the grid's perimeter.
+        """
+        max_val = 0
 
         for c in range(self.width):
             max_val = max(max_val, self.bfs((-1, c), self.DOWN))
             max_val = max(max_val, self.bfs((self.height, c), self.UP))
 
+        for r in range(self.height):
+            max_val = max(max_val, self.bfs((r, -1), self.RIGHT))
+            max_val = max(max_val, self.bfs((r, self.width), self.LEFT))
         return max_val
 
     def __str__(self) -> str:
