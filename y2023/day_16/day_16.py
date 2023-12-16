@@ -26,8 +26,6 @@ sys.dont_write_bytecode = True
 
 DEBUG = True
 
-# Define DIRECTIONS: right, up, left, down
-# DIRECTIONS = [(0, 1), (-1, 0), (0, -1), (1, 0)]  # directions 0..3 % 4
 
 DIRECTIONS: dict[str, tuple[int, int]] = {
     "right": (0, 1),  # right
@@ -49,9 +47,9 @@ class FloorWillBeLava(object):
     BACK_MIRROR = "\\"
     V_SPLITTER = "|"
     H_SPLITTER = "-"
-    LEFT = "left"
     RIGHT = "right"
     UP = "up"
+    LEFT = "left"
     DOWN = "down"
 
     def __init__(self, source: list[str]) -> None:
@@ -68,12 +66,11 @@ class FloorWillBeLava(object):
 
     def bfs(self, start: tuple[int, int] = (0, -1), start_direction: str = "right") -> int:
         queue: deque = deque()
+        explored: set[tuple[int, int, str]] = set()
         row, col = start
         direction = start_direction
 
         queue.append((row, col, direction))
-
-        explored: set[tuple[int, int, str]] = set()
 
         while queue:
             row, col, direction = queue.popleft()
@@ -85,33 +82,7 @@ class FloorWillBeLava(object):
 
             current_tile = self.grid[row][col]
 
-            if current_tile == self.FORE_MIRROR:
-                if direction == self.RIGHT:
-                    direction = self.UP
-                elif direction == self.UP:
-                    direction = self.RIGHT
-                elif direction == self.LEFT:
-                    direction = self.DOWN
-                else:
-                    direction = self.LEFT
-                if (row, col, direction) not in explored:
-                    explored.add((row, col, direction))
-                    queue.append((row, col, direction))
-                continue
 
-            if current_tile == self.BACK_MIRROR:
-                if direction == self.RIGHT:
-                    direction = self.DOWN
-                elif direction == self.UP:
-                    direction = self.LEFT
-                elif direction == self.LEFT:
-                    direction = self.UP
-                else:
-                    direction = self.RIGHT
-                if (row, col, direction) not in explored:
-                    explored.add((row, col, direction))
-                    queue.append((row, col, direction))
-                continue
 
             if current_tile == self.V_SPLITTER and direction in [self.LEFT, self.RIGHT]:
                 for nd in [self.UP, self.DOWN]:
@@ -126,6 +97,26 @@ class FloorWillBeLava(object):
                         explored.add((row, col, nd))
                         queue.append((row, col, nd))
                 continue
+
+            if current_tile == self.FORE_MIRROR:
+                if direction == self.RIGHT:
+                    direction = self.UP
+                elif direction == self.UP:
+                    direction = self.RIGHT
+                elif direction == self.LEFT:
+                    direction = self.DOWN
+                else:
+                    direction = self.LEFT
+
+            if current_tile == self.BACK_MIRROR:
+                if direction == self.RIGHT:
+                    direction = self.DOWN
+                elif direction == self.UP:
+                    direction = self.LEFT
+                elif direction == self.LEFT:
+                    direction = self.UP
+                else:
+                    direction = self.RIGHT
 
             if (row, col, direction) not in explored:
                 explored.add((row, col, direction))
