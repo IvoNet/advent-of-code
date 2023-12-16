@@ -67,6 +67,8 @@ class FloorWillBeLava(object):
         self.grid: list[str] = source
         self.height: int = len(self.grid)
         self.width: int = len(self.grid[0])
+        self.best_energized: set[tuple[int, int]] = set()
+        self.energized: set[tuple[int, int]] = set()
 
     def __is_valid(self, row: int, col: int) -> bool:
         return 0 <= row < self.height and 0 <= col < self.width
@@ -103,6 +105,7 @@ class FloorWillBeLava(object):
             col += DIRECTIONS[direction][1]
 
             if self._is_out_of_bounds(row, col):
+                _(f"Out of bounds: {row}, {col}")
                 continue
 
             current_tile = self.grid[row][col]
@@ -128,7 +131,8 @@ class FloorWillBeLava(object):
                 explored.add((row, col, direction))
                 queue.append((row, col, direction))
 
-        return len({(row, col) for row, col, _ in explored})
+        self.energized = {(row, col) for row, col, _ in explored}
+        return len(self.energized)
 
     def energize(self) -> int:
         """
@@ -157,26 +161,51 @@ class FloorWillBeLava(object):
             int: The maximum number of tiles that can be energized from any starting position on the grid's perimeter.
         """
         max_val = 0
+        self.best_energized = set()
 
         for c in range(self.width):
-            max_val = max(max_val, self.bfs((-1, c), self.DOWN))
-            max_val = max(max_val, self.bfs((self.height, c), self.UP))
+            current = self.bfs((-1, c), self.DOWN)
+            if current > max_val:
+                max_val = current
+                self.best_energized = self.energized
+            current = self.bfs((self.height, c), self.UP)
+            if current > max_val:
+                max_val = current
+                self.best_energized = self.energized
 
         for r in range(self.height):
-            max_val = max(max_val, self.bfs((r, -1), self.RIGHT))
-            max_val = max(max_val, self.bfs((r, self.width), self.LEFT))
+            current = self.bfs((r, -1), self.RIGHT)
+            if current > max_val:
+                max_val = current
+                self.best_energized = self.energized
+            current = self.bfs((r, self.width), self.LEFT)
+            if current > max_val:
+                max_val = current
+                self.best_energized = self.energized
         return max_val
 
     def __str__(self) -> str:
-        return "\n".join(self.grid)
+        if not self.best_energized:
+            self.best_config()
+        grid = [list(row) for row in self.source]
+        for row, col in self.best_energized:
+            if grid[row][col] == self.EMPTY:
+                grid[row][col] = "#"
+        return "\n".join("".join(row) for row in grid)
 
 
 def part_1(grid: list[str]) -> int:
-    return FloorWillBeLava(grid).energize()
+    lava = FloorWillBeLava(grid)
+    energize = lava.energize()
+    _(lava)
+    return energize
 
 
 def part_2(grid: list[str]) -> int:
-    return FloorWillBeLava(grid).best_config()
+    lava = FloorWillBeLava(grid)
+    answer = lava.best_config()
+    _(lava)
+    return answer
 
 
 # noinspection DuplicatedCode

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 
+# Define movements using imaginary numbers
+move_right = 1j  # Move one unit to the right
+move_up = -1  # Move one unit up
+move_left = -1j  # Move one unit to the left
+move_down = 1  # Move one unit down
+
 
 def navigate_through_grid():
     # Starting point
     current_position = 0 + 0j  # Complex number representing (0,0)
-
-    # Define movements using imaginary numbers
-    move_right = 1  # Move one unit to the right
-    move_up = 1j  # Move one unit up
-    move_left = -1  # Move one unit to the left
-    move_down = -1j  # Move one unit down
 
     # List of movements to navigate through the grid
     movements = [move_right, move_up, move_left, move_down]
@@ -34,6 +34,60 @@ def navigate_through_grid():
         start += start_direction
         print(f"Moved to 4: {int(start.real), int(start.imag)} - {start}")
 
+    grid = [list(row) for row in ["....", "....", "....", "...."]]
+    pos = 0 + 0j
+    for direction in [move_right, move_down, move_left, move_up]:
+        for i in range(len(grid) - 1):
+            print(f"Moved to 5: {int(pos.real), int(pos.imag)} - {pos}")
+            grid[int(pos.imag)][int(pos.real)] = "#"
+            pos += direction
+    print("\n".join("".join(row) for row in grid))
+
+    def turn_left(direction):
+        return direction * move_left
+
+    def turn_right(direction):
+        return direction * move_right
+
+    direction = move_right
+    pos = 0 + 0j
+    for i in range(10):
+        print(f"Moved to 6: {int(pos.real), int(pos.imag)} - {pos}")
+        pos += direction
+        direction = turn_left(direction)
+
+
+def moving():
+    # /
+    current_direction = move_up  # Moving up en find ing / should go right
+    current_direction *= -1j
+    assert current_direction == move_right
+    current_direction = move_down  # Moving up en find ing / should go right
+    current_direction *= -1j
+    assert current_direction == move_left
+    current_direction = move_right  # Moving up en find ing / should go right
+    current_direction *= 1j
+    assert current_direction == move_up
+    current_direction = move_left  # Moving up en find ing / should go right
+    current_direction *= 1j
+    assert current_direction == move_down
+
+    # \
+    current_direction = move_up  # Moving up en find ing / should go right
+    current_direction *= 1j
+    assert current_direction == move_left
+    current_direction = move_down  # Moving up en find ing / should go right
+    current_direction *= 1j
+    assert current_direction == move_right
+    current_direction = move_right  # Moving up en find ing / should go right
+    current_direction *= -1j
+    assert current_direction == move_down
+    current_direction = move_left  # Moving up en find ing / should go right
+    current_direction *= -1j
+    assert current_direction == move_up
+
 
 # Call the function to see the navigation
-navigate_through_grid()
+# navigate_through_grid()
+
+moving()
