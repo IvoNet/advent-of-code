@@ -75,6 +75,21 @@ class FloorWillBeLava(object):
         return not self.__is_valid(row, col)
 
     def bfs(self, start: tuple[int, int] = (0, -1), start_direction: str = "right") -> int:
+        """
+        Performs a breadth-first search (bfs) from a given starting position and direction on the grid.
+
+        The bfs takes into account the different types of tiles (empty, fore mirror, back mirror, vertical splitter,
+        horizontal splitter) and their effects on the direction of the bfs. The bfs continues until all reachable tiles
+        from the starting position have been explored.
+
+        Args:
+           start (tuple[int, int], optional): The starting position for the bfs. Defaults to (0, -1)
+              Note that the starting point is just outside the grid as we first do a step and then continue..
+           start_direction (str, optional): The initial direction of the bfs. Defaults to "right".
+
+        Returns:
+           int: The number of tiles that can be energized from the starting position.
+       """
         queue: deque = deque()
         explored: set[tuple[int, int, str]] = set()
         row, col = start
