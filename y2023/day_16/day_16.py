@@ -54,15 +54,11 @@ class FloorWillBeLava(object):
     UP = "up"
     DOWN = "down"
 
-    def __init__(self, source: list[str], start: tuple[int, int] = (0, -1), direction: str = "right") -> None:
+    def __init__(self, source: list[str]) -> None:
         self.source: list[str] = source
         self.grid: list[str] = source
         self.height: int = len(self.grid)
         self.width: int = len(self.grid[0])
-        self.queue: deque = deque()
-        self.direction: str = direction
-        self.start: tuple[int, int] = start
-        self.explored: set[tuple[int, int, str]] = set()
 
     def __is_valid(self, row: int, col: int) -> bool:
         return 0 <= row < self.height and 0 <= col < self.width
@@ -70,12 +66,17 @@ class FloorWillBeLava(object):
     def _is_out_of_bounds(self, row: int, col: int) -> bool:
         return not self.__is_valid(row, col)
 
-    def bfs(self) -> None:
-        row, col = self.start
-        self.queue.append((row, col, self.direction))
+    def bfs(self, start: tuple[int, int] = (0, -1), start_direction: str = "right") -> int:
+        queue: deque = deque()
+        row, col = start
+        direction = start_direction
 
-        while self.queue:
-            row, col, direction = self.queue.popleft()
+        queue.append((row, col, direction))
+
+        explored: set[tuple[int, int, str]] = set()
+
+        while queue:
+            row, col, direction = queue.popleft()
             row += DIRECTIONS[direction][0]
             col += DIRECTIONS[direction][1]
 
@@ -87,9 +88,9 @@ class FloorWillBeLava(object):
             if current_tile == self.EMPTY or (
                     current_tile == self.V_SPLITTER and direction in [self.UP, self.DOWN]) or (
                     current_tile == self.H_SPLITTER and direction in [self.LEFT, self.RIGHT]):
-                if (row, col, direction) not in self.explored:
-                    self.explored.add((row, col, direction))
-                    self.queue.append((row, col, direction))
+                if (row, col, direction) not in explored:
+                    explored.add((row, col, direction))
+                    queue.append((row, col, direction))
             elif current_tile == self.FORE_MIRROR:
                 if direction == self.RIGHT:
                     direction = self.UP
@@ -99,9 +100,9 @@ class FloorWillBeLava(object):
                     direction = self.DOWN
                 else:
                     direction = self.LEFT
-                if (row, col, direction) not in self.explored:
-                    self.explored.add((row, col, direction))
-                    self.queue.append((row, col, direction))
+                if (row, col, direction) not in explored:
+                    explored.add((row, col, direction))
+                    queue.append((row, col, direction))
             elif current_tile == self.BACK_MIRROR:
                 if direction == self.RIGHT:
                     direction = self.DOWN
@@ -111,28 +112,37 @@ class FloorWillBeLava(object):
                     direction = self.UP
                 else:
                     direction = self.RIGHT
-                if (row, col, direction) not in self.explored:
-                    self.explored.add((row, col, direction))
-                    self.queue.append((row, col, direction))
+                if (row, col, direction) not in explored:
+                    explored.add((row, col, direction))
+                    queue.append((row, col, direction))
             elif current_tile == self.V_SPLITTER:
                 for nd in [self.UP, self.DOWN]:
-                    if (row, col, nd) not in self.explored:
-                        self.explored.add((row, col, nd))
-                        self.queue.append((row, col, nd))
+                    if (row, col, nd) not in explored:
+                        explored.add((row, col, nd))
+                        queue.append((row, col, nd))
             elif current_tile == self.H_SPLITTER:
                 for nd in [self.LEFT, self.RIGHT]:
-                    if (row, col, nd) not in self.explored:
-                        self.explored.add((row, col, nd))
-                        self.queue.append((row, col, nd))
+                    if (row, col, nd) not in explored:
+                        explored.add((row, col, nd))
+                        queue.append((row, col, nd))
+
+        return len({(row, col) for row, col, _ in explored})
 
     def energize(self) -> int:
-        self.bfs()
-        _(f"Energized: {len(self.explored)} - {self.explored}")
-        return len({(row, col) for row, col, _ in self.explored})
+        return self.bfs(start=(0, -1), start_direction=self.RIGHT)
 
     def best_config(self):
+        max_val = 0
 
-        pass
+        for r in range(self.height):
+            max_val = max(max_val, self.bfs((r, -1), self.RIGHT))
+            max_val = max(max_val, self.bfs((r, self.width), self.LEFT))
+
+        for c in range(self.width):
+            max_val = max(max_val, self.bfs((-1, c), self.DOWN))
+            max_val = max(max_val, self.bfs((self.height, c), self.UP))
+
+        return max_val
 
     def __str__(self) -> str:
         return "\n".join(self.grid)
@@ -159,7 +169,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(51, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(7154, part_2(self.source))
 
     def setUp(self) -> None:
         _()
