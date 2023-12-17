@@ -116,7 +116,8 @@ def neighbor_values(grid: list[list[any]], coord: Location, diagonal=True) -> li
     return [grid[h][w] for h, w in nb]
 
 
-def neighbors_defined_grid(coord: Location, grid=(100, 100), diagonal=True) -> list[Location]:
+def neighbors_defined_grid(coord: Location, grid=(100, 100), diagonal=True, allowed_directions="NESW") -> list[
+    Location]:
     """Same as neighbors (above) but now with a fictional grid"""
     height = grid[0] - 1
     width = grid[1] - 1
