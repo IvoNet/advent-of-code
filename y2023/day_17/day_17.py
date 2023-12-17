@@ -78,25 +78,29 @@ def neighbors_defined_grid(coord: Location, grid=(100, 100), allowed_directions=
 
 def direction_steps(node: Node[T]) -> tuple[int, str]:
     # determine direction
-    if node.parent is None:  # start (moving right)
-        return 0, "E"
-    if node.state.row == node.parent.state.row:  # moving left or right
-        steps = 0
-        while node.parent is not None:
-            if node.state.row == node.parent.state.row:
+    test_node = node
+    if test_node.parent is None:  # start (moving right)
+        return 1, "E"
+    if test_node.state.row == test_node.parent.state.row:  # moving left or right
+        steps = 1
+        while test_node.parent is not None:
+            if node.state.row == test_node.parent.state.row:
                 steps += 1
-                node = node.parent
+                test_node = test_node.parent
             else:
                 break
+        _(steps, f"steps: {steps} - Node: {node}")
         return steps, "E" if node.state.col > node.parent.state.col else "W"
-    else:  # moving up or down
-        steps = 0
-        while node.parent is not None:
-            if node.state.col == node.parent.state.col:
+
+    if test_node.state.col == test_node.parent.state.col:  # moving up or down
+        steps = 1
+        while test_node.parent is not None:
+            if node.state.col == test_node.parent.state.col:
                 steps += 1
-                node = node.parent
+                test_node = test_node.parent
             else:
                 break
+        _(steps, f"steps: {steps} - Node: {node}")
         return steps, "S" if node.state.row > node.parent.state.row else "N"
 
 
@@ -107,54 +111,27 @@ def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
         - test if direction is allowed (not more than 3 steps in the same direction)
         - test if direction is allowed (not reverse direction in a block)
         """
-        # determine direction
         if node.parent is None:  # start (moving right)
             return [Location(r, c) for r, c in
                     neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
                                            allowed_directions="E")]
-        if node.parent.parent is None:  # second step
-            # determine direction and eliminate reverse direction
-            if node.state.row == node.parent.state.row:  # moving left or right
-                return [Location(r, c) for r, c in
-                        neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                               allowed_directions="NES" if node.state.col > node.parent.state.col else "NWS")]
-            else:  # moving up or down
-                return [Location(r, c) for r, c in
-                        neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                               allowed_directions="ESW" if node.state.row > node.parent.state.row else "NEW")]
-        if node.parent.parent.parent is None:  # third step
-            # determine direction and eliminate reverse direction and more than 3 steps in the same direction
-            # Hmm it seems that the direction check here is not important as reverse is not allowed, and we are testing for same direction
-            if node.state.row == node.parent.state.row:  # moving left or right
-                if node.state.row == node.parent.parent.state.row:  # moving left or right and previous move was left or right
-                    return [Location(r, c) for r, c in
-                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="NS")]
-                else:  # moving up or down and previous move was left or right
-                    return [Location(r, c) for r, c in
-                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="ESW" if node.state.col > node.parent.state.col else "NWE")]
-            if node.state.col == node.parent.state.col:  # moving up or down
-                if node.parent.state.col == node.parent.parent.state.col:  # moving up or down and previous move was up or down
-                    return [Location(r, c) for r, c in
-                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="EW")]
-                else:  # moving left or right and previous move was up or down
-                    return [Location(r, c) for r, c in
-                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="NES" if node.state.col > node.parent.state.row else "NEW")]
 
-        # if I arrive here none of the above is true what is left?
-        if node.state.row == node.parent.state.row:  # moving left or right
-            return [Location(r, c) for r, c in
-                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                           allowed_directions="NES" if node.state.col > node.parent.state.col else "NWS")]
-        else:  # moving up or down
-            return [Location(r, c) for r, c in
-                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                           allowed_directions="ESW" if node.state.row > node.parent.state.row else "NEW")]
+        # determine direction
+        steps, direction = direction_steps(node)
+        max_steps = 3
+        if direction == "E":
+            allowed_directions = "NES" if steps < max_steps else "NS"
+        elif direction == "W":
+            allowed_directions = "NWS" if steps < max_steps else "NS"
+        elif direction == "N":
+            allowed_directions = "NEW" if steps < max_steps else "EW"
+        else:  # direction == "S":
+            allowed_directions = "ESW" if steps < max_steps else "EW"
 
-        raise ValueError("This should not happen")
+        return [Location(r, c) for r, c in
+                neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
+                                       allowed_directions=allowed_directions)]
+
 
     return adjacent
 
@@ -228,6 +205,12 @@ def part_1(source: list[list[int]]) -> int | None:
         for row in grid:
             print("".join(row))
 
+        n = solution
+        while n.parent is not None:
+            print(n.state, n.cost - n.parent.cost, n.cost, n.heuristic, n.cost + n.heuristic)
+            n = n.parent
+
+
     if solution:
         # print(solution)
         # print(node_to_path(solution))
@@ -246,13 +229,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(102, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(686, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(94, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(801, part_2(self.source))
 
     def setUp(self) -> None:
         _()
