@@ -22,7 +22,7 @@ from ivonet.collection import PriorityQueue
 from ivonet.files import read_int_matrix
 from ivonet.grid import Location, DIRECTIONS
 from ivonet.iter import ints
-from ivonet.search import Node
+from ivonet.search import Node, node_to_path
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
@@ -76,6 +76,31 @@ def neighbors_defined_grid(coord: Location, grid=(100, 100), allowed_directions=
     return adjacent
 
 
+def direction_steps(node: Node[T]) -> tuple[int, str]:
+    # determine direction
+    if node.parent is None:  # start (moving right)
+        return 0, "E"
+    if node.state.row == node.parent.state.row:  # moving left or right
+        steps = 0
+        while node.parent is not None:
+            if node.state.row == node.parent.state.row:
+                steps += 1
+                node = node.parent
+            else:
+                break
+        return steps, "E" if node.state.col > node.parent.state.col else "W"
+    else:  # moving up or down
+        steps = 0
+        while node.parent is not None:
+            if node.state.col == node.parent.state.col:
+                steps += 1
+                node = node.parent
+            else:
+                break
+        return steps, "S" if node.state.row > node.parent.state.row else "N"
+
+
+
 def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
     def adjacent(node: Node[T]) -> list[Location]:
         """
@@ -86,16 +111,17 @@ def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
         if node.parent is None:  # start (moving right)
             return [Location(r, c) for r, c in
                     neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                           allowed_directions="NES")]
+                                           allowed_directions="E")]
         if node.parent.parent is None:  # second step
             # determine direction and eliminate reverse direction
             if node.state.row == node.parent.state.row:  # moving left or right
                 return [Location(r, c) for r, c in
                         neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
                                                allowed_directions="NES" if node.state.col > node.parent.state.col else "NWS")]
-            return [Location(r, c) for r, c in
-                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                           allowed_directions="ESW" if node.state.row > node.parent.state.row else "NEW")]
+            else:  # moving up or down
+                return [Location(r, c) for r, c in
+                        neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
+                                               allowed_directions="ESW" if node.state.row > node.parent.state.row else "NEW")]
         if node.parent.parent.parent is None:  # third step
             # determine direction and eliminate reverse direction and more than 3 steps in the same direction
             # Hmm it seems that the direction check here is not important as reverse is not allowed, and we are testing for same direction
@@ -108,7 +134,6 @@ def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
                     return [Location(r, c) for r, c in
                             neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
                                                    allowed_directions="ESW" if node.state.col > node.parent.state.col else "NWE")]
-            # optimization later? seems the same the two below
             if node.state.col == node.parent.state.col:  # moving up or down
                 if node.parent.state.col == node.parent.parent.state.col:  # moving up or down and previous move was up or down
                     return [Location(r, c) for r, c in
@@ -119,6 +144,15 @@ def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
                             neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
                                                    allowed_directions="NES" if node.state.col > node.parent.state.row else "NEW")]
 
+        # if I arrive here none of the above is true what is left?
+        if node.state.row == node.parent.state.row:  # moving left or right
+            return [Location(r, c) for r, c in
+                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
+                                           allowed_directions="NES" if node.state.col > node.parent.state.col else "NWS")]
+        else:  # moving up or down
+            return [Location(r, c) for r, c in
+                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
+                                           allowed_directions="ESW" if node.state.row > node.parent.state.row else "NEW")]
 
         raise ValueError("This should not happen")
 
@@ -185,6 +219,15 @@ def part_1(source: list[list[int]]) -> int | None:
                      adjoining(rows, cols),  # callback to get all the relevant neighbors of a Location
                      manhattan_distance(goal),  # No diagonals allowed so the Manhattan distance calculator callback
                      cost_calculator(risks))  # the cost of going a direction based on the Chiton risk per Location
+    if DEBUG:
+        print("Solution:")
+        print(node_to_path(solution))
+        grid = [[str(element) for element in row] for row in source]
+        for loc in node_to_path(solution):
+            grid[loc.row][loc.col] = "#"
+        for row in grid:
+            print("".join(row))
+
     if solution:
         # print(solution)
         # print(node_to_path(solution))
