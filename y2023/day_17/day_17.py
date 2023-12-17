@@ -16,12 +16,14 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from typing import TypeVar
+from typing import TypeVar, Generic
 
 from ivonet.collection import PriorityQueue
 from ivonet.files import read_int_matrix
 from ivonet.grid import Location
 from ivonet.iter import ints
+
+DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
@@ -60,7 +62,7 @@ def print_solution(solution_node: Node, source: list[list[int]]) -> None:
             print("".join(row))
 
 
-class Node:
+class Node(Generic[T]):
     """
     Represents a node in the grid.
     it has all the information needed to calculate the cost and the path to this node and keep track of the direction
@@ -115,20 +117,38 @@ class Node:
     def __repr__(self) -> str:
         return f"({self.row}, {self.col}) - ({self.direction_row}, {self.direction_col}) - {self.cost} - {self.steps} - {self.parent}"
 
-    def __eq__(self, other: Node) -> bool:
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Node):
+            return False
         return self.state == other.state
 
     def __hash__(self) -> int:
         return hash(self.state)
 
 
-def astar(source: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Node:
+def not_opposite(c_node, n_d_col, n_d_row):
+    return (n_d_row, n_d_col) != (-c_node.direction_row, -c_node.direction_col)
+
+
+def not_same(c_node, n_d_col, n_d_row):
+    return (n_d_row, n_d_col) != (c_node.direction_row, c_node.direction_col)
+
+
+def starting_point(node):
+    """
+    Only at the starting point is there no direction yet.
+    Feels a bit like a hack :-) but it works.
+    """
+    return (node.direction_row, node.direction_col) == (0, 0)
+
+
+def astar(grid: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Node:
     """
     Implements the A* search algorithm to find the shortest path in a grid.
 
     Parameters:
-    source (list[list[int]]): A 2D list representing the grid to be traversed. Each element in the grid represents the
-                              cost of visiting that cell.
+    grid (list[list[int]]): A 2D list representing the grid to be traversed. Each element in the grid represents the
+                              cost in heat loss of visiting that cell.
     max_steps (int, optional): The maximum number of steps that can be taken in the same direction. Defaults to 3.
     min_turn (int, optional): The minimum number of steps that must be taken before a turn can be made. Defaults to 0.
 
@@ -154,38 +174,37 @@ def astar(source: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Nod
     4. If the function exits the loop without finding the goal node, it raises a `ValueError` indicating that no
        solution was found.
     """
-    height: int = len(source)
-    width: int = len(source[0])
+    height: int = len(grid)
+    width: int = len(grid[0])
     goal = Location(height - 1, width - 1)
     explored: set[tuple[int, int, int, int, int]] = set()
-    start = Node(0, 0, 0, 0, 0, None)
+    start: Node = Node(0, 0, 0, 0, 0, None)
     priority_queue: PriorityQueue = PriorityQueue()
     priority_queue.push(start)
 
     while not priority_queue.empty:
-        cur_node = priority_queue.pop()
-        if cur_node.location == goal:
-            return cur_node
-        if cur_node.state in explored:
+        c_node = priority_queue.pop()
+        if c_node.location == goal:
+            return c_node
+        if c_node.state in explored:
             continue
-        explored.add(cur_node.state)
-        if cur_node.steps < max_steps and (cur_node.direction_row, cur_node.direction_col) != (0, 0):
-            new_row = cur_node.row + cur_node.direction_row
-            new_col = cur_node.col + cur_node.direction_col
-            if 0 <= new_row < height and 0 <= new_col < width:  # check if the new node is within the grid
-                new_cost = cur_node.cost + source[new_row][new_col]
-                new_node = Node(new_row, new_col, cur_node.direction_row, cur_node.direction_col, new_cost, cur_node)
+        explored.add(c_node.state)
+        if c_node.steps < max_steps and not starting_point(c_node):
+            n_row = c_node.row + c_node.direction_row
+            n_col = c_node.col + c_node.direction_col
+            if 0 <= n_row < height and 0 <= n_col < width:  # check if the new node is within the grid
+                new_node: Node = Node(n_row, n_col, c_node.direction_row, c_node.direction_col,
+                                      c_node.cost + grid[n_row][n_col], c_node)
                 priority_queue.push(new_node)
 
-        if cur_node.steps >= min_turn or (cur_node.direction_row, cur_node.direction_col) == (0, 0):
-            for new_direction_row, new_direction_col in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-                if (new_direction_row, new_direction_col) != (cur_node.direction_row, cur_node.direction_col) and \
-                        (new_direction_row, new_direction_col) != (-cur_node.direction_row, -cur_node.direction_col):
-                    new_row = cur_node.row + new_direction_row
-                    new_col = cur_node.col + new_direction_col
-                    if 0 <= new_row < height and 0 <= new_col < width:
-                        new_cost = cur_node.cost + source[new_row][new_col]
-                        new_node = Node(new_row, new_col, new_direction_row, new_direction_col, new_cost, cur_node)
+        if c_node.steps >= min_turn or starting_point(c_node):
+            for n_d_row, n_d_col in DIRECTIONS:
+                if not_same(c_node, n_d_col, n_d_row) and not_opposite(c_node, n_d_col, n_d_row):
+                    n_row = c_node.row + n_d_row
+                    n_col = c_node.col + n_d_col
+                    if 0 <= n_row < height and 0 <= n_col < width:
+                        new_node = Node(n_row, n_col, n_d_row, n_d_col,
+                                        c_node.cost + grid[n_row][n_col], c_node)
                         priority_queue.push(new_node)
 
     raise ValueError("This should not happen.")
