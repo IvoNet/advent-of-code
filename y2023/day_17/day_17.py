@@ -156,10 +156,10 @@ def astar(source: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Nod
     """
     height: int = len(source)
     width: int = len(source[0])
-    start = Node(0, 0, 0, 0, 0, None)
     goal = Location(height - 1, width - 1)
-    explored = set()
-    priority_queue = PriorityQueue()
+    explored: set[tuple[int, int, int, int, int]] = set()
+    start = Node(0, 0, 0, 0, 0, None)
+    priority_queue: PriorityQueue = PriorityQueue()
     priority_queue.push(start)
 
     while not priority_queue.empty:
@@ -172,7 +172,7 @@ def astar(source: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Nod
         if cur_node.steps < max_steps and (cur_node.direction_row, cur_node.direction_col) != (0, 0):
             new_row = cur_node.row + cur_node.direction_row
             new_col = cur_node.col + cur_node.direction_col
-            if 0 <= new_row < height and 0 <= new_col < width:
+            if 0 <= new_row < height and 0 <= new_col < width:  # check if the new node is within the grid
                 new_cost = cur_node.cost + source[new_row][new_col]
                 new_node = Node(new_row, new_col, cur_node.direction_row, cur_node.direction_col, new_cost, cur_node)
                 priority_queue.push(new_node)
