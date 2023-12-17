@@ -90,6 +90,7 @@ class SpinCycle:
                 sorted_row.append(sorted_group)
             self.grid[i] = "#".join(sorted_row)
 
+    @property
     def score(self):
         # Calculate and return the score
         score = 0
@@ -143,11 +144,11 @@ class SpinCycle:
 
 
 def part_1(source) -> int:
-    return SpinCycle(source).flip().score()
+    return SpinCycle(source).flip().score
 
 
 def part_2(source, times=1_000_000_000):
-    return SpinCycle(source).cycles(times).score()
+    return SpinCycle(source).cycles(times).score
 
 
 def test_puzzle(test_source, source):
