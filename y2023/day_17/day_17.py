@@ -90,52 +90,35 @@ def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
         if node.parent.parent is None:  # second step
             # determine direction and eliminate reverse direction
             if node.state.row == node.parent.state.row:  # moving left or right
-                if node.state.col > node.parent.state.col:
-                    return [Location(r, c) for r, c in
-                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="NES")]
-                if node.state.col < node.parent.state.col:
-                    return [Location(r, c) for r, c in
-                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="NWS")]
-            if node.state.row > node.parent.state.row:  # moving down
                 return [Location(r, c) for r, c in
                         neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                               allowed_directions="ESW")]
-            if node.state.row < node.parent.state.row:  # moving up
-                return [Location(r, c) for r, c in
-                        neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                               allowed_directions="NEW")]
+                                               allowed_directions="NES" if node.state.col > node.parent.state.col else "NWS")]
+            return [Location(r, c) for r, c in
+                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
+                                           allowed_directions="ESW" if node.state.row > node.parent.state.row else "NEW")]
         if node.parent.parent.parent is None:  # third step
             # determine direction and eliminate reverse direction and more than 3 steps in the same direction
-            # Hmm it seems that the direction check here is not important as reverse is not allowed and we are testing for same direction
+            # Hmm it seems that the direction check here is not important as reverse is not allowed, and we are testing for same direction
             if node.state.row == node.parent.state.row:  # moving left or right
-                if node.state.col > node.parent.state.col:  # moving right
-                    if node.state.row == node.parent.parent.state.row and node.parent.state.col > node.parent.parent.state.col:
-                        # moving right and previous move was right (same direction)
-                        return [Location(r, c) for r, c in
-                                neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                       allowed_directions="NS")]
-            if node.state.row == node.parent.state.row and node.state.col < node.parent.state.col:
-                if node.state.row == node.parent.parent.state.row and node.parent.state.col < node.parent.parent.state.col:
-                    # moving left and previous move was left (same direction)
+                if node.state.row == node.parent.parent.state.row:  # moving left or right and previous move was left or right
                     return [Location(r, c) for r, c in
                             neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
                                                    allowed_directions="NS")]
+                else:  # moving up or down and previous move was left or right
+                    return [Location(r, c) for r, c in
+                            neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
+                                                   allowed_directions="ESW" if node.state.col > node.parent.state.col else "NWE")]
             # optimization later? seems the same the two below
-            if node.state.row > node.parent.state.row:
-                if node.parent.state.row > node.parent.parent.state.row:
-                    # moving down and previous move was down (same direction)
+            if node.state.col == node.parent.state.col:  # moving up or down
+                if node.parent.state.col == node.parent.parent.state.col:  # moving up or down and previous move was up or down
                     return [Location(r, c) for r, c in
                             neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
                                                    allowed_directions="EW")]
-            if node.state.row < node.parent.state.row:
-                if node.parent.state.row < node.parent.parent.state.row:
-                    # moving up and previous move was up (same direction)
+                else:  # moving left or right and previous move was up or down
                     return [Location(r, c) for r, c in
                             neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                                   allowed_directions="EW")]
-            if node.state.row == node.parent.state.row and node.state.col > node.parent.state.col:
+                                                   allowed_directions="NES" if node.state.col > node.parent.state.row else "NEW")]
+
 
         raise ValueError("This should not happen")
 
