@@ -16,18 +16,17 @@ import os
 import sys
 import unittest
 from pathlib import Path
-from typing import Callable, TypeVar, Optional
+from typing import TypeVar
 
 from ivonet.collection import PriorityQueue
 from ivonet.files import read_int_matrix
-from ivonet.grid import Location, DIRECTIONS
+from ivonet.grid import Location
 from ivonet.iter import ints
-from ivonet.search import Node, node_to_path
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 T = TypeVar('T')
 
 
@@ -37,189 +36,176 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def manhattan_distance(goal: Location) -> Callable[[Location], float]:
-    def distance(ml: Location) -> float:
-        xdist: int = abs(ml.col - goal.col)
-        ydist: int = abs(ml.row - goal.row)
-        return xdist + ydist
-
-    return distance
-
-
-def make_heat_loss_map(grid: list[list[int]]) -> dict[Location, int]:
-    risks: dict[Location, int] = {}
-    for r, row in enumerate(grid):
-        for c, risk in enumerate(row):
-            risks[Location(r, c)] = risk
-    return risks
-
-
-def is_goal(goal: Location) -> Callable[[Location], bool]:
-    def reached(current: Location) -> bool:
-        return current == goal
-
-    return reached
-
-
-def neighbors_defined_grid(coord: Location, grid=(100, 100), allowed_directions="NESW") -> list[
-    Location]:
-    height = grid[0] - 1
-    width = grid[1] - 1
-    current = coord
-    adjacent = []
-    nb: list[Location] = [v for k, v in DIRECTIONS.items() if k in list(allowed_directions)]
-    for loc in nb:
-        pos = current + loc
-        if pos.col < 0 or pos.col > width or pos.row < 0 or pos.row > height:
-            continue
-        adjacent.append(pos)
-    return adjacent
-
-
-def direction_steps(node: Node[T]) -> tuple[int, str]:
-    # determine direction
-    test_node = node
-    if test_node.parent is None:  # start (moving right)
-        return 1, "E"
-    if test_node.state.row == test_node.parent.state.row:  # moving left or right
-        steps = 1
-        while test_node.parent is not None:
-            if node.state.row == test_node.parent.state.row:
-                steps += 1
-                test_node = test_node.parent
-            else:
-                break
-        _(steps, f"steps: {steps} - Node: {node}")
-        return steps, "E" if node.state.col > node.parent.state.col else "W"
-
-    if test_node.state.col == test_node.parent.state.col:  # moving up or down
-        steps = 1
-        while test_node.parent is not None:
-            if node.state.col == test_node.parent.state.col:
-                steps += 1
-                test_node = test_node.parent
-            else:
-                break
-        _(steps, f"steps: {steps} - Node: {node}")
-        return steps, "S" if node.state.row > node.parent.state.row else "N"
-
-
-
-def adjoining(height, width) -> Callable[[Node[T]], list[Location]]:
-    def adjacent(node: Node[T]) -> list[Location]:
-        """
-        - test if direction is allowed (not more than 3 steps in the same direction)
-        - test if direction is allowed (not reverse direction in a block)
-        """
-        if node.parent is None:  # start (moving right)
-            return [Location(r, c) for r, c in
-                    neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                           allowed_directions="E")]
-
-        # determine direction
-        steps, direction = direction_steps(node)
-        max_steps = 3
-        if direction == "E":
-            allowed_directions = "NES" if steps < max_steps else "NS"
-        elif direction == "W":
-            allowed_directions = "NWS" if steps < max_steps else "NS"
-        elif direction == "N":
-            allowed_directions = "NEW" if steps < max_steps else "EW"
-        else:  # direction == "S":
-            allowed_directions = "ESW" if steps < max_steps else "EW"
-
-        return [Location(r, c) for r, c in
-                neighbors_defined_grid(Location(node.state.row, node.state.col), grid=(width, height),
-                                       allowed_directions=allowed_directions)]
-
-
-    return adjacent
-
-
-def cost_calculator(risks: dict[Location, int]) -> Callable[[Location], int]:
-    def get_cost(ml: Location) -> int:
-        return risks[ml]
-
-    return get_cost
-
-
-def astar(initial: T,
-          goal_test: Callable[[T], bool],
-          successors: Callable[[Node[T]], list[T]],
-          heuristic: Callable[[T], float],
-          cost: Callable[[T], int]) -> Optional[Node[T]]:
-    """The A* (astar)
-
-    is a dfs but you can provide a cost callback function that can direct your search
-    (see 2021/Day15 of the Advent of Code for an implementation example)
+def node_to_path(node: Node) -> list[Location]:
     """
-    # frontier is where we've yet to go
-    frontier: PriorityQueue[Node[T]] = PriorityQueue()
-    frontier.push(Node(initial, None, 0.0, heuristic(initial)))
-    # explored is where we've been
-    explored: dict[T, float] = {initial: 0.0}
-
-    # keep going while there is more to explore
-    while not frontier.empty:
-        current_node: Node[T] = frontier.pop()
-        current_state: T = current_node.state
-        # if we found the goal, we're done
-        if goal_test(current_state):
-            return current_node
-        # check where we can go next and haven't explored
-        for nb in successors(current_node):
-            new_cost: float = current_node.cost + cost(nb)
-
-            if nb not in explored or explored[nb] > new_cost:
-                explored[nb] = new_cost
-                frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
-    return None  # went through everything and never found goal
-
-
-def part_1(source: list[list[int]]) -> int | None:
+    Returns the path from the node to the start node
+    :param node:
+    :return:
     """
-     Depth First Search
-     - grid of single digits. the digit indicates the cost of moving to that square
-     - you can not move diagonally
-     - you can not reverse direction in a block. in a block you can only go in the same direction, move left or right
-     - you can not go more than 3 steps in the same direction
-     - find the path from top left to bottom right with the lowest cost
+    path: list[Location] = [node.location]
+    # work backwards from end to front
+    while node.parent is not None:
+        node = node.parent
+        path.append(node.location)
+    path.reverse()
+    return path
 
-     """
-    rows = len(source)
-    cols = len(source[0])
-    start = Location(0, 0)
-    goal = Location(rows - 1, cols - 1)
-    risks = make_heat_loss_map(source)
-    solution = astar(start,  # start at the start
-                     is_goal(goal),  # callback function to see if the end goal has been reached
-                     adjoining(rows, cols),  # callback to get all the relevant neighbors of a Location
-                     manhattan_distance(goal),  # No diagonals allowed so the Manhattan distance calculator callback
-                     cost_calculator(risks))  # the cost of going a direction based on the Chiton risk per Location
+
+def print_solution(solution_node: Node, source: list[list[int]]) -> None:
     if DEBUG:
-        print("Solution:")
-        print(node_to_path(solution))
         grid = [[str(element) for element in row] for row in source]
-        for loc in node_to_path(solution):
+        for loc in node_to_path(solution_node):
             grid[loc.row][loc.col] = "#"
         for row in grid:
             print("".join(row))
 
-        n = solution
-        while n.parent is not None:
-            print(n.state, n.cost - n.parent.cost, n.cost, n.heuristic, n.cost + n.heuristic)
-            n = n.parent
+
+class Node:
+    """
+    Represents a node in the grid.
+    it has all the information needed to calculate the cost and the path to this node and keep track of the direction
+    """
+
+    def __init__(self, row: int, col: int, direction_row: int, direction_col: int, cost: int,
+                 parent: Node | None):
+        self.row = row
+        self.col = col
+        self.direction_row = direction_row
+        self.direction_col = direction_col
+        self.cost = cost
+        self.parent = parent
+
+    @property
+    def state(self) -> tuple[int, int, int, int, int]:
+        """
+        The state is the representation of the node in as a hashable tuple without the parent or the cost
+        this is important for the "explored" set as the cost will change but the state will not.
+        """
+        return self.row, self.col, self.direction_row, self.direction_col, self.steps
+
+    @property
+    def location(self) -> Location:
+        """
+        The location of the node in the grid. Needed for goal comparison.
+        """
+        return Location(self.row, self.col)
+
+    @property
+    def steps(self) -> int:
+        """
+        The number of steps taken to reach this node in a straight line in any direction as long as the direction is
+        the same.
+        This is needed to prevent going in the same direction for more than the allowed max steps in a direction.
+        We do not need to keep track of the number of steps as we can calculate it from the parent nodes.
+        """
+        nn = self
+        steps = 0
+        while nn.parent and self.direction_row == nn.direction_row and self.direction_col == nn.direction_col:
+            steps += 1
+            nn = nn.parent
+        return steps
+
+    def __lt__(self, other: Node) -> bool:
+        """
+        The priority queue needs to know which node is more important than the other.
+        In this case only the cost is important for that not the distance traveled (like manhattan distance)
+        """
+        return self.cost < other.cost
+
+    def __repr__(self) -> str:
+        return f"({self.row}, {self.col}) - ({self.direction_row}, {self.direction_col}) - {self.cost} - {self.steps} - {self.parent}"
+
+    def __eq__(self, other: Node) -> bool:
+        return self.state == other.state
+
+    def __hash__(self) -> int:
+        return hash(self.state)
 
 
-    if solution:
-        # print(solution)
-        # print(node_to_path(solution))
-        return int(solution.cost)
-    raise ValueError("Part 1: No solution found.")
+def astar(source: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Node:
+    """
+    Implements the A* search algorithm to find the shortest path in a grid.
+
+    Parameters:
+    source (list[list[int]]): A 2D list representing the grid to be traversed. Each element in the grid represents the
+                              cost of visiting that cell.
+    max_steps (int, optional): The maximum number of steps that can be taken in the same direction. Defaults to 3.
+    min_turn (int, optional): The minimum number of steps that must be taken before a turn can be made. Defaults to 0.
+
+    Returns:
+    Node: The goal node which contains the path from the start node to the goal node and the total cost.
+
+    The function works as follows:
+    1. It starts by defining the start and goal nodes. The start node is always at the top left of the grid (0, 0),
+       and the goal node is always at the bottom right of the grid.
+    2. It then creates an empty set `explored` to keep track of the nodes that have already been visited, and a
+       priority queue `priority_queue` to keep track of the nodes to be visited. The start node is added to the
+       priority queue.
+    3. The function then enters a loop that continues until the priority queue is empty. In each iteration of the loop,
+       it does the following:
+         - It pops a node from the priority queue. If this node is the goal node, it returns the node and ends
+           the function.
+         - If the node has already been explored, it skips the rest of the loop and moves on to the next iteration.
+         - If the node has not been explored, it adds the node to the set of explored nodes.
+         - If the current node has taken less than `max_steps` in its current direction and is not at the start, it
+           generates a new node in the same direction and adds it to the priority queue.
+         - If the current node has taken at least `min_turn` steps or is at the start, it generates new nodes in
+           all other valid directions and adds them to the priority queue.
+    4. If the function exits the loop without finding the goal node, it raises a `ValueError` indicating that no
+       solution was found.
+    """
+    height: int = len(source)
+    width: int = len(source[0])
+    start = Node(0, 0, 0, 0, 0, None)
+    goal = Location(height - 1, width - 1)
+    explored = set()
+    priority_queue = PriorityQueue()
+    priority_queue.push(start)
+
+    while not priority_queue.empty:
+        cur_node = priority_queue.pop()
+        if cur_node.location == goal:
+            return cur_node
+        if cur_node.state in explored:
+            continue
+        explored.add(cur_node.state)
+        if cur_node.steps < max_steps and (cur_node.direction_row, cur_node.direction_col) != (0, 0):
+            new_row = cur_node.row + cur_node.direction_row
+            new_col = cur_node.col + cur_node.direction_col
+            if 0 <= new_row < height and 0 <= new_col < width:
+                new_cost = cur_node.cost + source[new_row][new_col]
+                new_node = Node(new_row, new_col, cur_node.direction_row, cur_node.direction_col, new_cost, cur_node)
+                priority_queue.push(new_node)
+
+        if cur_node.steps >= min_turn or (cur_node.direction_row, cur_node.direction_col) == (0, 0):
+            for new_direction_row, new_direction_col in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+                if (new_direction_row, new_direction_col) != (cur_node.direction_row, cur_node.direction_col) and \
+                        (new_direction_row, new_direction_col) != (-cur_node.direction_row, -cur_node.direction_col):
+                    new_row = cur_node.row + new_direction_row
+                    new_col = cur_node.col + new_direction_col
+                    if 0 <= new_row < height and 0 <= new_col < width:
+                        new_cost = cur_node.cost + source[new_row][new_col]
+                        new_node = Node(new_row, new_col, new_direction_row, new_direction_col, new_cost, cur_node)
+                        priority_queue.push(new_node)
+
+    raise ValueError("This should not happen.")
+
+
+def part_1(source: list[list[int]]) -> int:
+    solution_node = astar(source, 3, 0)
+
+    # Just for fun
+    print_solution(solution_node, source)
+
+    return solution_node.cost
 
 
 def part_2(source: list[list[int]]) -> int | None:
-    return None
+    solution_node = astar(source, 10, 4)
+
+    print_solution(solution_node, source)
+
+    return solution_node.cost
 
 
 # noinspection DuplicatedCode

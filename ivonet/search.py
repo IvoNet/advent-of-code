@@ -148,7 +148,8 @@ def astar(initial: T,
     """The A* (astar)
 
     is a dfs but you can provide a cost callback function that can direct your search
-    (see 2021/Day15 of the Advent of Code for an implementation example)
+    - see 2021/Day15 of the Advent of Code for an implementation example
+    - see 2022/Day17 for an implementation with a twist (max steps in a direction and how many steps before turning)
     """
     # frontier is where we've yet to go
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
