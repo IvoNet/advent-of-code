@@ -25,7 +25,7 @@ from ivonet.iter import ints
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -126,7 +126,7 @@ def shoelace_theorem(coords: list[tuple[int, int]]) -> float:
         left_row, left_col = coords[i]
         right_row, right_col = coords[i + 1]
         area += left_row * right_col - right_row * left_col
-    area = abs(area) // 2
+    area = abs(area) / 2
 
     return area
 
@@ -145,7 +145,7 @@ def picks_theorem(area: float, boundary_points: int) -> float:
     Returns:
     - Number of interior points.
     """
-    interior_points = area - boundary_points // 2 + 1
+    interior_points = area + 1 - boundary_points // 2
     return interior_points
 
 
@@ -183,8 +183,9 @@ def calculate_cubic_meters(instructions):
         boundary_points += instruction.steps
         points.append((r + instruction.dr * instruction.steps, c + instruction.dc * instruction.steps))
     p(f"boundary_points = {boundary_points}")
+    p(f"points          = {points}")
     area = shoelace_theorem(points)
-    p(f"area = {area}")
+    p(f"area            = {area}")
     interior_points = picks_theorem(area, boundary_points)
     p(f"interior_points = {interior_points}")
     return boundary_points + interior_points
