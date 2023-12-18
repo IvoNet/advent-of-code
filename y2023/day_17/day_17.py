@@ -183,28 +183,28 @@ def astar(grid: list[list[int]], max_steps: int = 3, min_turn: int = 0) -> Node:
     priority_queue.push(start)
 
     while not priority_queue.empty:
-        c_node = priority_queue.pop()
-        if c_node.location == goal:
-            return c_node
-        if c_node.state in explored:
+        cn = priority_queue.pop()  # current node
+        if cn.location == goal:
+            return cn
+        if cn.state in explored:
             continue
-        explored.add(c_node.state)
-        if c_node.steps < max_steps and not starting_point(c_node):
-            n_row = c_node.row + c_node.direction_row
-            n_col = c_node.col + c_node.direction_col
-            if 0 <= n_row < height and 0 <= n_col < width:  # check if the new node is within the grid
-                new_node: Node = Node(n_row, n_col, c_node.direction_row, c_node.direction_col,
-                                      c_node.cost + grid[n_row][n_col], c_node)
+        explored.add(cn.state)
+        if cn.steps < max_steps and not starting_point(cn):
+            nr = cn.row + cn.direction_row  # new row
+            nc = cn.col + cn.direction_col  # new column
+            if 0 <= nr < height and 0 <= nc < width:  # check if the new node is within the grid
+                new_node: Node = Node(nr, nc, cn.direction_row, cn.direction_col,
+                                      cn.cost + grid[nr][nc], cn)
                 priority_queue.push(new_node)
 
-        if c_node.steps >= min_turn or starting_point(c_node):
+        if cn.steps >= min_turn or starting_point(cn):
             for n_d_row, n_d_col in DIRECTIONS:
-                if not_same(c_node, n_d_col, n_d_row) and not_opposite(c_node, n_d_col, n_d_row):
-                    n_row = c_node.row + n_d_row
-                    n_col = c_node.col + n_d_col
-                    if 0 <= n_row < height and 0 <= n_col < width:
-                        new_node = Node(n_row, n_col, n_d_row, n_d_col,
-                                        c_node.cost + grid[n_row][n_col], c_node)
+                if not_same(cn, n_d_col, n_d_row) and not_opposite(cn, n_d_col, n_d_row):
+                    nr = cn.row + n_d_row
+                    nc = cn.col + n_d_col
+                    if 0 <= nr < height and 0 <= nc < width:
+                        new_node = Node(nr, nc, n_d_row, n_d_col,
+                                        cn.cost + grid[nr][nc], cn)
                         priority_queue.push(new_node)
 
     raise ValueError("This should not happen.")
