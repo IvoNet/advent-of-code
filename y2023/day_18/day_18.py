@@ -184,12 +184,12 @@ def calculate_cubic_meters(instructions):
     return boundary_points + interior_points
 
 
-def part_1(source: list[str]) -> int | None:
-    return calculate_cubic_meters(instruction_generator_1(source))
+def part_1(source: list[str]) -> int:
+    return int(calculate_cubic_meters(instruction_generator_1(source)))
 
 
-def part_2(source: list[str]) -> int | None:
-    return calculate_cubic_meters(instruction_generator_2(source))
+def part_2(source: list[str]) -> int:
+    return int(calculate_cubic_meters(instruction_generator_2(source)))
 
 
 # noinspection DuplicatedCode
