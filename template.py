@@ -27,7 +27,7 @@ DEBUG = True
 
 
 # noinspection DuplicatedCode
-def _(*args, end="\n", sep=" "):
+def p(*args, end="\n", sep=" "):
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
 
@@ -56,7 +56,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(None, part_2(self.source))
 
     def setUp(self) -> None:
-        _()
+        print()
         folder = os.path.dirname(os.path.realpath(__file__))
         day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
         self.source = read_rows(f"{folder}/day_{day}.input")

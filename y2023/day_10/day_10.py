@@ -11,6 +11,8 @@ code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
 """
 
+# TODO revisit this one and try to solve it with the solution type of day 18
+
 import collections
 import os
 import sys
