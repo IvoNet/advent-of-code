@@ -97,7 +97,7 @@ def instruction_generator_2(source: list[str]) -> Generator[Instruction, None, N
         yield Instruction(dr, dc, steps)
 
 
-def shoelace_theorem(coords: list[tuple[int, int]]):
+def shoelace_theorem(coords: list[tuple[int, int]]) -> float:
     """
     Calculate the area of a polygon using the Shoelace Theorem.
     https://en.wikipedia.org/wiki/Shoelace_formula
@@ -117,15 +117,15 @@ def shoelace_theorem(coords: list[tuple[int, int]]):
     # Calculate the area using the Shoelace Theorem
     area = 0.0
     for i in range(n - 1):
-        left_r, left_c = coords[i]
-        right_r, right_c = coords[i + 1]
-        area += left_r * right_c - right_r * left_c
-    area = 0.5 * abs(area)
+        left_row, left_col = coords[i]
+        right_row, right_col = coords[i + 1]
+        area += left_row * right_col - right_row * left_col
+    area = abs(area) // 2
 
     return area
 
 
-def picks_theorem(area, boundary_points):
+def picks_theorem(area: float, boundary_points: int) -> float:
     """
     Calculate the number of interior points of a simple lattice polygon using Pick's Theorem.
     https://en.wikipedia.org/wiki/Pick%27s_theorem
@@ -139,7 +139,7 @@ def picks_theorem(area, boundary_points):
     Returns:
     - Number of interior points.
     """
-    interior_points = area - 0.5 * boundary_points + 1
+    interior_points = area - boundary_points // 2 + 1
     return interior_points
 
 
