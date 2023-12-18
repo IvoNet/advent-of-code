@@ -44,6 +44,12 @@ DIRECTIONS = {
 
 @dataclass
 class Instruction:
+    """
+    Class representing an instruction.
+    dr -> direction row
+    dc -> direction column
+    steps -> number of steps to take in that direction
+    """
     dr: int
     dc: int
     steps: int
