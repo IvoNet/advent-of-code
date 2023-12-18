@@ -96,7 +96,7 @@ def instruction_generator_2(source: list[str]) -> Generator[Instruction, None, N
     """
     for line in source:
         _, _, c = line.strip().split()
-        tmp = c[2:-1]
+        tmp = c[2:-1]  # remove the (# and ) chars
         # last char of tmp: 0 means R, 1 means D, 2 means L, and 3 means U
         dr, dc = DIRECTIONS["RDLU"[int(tmp[-1])]]
         steps = int(tmp[:-1], 16)  # first 5 chars of tmp represent the hexadecimal value of the steps
