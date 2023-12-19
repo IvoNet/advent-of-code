@@ -17,7 +17,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from ivonet.files import read_rows
+from ivonet.files import read_data
 from ivonet.iter import ints
 
 collections.Callable = collections.abc.Callable  # type: ignore
@@ -32,8 +32,73 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+class Aplenty:
+
+    def __init__(self, source: str, start="in"):
+        self.parts = []
+        self.rulez = collections.defaultdict(list)
+        self.operator_functions = {
+            ">": lambda left, right: left > right,
+            "<": lambda left, right: left < right,
+        }
+        self.start = start
+        self.result = collections.defaultdict(list)
+        self._parse(source)
+
+    def _parse(self, source):
+        flow, state = source.split("\n\n")
+        for line in flow.strip().splitlines():
+            ins = line.replace("{", " ").replace("}", "").replace(",", " ").split()
+            name = ins[0]
+            rest = ins[1:]
+            for i in rest:
+                ia = i.split(":")
+                if len(ia) == 1:
+                    self.rulez[name].append(ia[0])
+                else:
+                    left, operator, right = ia[0][0], ia[0][1], int(ia[0][2:])
+                    self.rulez[name].append((left, operator, right, ia[1]))
+        p(self.rulez)
+        for line in state.strip().splitlines():
+            x, m, a, s = ints(line)
+            self.parts.append({"x": x, "m": m, "a": a, "s": s})
+        p(self.parts)
+
+    def process(self):
+        for part in self.parts:
+            flow = self.rulez[self.start]
+            idx = 0
+            while flow:
+                ins = flow[idx]
+                idx += 1
+                if isinstance(ins, str):
+                    if ins in self.rulez:
+                        flow = self.rulez[ins]
+                        idx = 0
+                        continue
+                    self.result[ins].append(part)
+                    break
+                else:
+                    left, operator, right, goto = ins
+                    if self.operator_functions[operator](part[left], right):
+                        if goto in self.rulez:
+                            flow = self.rulez[goto]
+                            idx = 0
+                            continue
+                        self.result[goto].append(part)
+                        break
+        p("!!!", self.result)
+        p(self.result["A"])
+        p(self.result["R"])
+        return sum(sum(x.values()) for x in self.result["A"])
+
+
+
+
+
 def part_1(source: str | list[str]) -> int | None:
-    return None
+    aplenty = Aplenty(source)
+    return aplenty.process()
 
 
 def part_2(source: str | list[str]) -> int | None:
@@ -44,10 +109,10 @@ def part_2(source: str | list[str]) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(19114, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(376008, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
         self.assertEqual(None, part_2(self.test_source))
@@ -59,8 +124,8 @@ class UnitTests(unittest.TestCase):
         print()
         folder = os.path.dirname(os.path.realpath(__file__))
         day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
-        self.source = read_rows(f"{folder}/day_{day}.input")
-        self.test_source = read_rows(f"{folder}/test_{day}.input")
+        self.source = read_data(f"{folder}/day_{day}.input")
+        self.test_source = read_data(f"{folder}/test_{day}.input")
 
 
 if __name__ == '__main__':
