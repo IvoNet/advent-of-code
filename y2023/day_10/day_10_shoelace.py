@@ -38,28 +38,8 @@ def move_cell(dir: int, pos: tuple[int, int]) -> tuple[int, int]:
     return x + dx, y + dy
 
 
-def opposite_direction(dir: int) -> int:
-    return dir ^ 2
-
-
-def get_path_recursive(fi: str,
-                       grid: list[str],
-                       start: tuple[int, int],
-                       target: tuple[int, int], dir: int) -> list[
-    tuple[int, int]]:
-    """
-    Not used anymore but left here for reference
-    """
-    sx, sy = start
-    tx, ty = target
-    if not (0 <= sx < len(grid)) or not (0 <= sy < len(grid[0])):
-        return []
-    if sx == tx and sy == ty and dir != -1:
-        return [(sx, sy)]
-    ch = grid[sx][sy]
-    od = to_direction(fi)[0] if dir == -1 else other_direction(ch, opposite_direction(dir))
-    recr = get_path(fi, grid, move_cell(od, start), target, od)
-    return [] if od == -1 or not recr else [(sx, sy)] + recr
+def opposite_direction(direction: int) -> int:
+    return direction ^ 2
 
 
 def get_path(fi: str,
@@ -96,10 +76,6 @@ def get_loop(grid: list[str]) -> list[tuple[int, int]]:
     raise ValueError("No loop found")
 
 
-def shoelace(path: list[tuple[int, int]]) -> int:
-    return sum((y1 + y2) * (x2 - x1) for ((x1, y1), (x2, y2)) in zip(path, path[1:])) // 2
-
-
 def part_1(grid: list[str]) -> int:
     return len(get_loop(grid)) // 2
 
@@ -107,7 +83,6 @@ def part_1(grid: list[str]) -> int:
 def part_2(grid: list[str]) -> int:
     path = get_loop(grid)
     area = abs(shoelace_theorem(path))
-    print(f"Area: {area}")
     return picks_theorem(area, len(path))
 
 
