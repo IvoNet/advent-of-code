@@ -35,12 +35,12 @@ def p(*args, end="\n", sep=" "):
 class Aplenty:
 
     def __init__(self, source: str, start="in"):
-        self.parts = []
-        self.rulez = collections.defaultdict(list)
         self.operator_functions = {
             ">": lambda left, right: left > right,
             "<": lambda left, right: left < right,
         }
+        self.parts = []
+        self.rulez = collections.defaultdict(list)
         self.start = start
         self.result = collections.defaultdict(list)
         self._parse(source)
@@ -87,14 +87,66 @@ class Aplenty:
                             continue
                         self.result[goto].append(part)
                         break
-        p("!!!", self.result)
-        p(self.result["A"])
-        p(self.result["R"])
         return sum(sum(x.values()) for x in self.result["A"])
 
+    def count(self, ranges, name=None):
+        """
+        Calculate the total number of acceptable combinations of values for the variables x, m, a, and s
+        that satisfy the rules defined in the rulez attribute of the class.
 
+        Parameters:
+        ranges (dict): A dictionary where the keys are the variable names (x, m, a, s) and the values
+                       are tuples representing the range of acceptable values for each variable.
+        name (str): A string representing the current rule being processed. Default is self.start.
 
+        Returns:
+        int: The total number of acceptable combinations.
+        """
+        if not name:
+            name = self.start
 
+        # terminator 1: if name is not in the rulez then it is a terminator and when R rejected so 0
+        if name == "R":
+            return 0
+        # terminator 2: if name is A then we have a winner
+        if name == "A":
+            # we need to return all the accepted
+            product = 1
+            for lo, hi in ranges.values():
+                product *= hi - lo + 1  # one off inclusive
+            return product
+
+        rules = self.rulez[name][:-1]  # last one is the fallback
+        fallback = self.rulez[name][-1]
+
+        total = 0
+        for left, operator, right, target in rules:
+            lo, hi = ranges[left]  # start with the current range
+            if operator == "<":
+                # because the operator is not inclusive -1 is needed and yes I did this wrong the first time
+                true_range = (lo, right - 1)
+                false_range = (right, hi)
+            else:  # operator == ">":
+                true_range = (right + 1, hi)
+                false_range = (lo, right)
+
+            if true_range[0] <= true_range[1]:
+                # send the true range to the next rule (workflow)
+                total += self.count({**ranges, left: true_range}, target)
+            if false_range[0] <= false_range[1]:
+                # actually changes the ranges by first copying it and then adding the new range
+                ranges = {**ranges, left: false_range}
+            else:
+                break
+        else:
+            # if we get here we have not broken out of the loop, and thus we have a fallback
+            total += self.count(ranges, fallback)
+
+        return total
+
+    def acceptable_combinations(self):
+        """Only the first block of the data is used for this (flow)"""
+        return self.count({key: (1, 4000) for key in ["x", "m", "a", "s"]})
 
 def part_1(source: str | list[str]) -> int | None:
     aplenty = Aplenty(source)
@@ -102,7 +154,8 @@ def part_1(source: str | list[str]) -> int | None:
 
 
 def part_2(source: str | list[str]) -> int | None:
-    return None
+    aplenty = Aplenty(source)
+    return aplenty.acceptable_combinations()
 
 
 # noinspection DuplicatedCode
@@ -115,10 +168,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(376008, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(167409079868000, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(124078207789312, part_2(self.source))
 
     def setUp(self) -> None:
         print()
