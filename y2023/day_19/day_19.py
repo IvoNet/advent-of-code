@@ -33,16 +33,18 @@ def p(*args, end="\n", sep=" "):
 
 
 class Aplenty:
+    OPERATOR_FUNCTIONS: dict = {
+        ">": lambda left, right: left > right,
+        "<": lambda left, right: left < right,
+    }
 
-    def __init__(self, source: str, start="in"):
-        self.operator_functions = {
-            ">": lambda left, right: left > right,
-            "<": lambda left, right: left < right,
-        }
-        self.parts = []
-        self.rulez = collections.defaultdict(list)
-        self.start = start
-        self.result = collections.defaultdict(list)
+    def __init__(self, source: str, start: str = "in"):
+        if not start:
+            start = "in"
+        self.parts: list = []
+        self.rulez: dict = collections.defaultdict(list)
+        self.start: str = start
+        self.result: dict = collections.defaultdict(list)
         self._parse(source)
 
     def _parse(self, source):
@@ -80,7 +82,7 @@ class Aplenty:
                     break
                 else:
                     left, operator, right, goto = ins
-                    if self.operator_functions[operator](part[left], right):
+                    if self.OPERATOR_FUNCTIONS[operator](part[left], right):
                         if goto in self.rulez:
                             flow = self.rulez[goto]
                             idx = 0
@@ -131,10 +133,10 @@ class Aplenty:
                 false_range = (lo, right)
 
             if true_range[0] <= true_range[1]:
-                # send the true range to the next rule (workflow)
+                # send the true range to the next rule (workflow) for processing
                 total += self.count({**ranges, left: true_range}, target)
             if false_range[0] <= false_range[1]:
-                # actually changes the ranges by first copying it and then adding the new range
+                # update the current range with the false range and continue with the next rule in the same workflow
                 ranges = {**ranges, left: false_range}
             else:
                 break
@@ -148,12 +150,13 @@ class Aplenty:
         """Only the first block of the data is used for this (flow)"""
         return self.count({key: (1, 4000) for key in ["x", "m", "a", "s"]})
 
-def part_1(source: str | list[str]) -> int | None:
+
+def part_1(source: str) -> int | None:
     aplenty = Aplenty(source)
     return aplenty.process()
 
 
-def part_2(source: str | list[str]) -> int | None:
+def part_2(source: str) -> int | None:
     aplenty = Aplenty(source)
     return aplenty.acceptable_combinations()
 

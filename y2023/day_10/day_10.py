@@ -13,12 +13,9 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 # TODO revisit this one and try to solve it with the solution type of day 18
 
-import collections
 import os
 import sys
 import unittest
-
-collections.Callable = collections.abc.Callable
 from collections import deque
 from pathlib import Path
 

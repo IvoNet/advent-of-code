@@ -1,4 +1,4 @@
-def shoelace_theorem(coords: list[tuple[int, int]]):
+def shoelace_theorem(coords: list[tuple[int, int]]) -> int:
     """
     Calculate the area of a polygon using the Shoelace Theorem.
     https://en.wikipedia.org/wiki/Shoelace_formula
@@ -12,11 +12,12 @@ def shoelace_theorem(coords: list[tuple[int, int]]):
     Note:
         see y2023/day_18.py for an example usage
     """
-    n = len(coords)
 
     # Ensure the polygon is closed
     if coords[0] != coords[-1]:
         coords.append(coords[0])
+
+    n = len(coords)
 
     # Calculate the area using the Shoelace Theorem
     area = 0.0
@@ -24,8 +25,15 @@ def shoelace_theorem(coords: list[tuple[int, int]]):
         left_r, left_c = coords[i]
         right_r, right_c = coords[i + 1]
         area += left_r * right_c - right_r * left_c
-    area = abs(area) / 2
-    return area
+    area = abs(area) // 2
+    return int(area)
+
+
+def shoelace(path: list[tuple[int, int]]) -> int:
+    """
+    same as shoelace_theorem but witt solved differently
+    """
+    return sum((y1 + y2) * (x2 - x1) for ((x1, y1), (x2, y2)) in zip(path, path[1:])) // 2
 
 
 def picks_theorem(area, boundary_points):
