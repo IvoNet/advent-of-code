@@ -18,6 +18,8 @@ import unittest
 from dataclasses import dataclass
 from pathlib import Path
 
+import math
+
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -70,6 +72,9 @@ class FlipFlop(Module):
         sending = 'high' if self.on else 'low'
         return [Pulse(pulse.destination, dest, sending) for dest in self.destinations]
 
+    def __repr__(self):
+        return f"{self.name}[{self.destinations}]={self.on}"
+
 
 class Conjunction(Module):
     def __init__(self, name, destinations):
@@ -81,6 +86,9 @@ class Conjunction(Module):
         if all(state == 'high' for state in self.memory.values()):
             return [Pulse(pulse.destination, dest, 'low') for dest in self.destinations]
         return [Pulse(pulse.destination, dest, 'high') for dest in self.destinations]
+
+    def __repr__(self):
+        return f"{self.name}[{self.destinations}]={self.memory}"
 
 
 class Broadcaster(Module):
@@ -98,6 +106,26 @@ class System(object):
         self.modules = {}
         self.broadcaster = None
         self.parse_config(source)
+
+    def parse_config(self, source):
+        for line in source:
+            name, destinations = line.split(' -> ')
+            destinations = destinations.split(', ')
+            if name == 'broadcaster':
+                self.broadcaster = Broadcaster("broadcaster", destinations)
+                continue
+            typ = name[0]
+            name = name[1:].strip()
+            if typ == "%":
+                self.modules[name] = FlipFlop(name, destinations)
+            else:  # typ == "&":
+                self.modules[name] = Conjunction(name, destinations)
+
+            # connect the destinations to the conjunctions
+            for name, module in self.modules.items():
+                for destination in module.destinations:
+                    if destination in self.modules and isinstance(self.modules[destination], Conjunction):
+                        self.modules[destination].memory[name] = 'low'
 
     def push_button(self):
         lo = 1  # the button itself
@@ -129,25 +157,50 @@ class System(object):
             high_pulses += high
         return low_pulses, high_pulses
 
-    def parse_config(self, source):
-        for line in source:
-            name, destinations = line.split(' -> ')
-            destinations = destinations.split(', ')
-            if name == 'broadcaster':
-                self.broadcaster = Broadcaster("broadcaster", destinations)
-                continue
-            typ = name[0]
-            name = name[1:].strip()
-            if typ == "%":
-                self.modules[name] = FlipFlop(name, destinations)
-            else:  # typ == "&":
-                self.modules[name] = Conjunction(name, destinations)
+    def rx(self):
+        feed = None
+        for name, module in self.modules.items():
+            if "rx" in module.destinations:
+                feed = name
+                break
+        p(f"feed: {feed}")
+        cycle_lengths = {}
+        seen = {}
+        for name, module in self.modules.items():
+            if feed in module.destinations:
+                seen[name] = 0
+        presses = 0
 
-            # connect the destinations to the conjunctions
-            for name, module in self.modules.items():
-                for destination in module.destinations:
-                    if destination in self.modules and isinstance(self.modules[destination], Conjunction):
-                        self.modules[destination].memory[name] = 'low'
+        while True:
+            presses += 1
+            q = collections.deque(self.broadcaster.process(Pulse('button', 'broadcaster', 'low')))
+
+            while q:
+                pulse = q.popleft()
+
+                if pulse.destination not in self.modules:
+                    continue
+
+                module = self.modules[pulse.destination]
+
+                if module.name == feed and pulse.pulse == "high":
+                    seen[pulse.origin] += 1
+
+                    if pulse.origin not in cycle_lengths:
+                        cycle_lengths[pulse.origin] = presses
+                    else:
+                        assert presses == seen[pulse.origin] * cycle_lengths[pulse.origin]
+
+                    if all(seen.values()):
+                        x = 1
+                        for cycle_length in cycle_lengths.values():
+                            x = x * cycle_length // math.gcd(x, cycle_length)
+                        return x
+
+                module = self.modules[pulse.destination]
+                new_pulses = module.process(pulse)
+                q.extend(new_pulses)
+
 
 
 def part_1(source: list[str]) -> int | None:
@@ -157,8 +210,10 @@ def part_1(source: list[str]) -> int | None:
     return low_pulses * high_pulses
 
 
-def part_2(source: str | list[str]) -> int | None:
-    return None
+def part_2(source: list[str]) -> int | None:
+    system = System(source)
+    cycles = system.rx()
+    return cycles
 
 
 # noinspection DuplicatedCode
@@ -173,11 +228,8 @@ class UnitTests(unittest.TestCase):
     def test_part_1(self) -> None:
         self.assertEqual(731517480, part_1(self.source))
 
-    def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
-
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(244178746156661, part_2(self.source))
 
     def setUp(self) -> None:
         print()
