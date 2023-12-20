@@ -10,7 +10,48 @@ __doc__ = """
 
 import types
 from functools import reduce
+
 from math import sqrt
+
+
+def gcd(a, b):
+    """
+    Calculate the greatest common divisor (GCD) of two numbers using
+    the Euclidean algorithm.
+    https://en.wikipedia.org/wiki/Euclidean_algorithm
+    :param a: The first number.
+    :param b: The second number.
+    :return: The GCD of a and b.
+    """
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+
+def lcm(a, b):
+    """
+    Calculate the least common multiple (LCM) of two numbers.
+    :param a: The first number.
+    :param b: The second number.
+    :return: The LCM of a and b.
+    """
+    return abs(a * b) // gcd(a, b)
+
+
+def lcm_list(numbers: list[int]):
+    """
+     Calculate the least common multiple (LCM) of a list of numbers.
+     :param numbers: The list of numbers.
+     :return: The LCM of the numbers in the list.
+     """
+    if not numbers:
+        return 0
+    if len(numbers) == 1:
+        return numbers[0]
+    result = numbers[0]
+    for number in numbers[1:]:
+        result = lcm(result, number)
+    return result
 
 
 def prod(*iterable) -> float:
