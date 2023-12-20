@@ -2,6 +2,7 @@
 #  -*- coding: utf-8 -*-
 from __future__ import annotations
 
+# noinspection DuplicatedCode
 __author__ = "Ivo Woltring"
 __copyright__ = "Copyright (c) 2023 Ivo Woltring"
 __license__ = "Apache 2.0"
