@@ -173,10 +173,11 @@ class System(object):
     def rx_flip(self):
         """
         I've been looking at the input data to analyze the problem with the rx flip.
-        - there seems to be one Conjunction module that has the rx module as destination
+        - there seems to be one Conjunction module that has the rx module as a destination
         - and 4 flip-flops that have that Conjunction module as destination
         - so if all of those 4 flip-flops have been flipped at least once we have a cycle
-        - all of these have a cycle length we can find out.
+        - all of these have a number of cycle steps we can find out before it cycles.
+        - at least that is my assumption :-)
         - if all are flipped at the same time the Conjunction module will flip as well so that is the terminator
         - the cycle length is the LCM of the cycle lengths of the 4 flip-flops should be the answer
 
