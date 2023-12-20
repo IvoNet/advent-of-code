@@ -198,6 +198,7 @@ class System(object):
 
         6. Once all modules that have `module_with_rx_as_destination` in their destinations have been seen at least
            once, the method calculates the LCM of their cycle lengths and returns it.
+           The LCM is used so as not to have to do it brute force.
 
         :return: The LCM of the cycle lengths.
         """
@@ -235,7 +236,9 @@ class System(object):
                     if pulse.origin not in cycle_steps:
                         cycle_steps[pulse.origin] = button_presses
                         p(f"cycle_steps: {cycle_steps}")
-                    if all(watched.values()):  # all watched modules have received a pulse
+
+                    # all watched modules have received a pulse
+                    if all(watched.values()):
                         return lcm_list(list(cycle_steps.values()))
 
                 module = self.modules[pulse.destination]
