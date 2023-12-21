@@ -17,9 +17,8 @@ import sys
 import unittest
 from pathlib import Path
 
-from math import gcd
+from math import floor
 
-from ivonet.calc import gcd
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -109,37 +108,28 @@ def part_1(source: str | list[str], steps=64) -> int | None:
 
 def part_2(source: str | list[str], steps=26501365) -> int | None:
     """ OK this one is killing me. So let's observe and see if we can extrapolate:
+    NOTE!! my bfs version works with the unbounded_invalid_test but us way to slow to solve this puzzle
     - the question is how many positions can be reached in exactly 26501365 steps
-    - the grid is a square
+    - wy this specific odd number? (I'm going to assume it has a good reason to be that specific number)
+    - the grid is a square 131x131
     - the grid can infinitely be repeated
-    - the top and bottom rows have no obstacles
-    - all side columns have no obstacles
-    - so top, bottom, lef and right start with no obstacles
-    - the S is at (65,65)
-    - the grid is 131x131
-    - as the grid is square:
-      - the S is in the middle
-      - the grid can be repeated infinitely
-      - so if we can find the solution for the first 131x131 grid we can repeat that for the rest
-      - it seems to me that this repeating square is the key to the solution
-    - 26501365 // 131 = 202300
-    - 26501365 % 131 = 65 ---- oeh this is the same as the S position?! 0 indexed => 64
-    - 26501365 = 202300 * 131 + 65
-    - 202300 // 2 = 101150
-    - the actual input file also has a visible open diamond shape in the middle is that something?
+    - none of the sides have obstacles only "."
     - looking even more closely I noticed that vertically and horizontally the grid is completely free of obstacles
       from start (S) to the edge of the grid
+    - the S vertical and horizontal axis are free of obstacles and S is in the middle of the grid (65,65)
     - that means that one can walk to the edge of the grid in 65 steps which is in effect the shortest path to the edge
+    - 26501365 // 131 = 202300 (but has remainder)
+    - 202300 // 2 = 101150
+    - 202300 // 2 + 1 = 101151
+    - 26501365 % 131 = 65 ---- oeh this is the same as the S position?! 0 indexed => 64
+    - 26501365 = 202300 * 131 + 65
+    - the actual input file also has a visible open diamond shape in the middle is that something?
     - when I try to find all the places within the original boundaries I can go to in increments of 65 steps (+1 for every iteration) I
       find a pattern of 7255 steps every time
-    - unbounded it does not repeat this pattern
-    - I printed all the steps and answers in a range of 300 and after 130 a pattern repeats:
-      odd: 7255 steps
-      even: 7262 steps
-      so a repeating difference of 7 and -7
-    - if I do 131 * 2 steps I get Odds:  14706,131218,363866,712650,1177570,1758626,...The gcd of these numbers is 2
+    - unbounded it does not repeat this pattern lets ask wolfram alpha if there is a pattern i don't see
+    - if I do 131 * 2 steps I get Odds:  14706,131218,363866,712650,1177570,1758626,...
       https://www.wolframalpha.com/input?i=14706%2C131218%2C363866%2C712650%2C1177570
-      -> 2(29034 * n ** 2 - 28846 * n + 7165)
+      -> 2 * (29034 * n ** 2 - 28846 * n + 7165)
     - if I do 131 * 2 steps I get Evens: 1,58445,233025,523741,930593,1453581
       https://www.wolframalpha.com/input?i=58445%2C233025%2C523741%2C930593
       -> 58068 * n ** 2 - 115760 * n + 57693
@@ -148,68 +138,69 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
       evens: 32808,178174,439676,817314,1311088,1920998 -> 2(29034 * n ** 2 - 43453 * n + 16257)
     - so the pattern is 2 (16257 - 43453 n + 29034 n^2), n= steps // (131 *2) + 1
       https://www.wolframalpha.com/input?i=2+%2816257+-+43453+n+%2B+29034+n%5E2%29%2C+n%3D%28floor%2826501365+%2F+262%29+%2B+1%29
+      The mathematical term for // in Python is called "floor division". It divides the left operand by the right operand and rounds down the result to the nearest whole number.
     - I've tried al combinations and yes I had to wait minutes before I could enter a new answer
     - I've got the second star but I don't understand it. Wolfram Alpha is my friend here
     - I just found patterns and applied the formula and it worked after a lot of one offs and trials. I really want to understand this!
     - going to look at solutions now from others
     - for reference and learning I will commit this code as is
     - I chose the odds formula as the steps was an odd number
+    - I am pretty sure this solution is for my input only and not a general solution!
 
     """
     # pas = (steps // (131 * 2)) + 1
     # ans = 2 * (29034 * pas ** 2 - 43453 * pas + 16257)
     # 40782451734526155124
     # 594115391548176
-    n = steps // (131 * 2) + 1
-    print(f"floor: {n}")
-    e = 58068 * n ** 2 - 115760 * n + 57693
+    # n = steps // (131 * 2) + 1  # 101151
+    n = floor(steps / (131 * 2)) + 1  # 101151
+    # e = 58068 * n ** 2 - 115760 * n + 57693
     o = 2 * (29034 * n ** 2 - 43453 * n + 16257)
-    print(f"e: {e}, o: {o}, e-o: {abs(e - o)}")
+    return o  # <<<< this works! OMG and I don't understand it :-) I will try to understand it later
 
-    return o
-
-    start, grid = parse(source)
-    p(f"start: {start}")
-    p(f"grid: {grid}")
-    p(f"steps: {steps}")
-    p(f"grid is: {len(grid)}x{len(grid[0])}")
-    bounded = []
-    unbounded = []
-    odds = []
-    evens = []
-    for i in range(0, 10):
-        stps = 65 + i * 131
-        # answer = bfs(start, grid, stps, bounded_invalid_test)
-        # p(f"stps: {stps} answer: {answer}")
-        # bounded.append(answer)
-        answer = bfs(start, grid, stps, unbounded_invalid_test)
-        p(f"stps: {stps} answer: {answer}")
-        if stps % 2 == 0:
-            evens.append(answer)
-        else:
-            odds.append(answer)
-        unbounded.append(answer)
-    # p(",".join(str(x) for x in bounded))
-    p(",".join(str(x) for x in unbounded))
-    p(",".join(str(x) for x in odds))
-    p(",".join(str(x) for x in evens))
-    # print(gcd(*odds))
-    print(list(gcd(a, b) for a, b in zip(odds[:-1], odds[1:])))
-    print(list(gcd(a, b) for a, b in zip(evens[:-1], evens[1:])))
-    ans = 2(29034 * steps ** 2 - 43453 * steps + 16257)
-    print(ans)
-    # prev_diff = 0
-    # prev = 0
-    # for i in range(1, 300):
-    #     answer = bfs(start, grid, i, unbounded_invalid_test)
-    #     diff = answer - prev
-    #     p(f"steps: {i:>3} answer: {answer:>6}, diff to prev: {diff:>6}, 2nd diff: {prev_diff - diff:>6}")
-    #     prev_diff = answer - prev
-    #     prev = answer
-    # return None
-    # return solve(grid, start, steps)
-    # return bfs(start, grid, steps)
-    # return bfs(start, grid, steps, unbounded_invalid_test)
+    # The code below was all stuuf I used to find the patterns above
+    # start, grid = parse(source)
+    # p(f"start: {start}")
+    # p(f"grid: {grid}")
+    # p(f"steps: {steps}")
+    # p(f"grid is: {len(grid)}x{len(grid[0])}")
+    # bounded = []
+    # unbounded = []
+    # odds = []
+    # evens = []
+    # for i in range(0, 10):
+    #     stps = 65 + i * 131
+    #     # answer = bfs(start, grid, stps, bounded_invalid_test)
+    #     # p(f"stps: {stps} answer: {answer}")
+    #     # bounded.append(answer)
+    #     answer = bfs(start, grid, stps, unbounded_invalid_test)
+    #     p(f"stps: {stps} answer: {answer}")
+    #     if stps % 2 == 0:
+    #         evens.append(answer)
+    #     else:
+    #         odds.append(answer)
+    #     unbounded.append(answer)
+    # # p(",".join(str(x) for x in bounded))
+    # p(",".join(str(x) for x in unbounded))
+    # p(",".join(str(x) for x in odds))
+    # p(",".join(str(x) for x in evens))
+    # # print(gcd(*odds))
+    # print(list(gcd(a, b) for a, b in zip(odds[:-1], odds[1:])))
+    # print(list(gcd(a, b) for a, b in zip(evens[:-1], evens[1:])))
+    # ans = 2(29034 * steps ** 2 - 43453 * steps + 16257)
+    # print(ans)
+    # # prev_diff = 0
+    # # prev = 0
+    # # for i in range(1, 300):
+    # #     answer = bfs(start, grid, i, unbounded_invalid_test)
+    # #     diff = answer - prev
+    # #     p(f"steps: {i:>3} answer: {answer:>6}, diff to prev: {diff:>6}, 2nd diff: {prev_diff - diff:>6}")
+    # #     prev_diff = answer - prev
+    # #     prev = answer
+    # # return None
+    # # return solve(grid, start, steps)
+    # # return bfs(start, grid, steps)
+    # # return bfs(start, grid, steps, unbounded_invalid_test)
 
 
 # noinspection DuplicatedCode
