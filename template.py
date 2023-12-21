@@ -17,6 +17,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import pyperclip
+
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -33,11 +35,15 @@ def p(*args, end="\n", sep=" "):
 
 
 def part_1(source: str | list[str]) -> int | None:
-    return None
+    answer = None
+    pyperclip.copy(str(answer))
+    return answer
 
 
 def part_2(source: str | list[str]) -> int | None:
-    return None
+    answer = None
+    pyperclip.copy(str(answer))
+    return answer
 
 
 # noinspection DuplicatedCode

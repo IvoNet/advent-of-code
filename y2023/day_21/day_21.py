@@ -233,6 +233,7 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
 
     # 6 is enough to get the pattern and fast enough to still work
     # qso stands for quadratic sequence odd numbers
+    # raises a ValueError if the sequence is not quadratic or not enough sample data is given
     qso = try_sequence(grid, start, samples=6, odd=True)
     return qso(steps // (len(grid) * 2) + 1)
 
@@ -261,6 +262,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(1594, part_1(self.test_source, 50, unbounded_invalid_test))
         self.assertEqual(6536, part_1(self.test_source, 100, unbounded_invalid_test))
         self.assertEqual(167004, part_1(self.test_source, 500, unbounded_invalid_test))
+        # these two also work but are too slow for my teste
         # self.assertEqual(668697, part_1(self.test_source, 1000))
         # self.assertEqual(16733044, part_2(self.test_source, 5000))
 
