@@ -153,6 +153,7 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
     - I just found patterns and applied the formula and it worked after a lot of one offs and trials. I really want to understand this!
     - going to look at solutions now from others
     - for reference and learning I will commit this code as is
+    - I chose the odds formula as the steps was an odd number
 
     """
     # pas = (steps // (131 * 2)) + 1
