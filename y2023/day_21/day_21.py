@@ -16,8 +16,7 @@ import os
 import sys
 import unittest
 from pathlib import Path
-
-from math import floor
+from typing import Callable, Sequence
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -43,6 +42,33 @@ def parse(source):
     raise ValueError("No start found")
 
 
+def quadratic_sequence(seq: Sequence[int]) -> Callable:
+    """
+    Returns a function that calculates the value of the quadratic sequence for the given list of integers
+    :param seq:
+    :return:
+    """
+    diff1 = [b - a for a, b in zip(seq, seq[1:])]  # first differences
+    diff2 = [b - a for a, b in zip(diff1, diff1[1:])]  # second differences
+    # test if it is a quadratic sequence
+    if len(set(diff2)) == 1:  # all second differences should be the same in a quadratic sequence
+        a = diff2[0] // 2  # 2a = 2nd diff
+        b = diff1[0] - 3 * a  # 3a + b = u2 - u1 = 1st diff
+        c = seq[0] - a - b  # a + b + c = u1
+        return lambda n: quadratic_formula(a, b, c, n)
+    else:
+        raise ValueError("Not a quadratic sequence")
+
+
+def quadratic_formula(a, b, c, n):
+    """
+    Returns the value of the quadratic formula for the given parameters.
+
+    Un = an^2 + bn + c
+    """
+    return a * n ** 2 + b * n + c
+
+
 def get_cell_state(grid, x, y):
     # TODO make this one pretty and put in the ivonet library
     height = len(grid)
@@ -62,7 +88,7 @@ def unbounded_invalid_test(grid, nr, nc):
     return get_cell_state(grid, nr, nc) == "#"
 
 
-def bfs(start, grid, max_steps, invalid=None):
+def bfs(start, grid, max_steps, invalid=None) -> int:
     """
     Perform a Breadth-First Search (BFS) on the grid from the start position.
 
@@ -97,14 +123,30 @@ def bfs(start, grid, max_steps, invalid=None):
     return len(answer)
 
 
-def part_1(source: str | list[str], steps=64) -> int | None:
+def try_sequence(grid, start, samples=6, odd=True):
+    """
+    Try to find the quadratic sequence for the given grid and start position.
+    This is done by performing a BFS for the given number of samples and then
+    calculating the quadratic sequence for the odd or even samples.
+    """
+    answers_odd = []
+    answers_even = []
+    offset = len(grid) // 2
+    width = len(grid)
+    for i in range(0, samples):
+        s = offset + width * i
+        answer = bfs(start, grid, s, unbounded_invalid_test)
+        if s % 2 == 1:
+            answers_odd.append(answer)
+        else:
+            answers_even.append(answer)
+    return quadratic_sequence(answers_odd) if odd else quadratic_sequence(answers_even)
+
+
+def part_1(source: str | list[str], steps=64, invalid=bounded_invalid_test) -> int | None:
     start, grid = parse(source)
-    return bfs(start, grid, steps, bounded_invalid_test)
+    return bfs(start, grid, steps, invalid)
 
-
-# usage
-# grid = [list(line) for line in open('day_21.input').read().splitlines()]
-# print(solve(grid, 26501365))
 
 def part_2(source: str | list[str], steps=26501365) -> int | None:
     """ OK this one is killing me. So let's observe and see if we can extrapolate:
@@ -122,7 +164,8 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
     - 202300 // 2 = 101150
     - 202300 // 2 + 1 = 101151
     - 26501365 % 131 = 65 ---- oeh this is the same as the S position?! 0 indexed => 64
-    - 26501365 = 202300 * 131 + 65
+    - 26501365 % 262 = 65
+    - 26501365 = 202300 * 131 + 65 => 101150 * 2 * 131 + 65 => 101151 * 2 * 131
     - the actual input file also has a visible open diamond shape in the middle is that something?
     - when I try to find all the places within the original boundaries I can go to in increments of 65 steps (+1 for every iteration) I
       find a pattern of 7255 steps every time
@@ -134,92 +177,92 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
       https://www.wolframalpha.com/input?i=58445%2C233025%2C523741%2C930593
       -> 58068 * n ** 2 - 115760 * n + 57693
     - and for offset 65 (just trying to find patterns) I get:
-      odds : 3676,90974,294408,613978,1049684,1601526  -> 2(29034 * n ** 2 - 43453 * n + 16257)
-      evens: 32808,178174,439676,817314,1311088,1920998 -> 2(29034 * n ** 2 - 43453 * n + 16257)
+      even : 3676,90974,294408,613978,1049684,1601526  -> 2(29034 * n ** 2 - 43453 * n + 16257)
+      odds: 32808,178174,439676,817314,1311088,1920998 -> 2(29034 * n ** 2 - 43453 * n + 16257)
     - so the pattern is 2 (16257 - 43453 n + 29034 n^2), n= steps // (131 *2) + 1
-      https://www.wolframalpha.com/input?i=2+%2816257+-+43453+n+%2B+29034+n%5E2%29%2C+n%3D%28floor%2826501365+%2F+262%29+%2B+1%29
-      The mathematical term for // in Python is called "floor division". It divides the left operand by the right operand and rounds down the result to the nearest whole number.
+      ANSWER>>> https://www.wolframalpha.com/input?i=2+%2816257+-+43453+n+%2B+29034+n%5E2%29%2C+n%3D%28floor%2826501365+%2F+262%29+%2B+1%29
     - I've tried al combinations and yes I had to wait minutes before I could enter a new answer
     - I've got the second star but I don't understand it. Wolfram Alpha is my friend here
-    - I just found patterns and applied the formula and it worked after a lot of one offs and trials. I really want to understand this!
+    - I just found patterns and applied the formula and it worked after a lot of one offs and trials.
+    - I really want to understand this!
     - going to look at solutions now from others
     - for reference and learning I will commit this code as is
-    - I chose the odds formula as the steps was an odd number
+    - I chose the odds formula as the steps was an odd number (tried the other one also :-))
     - I am pretty sure this solution is for my input only and not a general solution!
-
+    -======== Now for Generalisation... =====
+    - research tells me that this is a quadratic sequence and the formula for that is always -> an^2 + bn + c
+    - I want to generify this solution so it works for all inputs
+    - I need to prove that the pattern is actually a quadratic sequence
+    - because of the former observations I know that the shortest path to the edge of the grid is 65 steps as there
+      are no obstacles in the way
+    - so that is my offset. I need to bfs a couple of samples to get the possible quadratic sequence
+      (which I did earlier but now with understanding :-)
+    - either on 0 + x * 131 or 65 + x * 131 lets try both...--> 65 it is after I tried both
+    - look at this site to understand my equations better:
+      https://www.radfordmathematics.com/algebra/sequences-series/difference-method-sequences/quadratic-sequences.html
+    - first we have to recognise there is a quadratic sequence:
+    - given sequence:    3676     90974     294408      613978      1049684      1601526
+                            \     /   \    /     \    /     \     /       \     /
+    - first differences:     872237    203434     319570       435706      551842
+                                 \    /    \    /      \     /      \     /
+    - Second differences:        116136    116136      116136       116136
+    - so the second differences are all the same so we have a quadratic sequence -> len(set(second diffs)) == 1
+    - we need to find a, b and c of the given quadratic sequence equation: an^2 + bn + c
+    - in order to do that we have 3 formulas:
+    - 1) 2a = 2nd diff ->  a = 1/2 * (2nd diff) = 1/2 * 116136 = 58068
+    - 2) 3a + b = 1st diff = u2 - u1 -> 3a + b = 90974 - 3676 = 87298 -> b = 87298 - 3a = 87298 - 3 * 58068 = -115760
+    - 3) a + b + c = 1st term = u1 -> c = 1st term - a - b = 3676 - 58068 - (-115760) = 57693
+    - so the formula is: 58068 * n ** 2 - 115760 * n + 57693
+    - now we can calculate the steps for my input -> see code...
+    - but how do I derive what n should be in the quadratic sequence -> n = floor(steps / (131 * 2)) + 1
+    - Here, steps is the total number of steps you want to take, 131 is the width of the grid, and 2 is used to
+      account for both horizontal and vertical directions. The floor function is used to round down to the nearest
+      whole number, and 1 is added to the result.
+    - The `1` is added to the result in the formula  to adjust the term number `n` in the quadratic sequence.
+    - In the context of the code, the term number `n` is calculated based on the number of steps you want to
+      take. The `floor` function is used to round down to the nearest whole number. However, in a quadratic sequence,
+      the term number starts from `1` (for the first term), not `0`. Therefore, `1` is added to the result of the
+      floor division to correctly calculate the term number `n` in the quadratic sequence.
+    - I need to do de bfs with the unbounded_invalid_test for enough steps to get to the edge of the grid and then
+      get enough samples to determine the quadratic sequence and then calculate the answer
     """
-    # pas = (steps // (131 * 2)) + 1
-    # ans = 2 * (29034 * pas ** 2 - 43453 * pas + 16257)
-    # n = steps // (131 * 2) + 1  # 101151
-    n = floor(steps / (131 * 2)) + 1  # 101151
-    # e = 58068 * n ** 2 - 115760 * n + 57693
-    o = 2 * (29034 * n ** 2 - 43453 * n + 16257)
-    return o  # <<<< this works! OMG and I don't understand it :-) I will try to understand it later
+    start, grid = parse(source)
 
-    # The code below was all stuuf I used to find the patterns above
-    # start, grid = parse(source)
-    # p(f"start: {start}")
-    # p(f"grid: {grid}")
-    # p(f"steps: {steps}")
-    # p(f"grid is: {len(grid)}x{len(grid[0])}")
-    # bounded = []
-    # unbounded = []
-    # odds = []
-    # evens = []
-    # for i in range(0, 10):
-    #     stps = 65 + i * 131
-    #     # answer = bfs(start, grid, stps, bounded_invalid_test)
-    #     # p(f"stps: {stps} answer: {answer}")
-    #     # bounded.append(answer)
-    #     answer = bfs(start, grid, stps, unbounded_invalid_test)
-    #     p(f"stps: {stps} answer: {answer}")
-    #     if stps % 2 == 0:
-    #         evens.append(answer)
-    #     else:
-    #         odds.append(answer)
-    #     unbounded.append(answer)
-    # # p(",".join(str(x) for x in bounded))
-    # p(",".join(str(x) for x in unbounded))
-    # p(",".join(str(x) for x in odds))
-    # p(",".join(str(x) for x in evens))
-    # # print(gcd(*odds))
-    # print(list(gcd(a, b) for a, b in zip(odds[:-1], odds[1:])))
-    # print(list(gcd(a, b) for a, b in zip(evens[:-1], evens[1:])))
-    # ans = 2(29034 * steps ** 2 - 43453 * steps + 16257)
-    # print(ans)
-    # # prev_diff = 0
-    # # prev = 0
-    # # for i in range(1, 300):
-    # #     answer = bfs(start, grid, i, unbounded_invalid_test)
-    # #     diff = answer - prev
-    # #     p(f"steps: {i:>3} answer: {answer:>6}, diff to prev: {diff:>6}, 2nd diff: {prev_diff - diff:>6}")
-    # #     prev_diff = answer - prev
-    # #     prev = answer
-    # # return None
-    # # return solve(grid, start, steps)
-    # # return bfs(start, grid, steps)
-    # # return bfs(start, grid, steps, unbounded_invalid_test)
+    assert len(grid) == len(grid[0])  # grid is square (important)
+    assert len(grid) % 2 == 1  # grid is odd (important)
+
+    # 6 is enough to get the pattern and fast enough to still work
+    # qso stands for quadratic sequence odd numbers
+    qso = try_sequence(grid, start, samples=6, odd=True)
+    return qso(steps // (len(grid) * 2) + 1)
 
 
 # noinspection DuplicatedCode
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        # self.assertEqual(2, part_1(self.test_source, 1))
-        # self.assertEqual(6, part_1(self.test_source, 3))
+        self.assertEqual(2, part_1(self.test_source, 1))
+        self.assertEqual(6, part_1(self.test_source, 3))
         self.assertEqual(16, part_1(self.test_source, 6))
 
     def test_part_1(self) -> None:
         self.assertEqual(3578, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        # self.assertEqual(16, part_2(self.test_source, 6))
-        # self.assertEqual(50, part_2(self.test_source, 10))
-        # self.assertEqual(1594, part_2(self.test_source, 50))
-        # self.assertEqual(6536, part_2(self.test_source, 100))
-        # self.assertEqual(167004, part_2(self.test_source, 500))
-        # self.assertEqual(668697, part_2(self.test_source, 1000))
-        self.assertEqual(16733044, part_2(self.test_source, 5000))
+        """
+        It seems that the same formula can be used for both part 1 as part 2 but it is to slow for
+        part 2. The only difference in the formula is the invalid test function.
+        so above 1000 steps it is too slow so I needed to optimize.
+        Through observation I noticed stuff and the optimizations has a couple of assumptions that does not hold true
+        for the test input. I leave this here for reference and proof of my thinking process.
+        """
+        self.assertEqual(16, part_1(self.test_source, 6, unbounded_invalid_test))
+        self.assertEqual(50, part_1(self.test_source, 10, unbounded_invalid_test))
+        self.assertEqual(1594, part_1(self.test_source, 50, unbounded_invalid_test))
+        self.assertEqual(6536, part_1(self.test_source, 100, unbounded_invalid_test))
+        self.assertEqual(167004, part_1(self.test_source, 500, unbounded_invalid_test))
+        # self.assertEqual(668697, part_1(self.test_source, 1000))
+        # self.assertEqual(16733044, part_2(self.test_source, 5000))
 
     def test_part_2(self) -> None:
         self.assertEqual(594115391548176, part_2(self.source))
