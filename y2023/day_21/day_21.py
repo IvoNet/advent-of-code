@@ -45,7 +45,21 @@ def parse(source):
     raise ValueError("No start found")
 
 
-def bfs(start, grid, max_steps):
+def bfs(start, grid, max_steps, invalid=None):
+    """
+    Perform a Breadth-First Search (BFS) on the grid from the start position.
+
+    The BFS explores all reachable positions in the grid in exactly `max_steps` steps.
+    A position is considered reachable if it is a garden plot (".") and not a rock ("#").
+
+    Args:
+        start (tuple): The starting position as a tuple of (row, column).
+        grid (list): The grid as a 2D list of strings. Each string can be ".", "#", or "S".
+        max_steps (int): The maximum number of steps to take from the start position.
+
+    Returns:
+        set: A set of all positions that can be reached in exactly `max_steps` steps from the start position.
+    """
     queue = collections.deque([(start, max_steps)])  # Add step count to queue
     visited = {start}
     answer = set()
@@ -59,20 +73,39 @@ def bfs(start, grid, max_steps):
 
         for dr, dc in ((0, 1), (0, -1), (1, 0), (-1, 0)):
             nr, nc = r + dr, c + dc
-            if nr < 0 or nr >= len(grid) or nc < 0 or nc >= len(grid[0]) or grid[nr][nc] == "#" or (nr, nc) in visited:
+            if invalid(grid, nr, nc) or (nr, nc) in visited:
                 continue
             visited.add((nr, nc))
             queue.append(((nr, nc), steps - 1))
     return len(answer)
 
 
+def bounded_invalid_test(grid, nr, nc):
+    return nr < 0 or nr >= len(grid) or nc < 0 or nc >= len(grid[0]) or grid[nr][nc] == "#"
+
+
+def get_cell_state(grid, x, y):
+    height = len(grid)
+    width = len(grid[0])
+
+    wrapped_x = x % width
+    wrapped_y = y % height
+
+    return grid[wrapped_y][wrapped_x]
+
+
+def unbounded_invalid_test(grid, nr, nc):
+    return get_cell_state(grid, nr, nc) == "#"
+
+
 def part_1(source: str | list[str], steps=64) -> int | None:
     start, grid = parse(source)
-    return bfs(start, grid, steps)
+    return bfs(start, grid, steps, bounded_invalid_test)
 
 
-def part_2(source: str | list[str]) -> int | None:
-    return None
+def part_2(source: str | list[str], steps=26501365) -> int | None:
+    start, grid = parse(source)
+    return bfs(start, grid, steps, unbounded_invalid_test)
 
 
 # noinspection DuplicatedCode
@@ -82,10 +115,16 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(16, part_1(self.test_source, 6))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(3578, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(16, part_2(self.test_source, 6))
+        self.assertEqual(50, part_2(self.test_source, 10))
+        self.assertEqual(1594, part_2(self.test_source, 50))
+        self.assertEqual(6536, part_2(self.test_source, 100))
+        self.assertEqual(167004, part_2(self.test_source, 500))
+        self.assertEqual(668697, part_2(self.test_source, 1000))
+        self.assertEqual(16733044, part_2(self.test_source, 5000))
 
     def test_part_2(self) -> None:
         self.assertEqual(None, part_2(self.source))
