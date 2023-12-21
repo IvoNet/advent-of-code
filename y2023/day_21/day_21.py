@@ -44,9 +44,8 @@ def parse(source):
 
 def quadratic_sequence(seq: Sequence[int]) -> Callable:
     """
-    Returns a function that calculates the value of the quadratic sequence for the given list of integers
-    :param seq:
-    :return:
+    Returns a function that calculates the value of the quadratic sequence for the given list of integers.
+    https://www.radfordmathematics.com/algebra/sequences-series/difference-method-sequences/quadratic-sequences.html
     """
     diff1 = [b - a for a, b in zip(seq, seq[1:])]  # first differences
     diff2 = [b - a for a, b in zip(diff1, diff1[1:])]  # second differences
@@ -201,11 +200,11 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
     - look at this site to understand my equations better:
       https://www.radfordmathematics.com/algebra/sequences-series/difference-method-sequences/quadratic-sequences.html
     - first we have to recognise there is a quadratic sequence:
-    - given sequence:    3676     90974     294408      613978      1049684      1601526
+    - given sequence:    3676      90974    294408     613978      1049684       1601526
                             \     /   \    /     \    /     \     /       \     /
     - first differences:     872237    203434     319570       435706      551842
-                                 \    /    \    /      \     /      \     /
-    - Second differences:        116136    116136      116136       116136
+                                 \    /     \    /      \     /      \     /
+    - Second differences:        116136     116136       116136       116136
     - so the second differences are all the same so we have a quadratic sequence -> len(set(second diffs)) == 1
     - we need to find a, b and c of the given quadratic sequence equation: an^2 + bn + c
     - in order to do that we have 3 formulas:
@@ -227,9 +226,6 @@ def part_2(source: str | list[str], steps=26501365) -> int | None:
       get enough samples to determine the quadratic sequence and then calculate the answer
     """
     start, grid = parse(source)
-
-    assert len(grid) == len(grid[0])  # grid is square (important)
-    assert len(grid) % 2 == 1  # grid is odd (important)
 
     # 6 is enough to get the pattern and fast enough to still work
     # qso stands for quadratic sequence odd numbers

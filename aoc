@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# test if two params are passed
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <year> <day>"
+    exit 1
+fi
+
+YEAR=$1
+DAY=$2
+
+if ! [[ $YEAR =~ ^[0-9]+$ ]]; then
+    echo "Year must be a number"
+    exit 1
+fi
+if ! [[ $DAY =~ ^[0-9]+$ ]]; then
+    echo "Day must be a number"
+    exit 1
+fi
+if [ $YEAR -lt 2015 ]; then
+    echo "Year must be 2015 or later"
+    exit 1
+fi
+if [ $DAY -lt 1 ] || [ $DAY -gt 25 ]; then
+    echo "Day must be between 1 and 25"
+    exit 1
+fi
+#pad day with leading zero if needed
+if [ $DAY -lt 10 ]; then
+    DAY="0$DAY"
+fi
+
+# run python from the venv directory in the venv folder where this script resides
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source $DIR/venv/bin/activate
+python $DIR/aoc_input.py $YEAR $DAY
+
+git add $DIR/y$YEAR/day_$DAY/*
+git commit -m "Add $YEAR/day_$DAY puzzle start"
