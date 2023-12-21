@@ -2,7 +2,7 @@ import re
 from collections import namedtuple
 from random import random
 
-with open('/y2022/day_19/day_19.input') as inputfile:
+with open('/Users/ivonet/dev/puzzle/advent-of-code/y2022/day_19/day_19.input') as inputfile:
     lines = [b.strip() for b in inputfile.readlines()]
 
 Rule = namedtuple('Rule', 'id ore clay obsidian geode')

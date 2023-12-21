@@ -4,7 +4,7 @@ import re
 r = 1
 o = [(t - 1) * t // 2 for t in range(32 + 1)]
 p = [list(map(int, re.findall("-?\d+", l))) for l in
-     fileinput.input("/y2022/day_19/day_19.input")]
+     fileinput.input("/Users/ivonet/dev/puzzle/advent-of-code/y2022/day_19/day_19.input")]
 for n, a, b, c, d, e, f in p[: 3]:
     m = 0
     mi, mj, mk = max(a, b, c, e), d, f

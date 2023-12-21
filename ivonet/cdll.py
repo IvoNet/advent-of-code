@@ -68,6 +68,7 @@ class CircularDoublyLinkedList:
         return self.current_node
 
     def step_right(self, times) -> Optional[Node[T]]:
+        """'Walks' forwards from the current node"""
         for _ in range(times % self.size):
             self.next()
         return self.current()
@@ -158,7 +159,7 @@ class CircularDoublyLinkedList:
         """
         self.insert_at_beginning(Node(value))
 
-    def popleft(self) -> T:
+    def popleft(self) -> T | None:
         """Returns the value of the first and removes the node from the cycle
         the next node will become the first node.
         """

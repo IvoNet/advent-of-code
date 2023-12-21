@@ -1,4 +1,5 @@
 import collections
+
 import math
 
 from ivonet.files import read_rows
@@ -76,12 +77,12 @@ def get_max_geodes(blueprint, total_time):
 
 
 def part_1():
-    blueprints = [ints(x) for x in read_rows("/Users/ivonet/dev/puzzle/advent-of-code/2022/day_19/day_19.input")]
+    blueprints = [ints(x) for x in read_rows("/Users/ivonet/dev/puzzle/advent-of-code/y2022/day_19/day_19.input")]
     print(sum(blueprint[0] * get_max_geodes(blueprint, 24) for blueprint in blueprints))
 
 
 def part_2():
-    blueprints = [ints(x) for x in read_rows("/Users/ivonet/dev/puzzle/advent-of-code/2022/day_19/day_19.input")]
+    blueprints = [ints(x) for x in read_rows("/Users/ivonet/dev/puzzle/advent-of-code/y2022/day_19/day_19.input")]
     print(math.prod([get_max_geodes(blueprint, 32) for blueprint in blueprints[:3]]))
 
 

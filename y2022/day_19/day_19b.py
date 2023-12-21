@@ -3,7 +3,8 @@ import re
 
 r = 0
 o = [(t - 1) * t // 2 for t in range(24 + 1)]
-p = [list(map(int, re.findall("-?\d+", l))) for l in fileinput.input("/y2022/day_19/day_19.input")]
+p = [list(map(int, re.findall("-?\d+", l))) for l in
+     fileinput.input("/Users/ivonet/dev/puzzle/advent-of-code/y2022/day_19/day_19.input")]
 for n, a, b, c, d, e, f in p:
     m = 0
     mi, mj, mk = max(a, b, c, e), d, f

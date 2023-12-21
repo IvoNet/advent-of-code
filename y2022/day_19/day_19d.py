@@ -11,7 +11,7 @@ from functools import cache
 
 blueprints = []
 
-input_data = open(r"/y2022/day_19/day_19.input")
+input_data = open(r"/Users/ivonet/dev/puzzle/advent-of-code/y2022/day_19/day_19.input")
 for input_line in input_data.read().splitlines():
     input_line = input_line.replace("\n", "")
     parts = input_line.split(": Each ore robot costs ")

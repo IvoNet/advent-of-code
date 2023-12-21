@@ -181,9 +181,10 @@ class System(object):
         - if all are flipped at the same time the Conjunction module will flip as well so that is the terminator
         - the cycle length is the LCM of the cycle lengths of the 4 flip-flops should be the answer
 
-        Calculate the least common multiple (LCM) (see also day 8) of the cycle lengths of all modules that have "rx"
-        in their destinations.
-        (as this is the second time I needed lcm I moved it to my ivonet library)
+        So Calculate the least common multiple (LCM) (see also day 8) of the cycle lengths of all modules that have
+        "rx" in their destinations.
+        (as this is the second time I needed GCM/LCM I moved it to my ivonet library even though it is part of
+         the math lib too)
 
         Steps to take:
 
