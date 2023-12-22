@@ -12,6 +12,10 @@ from typing import NamedTuple, Callable, Any
 from ivonet.iter import flatten, max_idx
 
 
+def is_within_bounds(grid: list[list[Any]], row, col) -> bool:
+    return 0 <= row < len(grid) and 0 <= col < len(grid[0])
+
+
 class Location(NamedTuple):
     row: int
     col: int

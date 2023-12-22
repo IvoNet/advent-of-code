@@ -43,6 +43,9 @@ class WeightedEdge(Edge):
     def __lt__(self, other: WeightedEdge) -> bool:
         return self.weight < other.weight
 
+    def __repr__(self) -> str:
+        return f"{self.u} {self.weight}> {self.v}"
+
     def __str__(self) -> str:
         return f"{self.u} {self.weight}> {self.v}"
 
@@ -148,13 +151,16 @@ class Graph(Generic[V]):
 
     # Make it easy to pretty-print a Graph
     def __str__(self) -> str:
-        desc: str = ""
+        desc: str = "\n"
         for i in range(self.vertex_count):
             desc += f"{self.vertex_at(i)} -> {self.neighbors_for_index(i)}\n"
         return desc
 
 
 class WeightedGraph(Generic[V], Graph[V]):
+    """
+     See y2023/day_23 for a nice example of how to use this class.
+    """
     def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
         self._edges: list[list[WeightedEdge]] = [[] for _ in self._vertices]
@@ -192,6 +198,20 @@ def total_weight(wp: WeightedPath) -> float:
 
 
 def mst(wg: WeightedGraph[V], start: int = 0) -> Optional[WeightedPath]:
+    """
+    This function implements Prim's algorithm to find the Minimum Spanning Tree (MST) of a weighted,
+    undirected graph.
+    A Minimum Spanning Tree of a graph is a subset of the edges of the graph that connects all the
+    vertices together, without any cycles and with the minimum possible total edge weight.
+
+    Parameters:
+    wg (WeightedGraph): The weighted graph on which to find the MST.
+    start (int, optional): The index of the starting vertex. Defaults to 0.
+
+    Returns:
+    Optional[WeightedPath]: The MST as a list of weighted edges. If the start vertex is not within the range of the
+                            vertices in the graph, returns None.
+    """
     if start > (wg.vertex_count - 1) or start < 0:
         return None
     result: WeightedPath = []  # holds the final MST

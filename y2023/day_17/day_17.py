@@ -23,7 +23,7 @@ from ivonet.files import read_int_matrix
 from ivonet.grid import Location
 from ivonet.iter import ints
 
-DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # right, down, left, up
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
