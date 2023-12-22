@@ -158,25 +158,6 @@ def settle(bricks: list[Brick]) -> list[Brick]:
     return bricks
 
 
-def supports(bricks: list[Brick], brick: Brick) -> bool:
-    """
-    Checks if a brick is supported by the ground or another brick.
-
-    Args:
-        bricks (list[Brick]): A list of Brick objects representing the bricks in their initial positions.
-        brick (Brick): The brick to check.
-
-    Returns:
-        bool: True if the brick is supported, False otherwise.
-    """
-    for other in bricks:
-        if other == brick:
-            continue
-        if brick.overlaps_with_x_and_y(other) and brick.z1 == other.z2 + 1:
-            return True
-    return brick.lowest_z == 1
-
-
 def brick_support_map(bricks: list[Brick]) -> tuple[dict, dict]:
     """
     Creates a double map of brick support relationships.
