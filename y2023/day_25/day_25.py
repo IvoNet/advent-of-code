@@ -34,13 +34,7 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def part_1(source: str | list[str]) -> int | None:
-    answer = None
-    pyperclip.copy(str(answer))
-    return answer
-
-
-def part_2(source: str | list[str]) -> int | None:
+def part_1(source) -> int | None:
     answer = None
     pyperclip.copy(str(answer))
     return answer
@@ -54,12 +48,6 @@ class UnitTests(unittest.TestCase):
 
     def test_part_1(self) -> None:
         self.assertEqual(None, part_1(self.source))
-
-    def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
-
-    def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
 
     def setUp(self) -> None:
         print()
