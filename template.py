@@ -34,13 +34,13 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-def part_1(source: str | list[str]) -> int | None:
+def part_1(source) -> int | None:
     answer = None
     pyperclip.copy(str(answer))
     return answer
 
 
-def part_2(source: str | list[str]) -> int | None:
+def part_2(source) -> int | None:
     answer = None
     pyperclip.copy(str(answer))
     return answer

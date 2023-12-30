@@ -36,4 +36,4 @@ source $DIR/venv/bin/activate
 python $DIR/aoc_input.py $YEAR $DAY
 
 git add $DIR/y$YEAR/day_$DAY/*
-git commit -m "Add $YEAR/day_$DAY puzzle start"
+git commit -m "$YEAR day $DAY"

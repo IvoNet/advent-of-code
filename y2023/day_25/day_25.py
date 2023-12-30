@@ -17,8 +17,12 @@ import sys
 import unittest
 from pathlib import Path
 
+import networkx as nx
 import pyperclip
+from matplotlib import pyplot as plt
+from networkx import Graph, minimum_edge_cut, connected_components
 
+from ivonet.calc import prod
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -35,7 +39,24 @@ def p(*args, end="\n", sep=" "):
 
 
 def part_1(source) -> int | None:
-    answer = None
+    """
+    Sry didn't feel like doing this one in pure python.
+    I will though at a later time I think if I have time left.
+    https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.flow.minimum_cut.html
+    """
+    graph = Graph()
+
+    for line in source:
+        node, connections = line.split(": ")
+        for connection in connections.split(" "):
+            graph.add_edge(node, connection)
+
+    nx.draw(graph, with_labels=True)
+    plt.show()
+
+    graph.remove_edges_from(minimum_edge_cut(graph))
+
+    answer = prod(len(c) for c in connected_components(graph))
     pyperclip.copy(str(answer))
     return answer
 
@@ -44,10 +65,10 @@ def part_1(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(54, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(571753, part_1(self.source))
 
     def setUp(self) -> None:
         print()
