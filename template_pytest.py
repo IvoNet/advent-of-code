@@ -15,6 +15,8 @@ import collections
 import os
 from pathlib import Path
 
+from ivonet.decorators import timer
+
 collections.Callable = collections.abc.Callable
 
 import sys
@@ -33,10 +35,12 @@ def _(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+@timer
 def part_1(source):
     return None
 
 
+@timer
 def part_2(source):
     return None
 

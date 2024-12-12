@@ -16,14 +16,11 @@ import os
 import unittest
 from pathlib import Path
 
-import networkx as nx
 import pyperclip
 import sys
-from matplotlib import pyplot as plt
-from networkx import Graph, minimum_edge_cut, connected_components
 
-from ivonet.calc import prod
-from ivonet.files import read_rows
+from ivonet.decorators import debug, timer
+from ivonet.files import read_ints
 from ivonet.iter import ints
 
 collections.Callable = collections.abc.Callable  # type: ignore
@@ -38,25 +35,19 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+@debug
+@timer
 def part_1(source) -> int | None:
-    """
-    Sry didn't feel like doing this one in pure python.
-    I will though at a later time I think if I have time left.
-    https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.flow.minimum_cut.html
-    """
-    graph = Graph()
+    answer = None
+    print(source)
+    pyperclip.copy(str(answer))
+    return answer
 
-    for line in source:
-        node, connections = line.split(": ")
-        for connection in connections.split(" "):
-            graph.add_edge(node, connection)
 
-    nx.draw(graph, with_labels=True)
-    plt.show()
-
-    graph.remove_edges_from(minimum_edge_cut(graph))
-
-    answer = prod(len(c) for c in connected_components(graph))
+@debug
+@timer
+def part_2(source) -> int | None:
+    answer = None
     pyperclip.copy(str(answer))
     return answer
 
@@ -65,17 +56,23 @@ def part_1(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(54, part_1(self.test_source))
+        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(571753, part_1(self.source))
+        self.assertEqual(None, part_1(self.source))
+
+    def test_example_data_part_2(self) -> None:
+        self.assertEqual(None, part_2(self.test_source))
+
+    def test_part_2(self) -> None:
+        self.assertEqual(None, part_2(self.source))
 
     def setUp(self) -> None:
         print()
         folder = os.path.dirname(os.path.realpath(__file__))
         day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
-        self.source = read_rows(f"{folder}/day_{day}.input")
-        self.test_source = read_rows(f"{folder}/test_{day}.input")
+        self.source = read_ints(f"{folder}/day_{day}.input")
+        self.test_source = read_ints(f"{folder}/test_{day}.input")
 
 
 if __name__ == '__main__':

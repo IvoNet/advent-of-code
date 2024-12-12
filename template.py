@@ -13,12 +13,14 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
-import sys
 import unittest
 from pathlib import Path
 
 import pyperclip
+import sys
 
+from ivonet.decorators import debug
+from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
@@ -34,12 +36,16 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+@debug
+@timer
 def part_1(source) -> int | None:
     answer = None
     pyperclip.copy(str(answer))
     return answer
 
 
+@debug
+@timer
 def part_2(source) -> int | None:
     answer = None
     pyperclip.copy(str(answer))

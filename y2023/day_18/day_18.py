@@ -13,11 +13,12 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
-import sys
 import unittest
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator
+
+import sys
 
 from ivonet.files import read_rows
 from ivonet.iter import ints
@@ -25,7 +26,7 @@ from ivonet.iter import ints
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
