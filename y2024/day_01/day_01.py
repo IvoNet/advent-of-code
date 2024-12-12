@@ -20,7 +20,7 @@ import pyperclip
 import sys
 
 from ivonet.decorators import debug, timer
-from ivonet.files import read_rows, read_ints
+from ivonet.files import read_rows
 from ivonet.iter import ints
 
 collections.Callable = collections.abc.Callable  # type: ignore
@@ -36,7 +36,7 @@ def p(*args, end="\n", sep=" "):
 
 
 def parse_source(source):
-    left, right = zip(*[read_ints(line, delimiter="   ") for line in source])
+    left, right = zip(*[ints(line) for line in source])
     return left, right
 
 

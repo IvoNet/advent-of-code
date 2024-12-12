@@ -36,18 +36,67 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+def parse_source(source):
+    return [ints(line) for line in source]
+
+
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = None
+    answer = 0
+    reports = parse_source(source)
+    for levels in reports:
+        answer = check_levels(answer, levels)
+    answer = len(reports) - answer
+
     pyperclip.copy(str(answer))
     return answer
+
+
+def check_levels(levels):
+    answer = 0
+    increase = levels[1] > levels[0]
+    for idx, level in enumerate(levels[1:], 1):
+        if increase:
+            if level < levels[idx - 1]:
+                answer += 1
+                break
+            if level == levels[idx - 1]:
+                answer += 1
+                break
+            if level > levels[idx - 1]:
+                if level - levels[idx - 1] > 3:
+                    answer += 1
+                    break
+        else:
+            if level > levels[idx - 1]:
+                answer += 1
+                break
+            if level == levels[idx - 1]:
+                answer += 1
+                break
+            if level < levels[idx - 1]:
+                if levels[idx - 1] - level > 3:
+                    answer += 1
+                    break
+    return answer == 0
 
 
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = None
+    answer = 0
+    reports = parse_source(source)
+    for levels in reports:
+        if check_levels(levels):
+            answer += 1
+        else:
+            for i in range(0, len(levels)):
+                new_levels = levels.copy()
+                del new_levels[i]
+                if check_levels(new_levels):
+                    answer += 1
+                    break
     pyperclip.copy(str(answer))
     return answer
 
@@ -56,16 +105,16 @@ def part_2(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(2, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(224, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(4, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(293, part_2(self.source))
 
     def setUp(self) -> None:
         print()
