@@ -20,7 +20,7 @@ import pyperclip
 import sys
 
 from ivonet.decorators import debug, timer
-from ivonet.files import read_ints
+from ivonet.files import read_rows, read_ints
 from ivonet.iter import ints
 
 collections.Callable = collections.abc.Callable  # type: ignore
@@ -35,10 +35,18 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+def parse_source(source):
+    left, right = zip(*[read_ints(line, delimiter="   ") for line in source])
+    return left, right
+
+
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = None
+    answer = 0
+    left, right = parse_source(source)
+    for i, j in zip(sorted(left), sorted(right)):
+        answer += abs(i - j)
     print(source)
     pyperclip.copy(str(answer))
     return answer
@@ -47,7 +55,12 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = None
+    answer = 0
+    left, right = parse_source(source)
+    for i in left:
+        #     count the number of times i in left occurs in right
+        answer += i * right.count(i)
+
     pyperclip.copy(str(answer))
     return answer
 
@@ -56,23 +69,23 @@ def part_2(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(11, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1889772, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(31, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(23228917, part_2(self.source))
 
     def setUp(self) -> None:
         print()
         folder = os.path.dirname(os.path.realpath(__file__))
         day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
-        self.source = read_ints(f"{folder}/day_{day}.input")
-        self.test_source = read_ints(f"{folder}/test_{day}.input")
+        self.source = read_rows(f"{folder}/day_{day}.input")
+        self.test_source = read_rows(f"{folder}/test_{day}.input")
 
 
 if __name__ == '__main__':
