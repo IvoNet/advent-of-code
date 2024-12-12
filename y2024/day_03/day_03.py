@@ -57,15 +57,10 @@ def part_1(source) -> int | None:
 @timer
 def part_2(source) -> int | None:
     answer = 0
-    # [help(m) for m in re.finditer(PATTERN_DONT, source)]
     donts = [m.start() for m in re.finditer(PATTERN_DONT, source)]
-    p(donts)
     dos = [m.start() for m in re.finditer(PATTERN_DO, source)]
-    p(dos)
     muls = [(m.start(), ints(m.group())) for m in re.finditer(PATTERN, source)]
-    # zip the donts and dos together
     donts_and_dos = sorted(donts + dos)
-    p(donts_and_dos)
     enabled = True
     for position, (left, right) in muls:
         for idx in donts_and_dos:
@@ -73,7 +68,6 @@ def part_2(source) -> int | None:
                 enabled = idx in dos
         if enabled:
             answer += left * right
-
 
     pyperclip.copy(str(answer))
     return answer
