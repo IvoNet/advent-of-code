@@ -69,42 +69,23 @@ def direction(start):
         start = NEXT_DIRECTION[start]
 
 
-def get_start(grid):
-    for h, row in enumerate(grid):
-        for w, col in enumerate(row):
-            if col in STARTERS:
-                return Location(h, w), START[col]
-
-
-def parse_grid(grid, source):
-    loc: Location
-    direction_gen: str
-    obstacles = []
+def parse_source(source):
+    grid = [list(row) for row in source]
     for h, row in enumerate(source):
         for w, col in enumerate(row):
             if col in STARTERS:
-                loc = Location(h, w)
+                start = Location(h, w)
                 grid[h][w] = WALKED
                 direction_gen = START[col]
-            if col == OBSTACLE:
-                obstacles.append(Location(h, w))
-    return direction_gen, loc, obstacles
+                break
+    return grid, direction_gen, start
 
 
 @debug
 @timer
 def part_1(source) -> int | None:
-    grid = [list(row) for row in source]
     answer = 0
-    loc: Location
-    direction_gen: str
-    for h, row in enumerate(source):
-        for w, col in enumerate(row):
-            if col in STARTERS:
-                loc = Location(h, w)
-                grid[h][w] = WALKED
-                direction_gen = START[col]
-                break
+    grid, direction_gen, loc = parse_source(source)
 
     for d in direction(direction_gen):
         to = DIRECTION_FUNCTION[d]
@@ -122,10 +103,6 @@ def part_1(source) -> int | None:
                     print("".join(row))
 
                 return sum([row.count(WALKED) for row in grid])
-
-
-
-
 
 
 @debug
