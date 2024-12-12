@@ -39,7 +39,7 @@ def p(*args, end="\n", sep=" "):
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = None
+    answer = 0
     pyperclip.copy(str(answer))
     return answer
 
@@ -47,7 +47,7 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = None
+    answer = 0
     pyperclip.copy(str(answer))
     return answer
 

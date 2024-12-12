@@ -13,11 +13,11 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
-import sys
 import unittest
 from pathlib import Path
 
 import pyperclip
+import sys
 
 from ivonet.direction import directions
 from ivonet.files import read_rows
