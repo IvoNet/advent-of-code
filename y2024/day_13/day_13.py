@@ -85,15 +85,19 @@ def first_try_working_but_to_slow_for_part2(machines):
 
 def calc_tokens(ax, ay, bx, by, px, py):
     """
+    https://www.mathcentre.ac.uk/resources/uploaded/mc-ty-strtlines-2009-1.pdf
+    https://stackoverflow.com/questions/8954326/how-to-calculate-the-mirror-point-along-a-line
+
     So we need to optimize the way we calculate the tokens as the brute force method is way to slow.
     This looks like some kind of linear equation system so let's try to solve it that way.
-    The linear equations to determine if two points starting from (0,0) and walking `ax, ay` and `bx, by` can reach a point `p` at `px, py` can be represented as:
+    The linear equations to determine if two points starting from (0,0) and walking (ax, ay) and (bx, by)
+    can reach a point p at (px, py) can be represented as:
 
     n * ax + m * bx = px
     n * ay + m * by = py
 
     Here, n and m are the multipliers for the steps taken by a and b respectively.
-    The goal is to find integer values of n and n that satisfy both equations.
+    The goal is to find integer values of n and m that satisfy both equations.
 
     n * ax + m * bx = px ->
     n * ax = px - m * bx ->
@@ -114,7 +118,7 @@ def calc_tokens(ax, ay, bx, by, px, py):
     now we have isolated m in the second equation.
     what can we do with this information?
     We can now substitute the value of n in the first equation into the second equation and vice versa.
-    lets try that:
+    let's try that:
     n = (px - m * bx) / ax
     n = (py - m * by) / ay
     so:
@@ -140,8 +144,9 @@ def calc_tokens(ax, ay, bx, by, px, py):
     this means that if the denominator is zero there is no solution (divide by zero)
     if n and m are integers we have a solution.
     n steps kost 3 tokens and m steps kost 1 token.
-    so the total tokens are 3 * n + m and we should cast them to int
-    I was lucky to think of the linear equation and to find
+    so the total tokens are (3 * n + m) tokens.
+    I was lucky to think of the linear equation with some googling I thought it was searching in the right direction.
+    took me quite a while to figure this out as I am not a mathematician.
     """
     denominator = bx * ay - by * ax
     if denominator == 0:
@@ -159,13 +164,13 @@ def calc_tokens(ax, ay, bx, by, px, py):
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = 0
     machines = parse(source)
     answer = sum([calc_tokens(ax, ay, bx, by, px, py) for ax, ay, bx, by, px, py in machines])
     # answer = first_try_working_but_to_slow_for_part2(machines)
 
     pyperclip.copy(str(answer))
     return answer
+
 
 @debug
 @timer
