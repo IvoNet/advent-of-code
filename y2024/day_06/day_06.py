@@ -87,22 +87,23 @@ def part_1(source) -> int | None:
     answer = 0
     grid, direction_gen, loc = parse_source(source)
 
+    visited = set()
+    visited.add(loc)
     for d in direction(direction_gen):
         to = DIRECTION_FUNCTION[d]
         loc, value = next(to(grid, loc, value=True))
         while value not in OBSTACLE:
+            visited.add(loc)
             if value == FREE:
                 answer += 1
-                grid[loc[0]][loc[1]] = WALKED
+                # grid[loc[0]][loc[1]] = WALKED
             last_loc = loc
             loc, value = next(to(grid, loc, value=True), (None, None))
             if value in OBSTACLE:
                 loc = last_loc
             if not loc and not value:
-                for row in grid:
-                    print("".join(row))
-
-                return sum([row.count(WALKED) for row in grid])
+                return len(visited)
+                # return sum([row.count(WALKED) for row in grid])
 
 
 @debug
@@ -140,48 +141,38 @@ def part_2(source) -> int | None:
 
     """
     answer = 0
-    orig_grid = [list(row) for row in source]
-    grid = orig_grid.copy()
-    direction_gen, start, obstacles = parse_grid(grid, source)
-    # grid[8][7] = OBSTACLE[1]
-    # loop = run2(direction_gen, grid, start)
+    grid, direction_gen, loc = parse_source(source)
+
     for h, row in enumerate(grid):
         for w, col in enumerate(row):
-            if col == FREE and Location(h, w) != start:
-                grid[h][w] = OBSTACLE[1]
-                if run2(direction_gen, grid, start):
-                    p(h, w)
-                    answer += 1
-                grid[h][w] = FREE
-
+            if col != FREE:
+                continue
+            grid[h][w] = "O"
+            if looped(direction_gen, deepcopy(grid), loc):
+                answer += 1
+            grid[h][w] = "."
 
     pyperclip.copy(str(answer))
     return answer
 
 
-def run2(direction_gen, matrix, loc):
-    grid = deepcopy(matrix)
-    seen = set()
+def looped(direction_gen: str, grid: list[list[str]], start: Location):
+    loc: Location = start
+    visited = set()
+    visited.add(((start.row, start.col), direction_gen))
     for d in direction(direction_gen):
         to = DIRECTION_FUNCTION[d]
         loc, value = next(to(grid, loc, value=True))
         while value not in OBSTACLE:
-            new = (loc, d)
-            if new in seen:  # Looped
-                p("Looped")
-                for row in grid:
-                    print("".join(row))
+            if (loc, d) in visited:
                 return True
-            seen.add((loc, d))
-            if value == FREE:
-                grid[loc[0]][loc[1]] = d
+            visited.add((loc, d))
+            grid[loc[0]][loc[1]] = d
             last_loc = loc
             loc, value = next(to(grid, loc, value=True), (None, None))
             if value in OBSTACLE:
                 loc = last_loc
             if not loc and not value:
-                # for row in grid:
-                #     print("".join(row))
                 return False
 
 
