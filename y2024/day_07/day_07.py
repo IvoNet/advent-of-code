@@ -12,6 +12,7 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import collections
+import itertools
 import os
 import sys
 import unittest
@@ -27,7 +28,7 @@ from ivonet.iter import ints
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -36,10 +37,49 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+class Test:
+    def __init__(self, lst):
+        self.test = lst[0]
+        self.values = lst[1:]
+
+
+def evaluate_expression(values, operators):
+    result = values[0]
+    for i in range(1, len(values)):
+        if operators[i - 1] == '+':
+            result += values[i]
+        elif operators[i - 1] == '*':
+            result *= values[i]
+        elif operators[i - 1] == '||':  # added for part 2
+            result = int(str(result) + str(values[i]))
+    return result
+
+
+def can_make_amount(t: Test, operators=('+', '*')):
+    operator_permutations = list(itertools.product(operators, repeat=len(t.values) - 1))
+
+    for perm in operator_permutations:
+        if evaluate_expression(t.values, perm) == t.test:
+            return True
+    return False
+
+
+def parse(source):
+    bridge = []
+    for line in source:
+        bridge.append(Test(ints(line)))
+    return bridge
+
+
 @debug
 @timer
-def part_1(source) -> int | None:
+def part_1(source, operators=('+', '*')) -> int | None:
     answer = 0
+    bridge = parse(source)
+    for t in bridge:
+        if can_make_amount(t, operators=operators):
+            answer += t.test
+
     pyperclip.copy(str(answer))
     return answer
 
@@ -47,7 +87,7 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
+    answer = part_1(source, operators=('+', '*', '||'))
     pyperclip.copy(str(answer))
     return answer
 
@@ -56,16 +96,16 @@ def part_2(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(3749, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(1430271835320, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(11387, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(456565678667482, part_2(self.source))
 
     def setUp(self) -> None:
         print()
