@@ -15,10 +15,10 @@ def rangei(start, end, step=1):
     return range(start, end + 1, step)
 
 
-def rangei(end, step=1):
-    """Inclusive, range from 0 to end: rangei(b) = range(0, b+1).
-    """
-    return rangei(0, end, step)
+# def rangei(end, step=1):
+#     """Inclusive, range from 0 to end: rangei(b) = range(0, b+1).
+#     """
+#     return rangei(0, end, step)
 
 
 def lmap(fn, *iterables):
