@@ -29,10 +29,10 @@ from ivonet.iter import ints
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 OBSTACLE = ["#", "O"]
-FREE = "."
+FREE = "B"
 STARTERS = "^>v<"
 WALKED = "X"
 START = {
@@ -70,11 +70,11 @@ def direction(start):
 
 
 def parse_source(source):
-    grid = [list(row) for row in source]
+    grid = [list(row.replace(".", "B")) for row in source]
     for h, row in enumerate(source):
         for w, col in enumerate(row):
             if col in STARTERS:
-                start = Location(h, w)
+                start = (h, w)
                 grid[h][w] = WALKED
                 direction_gen = START[col]
                 break
@@ -85,10 +85,11 @@ def parse_source(source):
 @timer
 def part_1(source) -> int | None:
     answer = 0
-    grid, direction_gen, loc = parse_source(source)
+    grid, direction_gen, start = parse_source(source)
 
     visited = set()
-    visited.add((loc.row, loc.col))
+    visited.add(start)
+    loc = Location(*start)
     for d in direction(direction_gen):
         to = DIRECTION_FUNCTION[d]
         loc, value = next(to(grid, loc, value=True))
@@ -103,43 +104,12 @@ def part_1(source) -> int | None:
                 loc = last_loc
             if not loc and not value:
                 return len(visited)
-                # return sum([row.count(WALKED) for row in grid])
+
 
 
 @debug
 @timer
 def part_2(source) -> int | None:
-    """
-    So I think that the extra obstacle we need to place must always lead to a parallelogram of obstacles
-    That means that the opposite sides of the parallelogram must be parallel and of equal length
-    in this case it can not be a square as the turn is 1 before the actual obstacle.
-    so it must be a parallelogram with only 1 column off kilter as the loop must be closed
-    That would mean possible locations must already have three obstacles in place that adhere to the above
-    so how to determine the possible locations?
-    look at all obstacles and determine if they are part of an incomplete parallelogram
-    so how to do that?
-    - find all obstacles
-    - iterate over the obstacles
-    - it must have at least one obstacle in the grid either 1 row above or below or 1 column left or right
-    - but we are looking at the obstacles that have two obstacles 1 row above or below or 1 column left or right
-    - then we can determine the 4th obstacle
-    kooking at the test_06.input we see that the obstacles are at: (0,4), (1,9), (3,2), (4,7), (6,1), (7,8), (8,0), (9,6)
-    - (0,4) has (1,9) one below and x to the right but no other adhering to the rules
-    - (1,9) has (0,4) one above and x to the left and (7,8) one to the left and y down. so this is a possible parallelogram
-    - what would be the 4th obstacle then? it should be a parallelogram so it must also be one above (7,8) and x to the left (same as (0,4))
-    - that would mean (6,4)
-    do this for all obstacles, and you have the possible locations
-    Some extra rules:
-    - the possible location must not be off the border
-    - the possible location must not be an obstacle
-    - the possible location must not be the start location
-
-    hmm did not work out as expected too many options.
-
-    brute force approach:
-    - iterate over all rows then over all cols and change that coord to an obstacle and then see of it looped
-
-    """
     answer = 0
     grid, direction_gen, loc = parse_source(source)
 
@@ -157,14 +127,22 @@ def part_2(source) -> int | None:
 
 
 def looped(direction_gen: str, grid: list[list[str]], start: Location):
-    loc: Location = start
+    loc = start
     visited = set()
-    visited.add(((start.row, start.col), direction_gen))
+    visited.add((start, direction_gen))
     for d in direction(direction_gen):
+
         to = DIRECTION_FUNCTION[d]
+        last_loc = loc
         loc, value = next(to(grid, loc, value=True))
+        if value in OBSTACLE:
+            loc = last_loc
         while value not in OBSTACLE:
             if (loc, d) in visited:
+                p(visited)
+                if DEBUG:
+                    for row in grid:
+                        p("".join(row))
                 return True
             visited.add((loc, d))
             grid[loc[0]][loc[1]] = d
@@ -173,6 +151,9 @@ def looped(direction_gen: str, grid: list[list[str]], start: Location):
             if value in OBSTACLE:
                 loc = last_loc
             if not loc and not value:
+                if DEBUG:
+                    for row in grid:
+                        p("".join(row))
                 return False
 
 
@@ -189,7 +170,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(6, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1711, part_2(self.source))
 
     def setUp(self) -> None:
         print()
