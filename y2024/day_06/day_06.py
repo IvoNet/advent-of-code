@@ -88,7 +88,7 @@ def part_1(source) -> int | None:
     grid, direction_gen, loc = parse_source(source)
 
     visited = set()
-    visited.add(loc)
+    visited.add((loc.row, loc.col))
     for d in direction(direction_gen):
         to = DIRECTION_FUNCTION[d]
         loc, value = next(to(grid, loc, value=True))
@@ -96,7 +96,7 @@ def part_1(source) -> int | None:
             visited.add(loc)
             if value == FREE:
                 answer += 1
-                # grid[loc[0]][loc[1]] = WALKED
+                grid[loc[0]][loc[1]] = WALKED
             last_loc = loc
             loc, value = next(to(grid, loc, value=True), (None, None))
             if value in OBSTACLE:
