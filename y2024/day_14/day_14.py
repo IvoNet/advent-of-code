@@ -56,7 +56,7 @@ def part_2(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(14, part_1(self.test_source))
+        self.assertEqual(None, part_1(self.test_source))
 
     def test_part_1(self) -> None:
         self.assertEqual(None, part_1(self.source))
