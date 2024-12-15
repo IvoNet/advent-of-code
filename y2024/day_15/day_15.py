@@ -120,6 +120,13 @@ class Robot:
             - For [, also add the cell to the right.
             - For ], also add the cell to the left.
 
+        6. Move the Box(es):
+            - Sort the seen list to move the box(es) in the correct order.
+            - While there are cells in the seen list, move the box(es) if the move is possible.
+            - Update the grid with the new box position.
+            - Update the grid with the empty space at the old box position.
+            - Remove the cell from the seen list.
+
         That should do it :-)
         """
         nr = self.row + dr  # potential new row
