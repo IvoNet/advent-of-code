@@ -28,7 +28,7 @@ from ivonet.iter import ints
 collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -38,10 +38,11 @@ def p(*args, end="\n", sep=" "):
 
 
 class Defragmentator:
-    def __init__(self, source: str):
+    def __init__(self, source: str, part2=False):
         self.source = source
         self.disk = [int(x) for x in source]
         self.unpacked = []
+        self.part2 = part2
 
     def parse(self):
         file_queue = deque([])
@@ -50,9 +51,12 @@ class Defragmentator:
         pos = 0
         for idx, file_or_space in enumerate(self.disk):
             if idx % 2 == 0:
+                if self.part2:
+                    file_queue.append((pos, file_or_space, file_id))
                 for _ in range(file_or_space):
                     self.unpacked.append(file_id)
-                    file_queue.append((pos, 1, file_id))
+                    if not self.part2:
+                        file_queue.append((pos, 1, file_id))
                     pos += 1
                 file_id += 1
             else:
@@ -92,6 +96,8 @@ def part_1(source) -> int | None:
 @timer
 def part_2(source) -> int | None:
     answer = 0
+    d = Defragmentator(source, True)
+    answer = d.parse()
     pyperclip.copy(str(answer))
     return answer
 
@@ -106,10 +112,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(6461289671426, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(2858, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(6488291456470, part_2(self.source))
 
     def setUp(self) -> None:
         print()
