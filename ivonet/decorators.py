@@ -18,7 +18,17 @@ def timer(func):
         run_time = end_time - start_time
         hours, rem = divmod(run_time, 3600)
         minutes, seconds = divmod(rem, 60)
-        print(f"Finished {func.__name__!r} in {int(hours):02}:{int(minutes):02}:{seconds:.4f} (h:m:s)")
+
+        if hours == 0:
+            if minutes < 1:
+                if seconds < 1:
+                    print(f"Finished {func.__name__!r} in {seconds:.6f} (s)")
+                else:
+                    print(f"Finished {func.__name__!r} in {seconds:.4f} (s)")
+            else:
+                print(f"Finished {func.__name__!r} in {int(minutes):02}:{seconds:.4f} (mm:ss.ms)")
+        else:
+            print(f"Finished {func.__name__!r} in {int(hours):02}:{int(minutes):02}:{seconds:.4f} (hh:mm:ss.ms)")
         return value
 
     return wrapper_timer
