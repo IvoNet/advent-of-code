@@ -137,11 +137,11 @@ def part_1(source, boundary=(101, 103), seconds=100) -> int | None:
 
 @debug
 @timer
-def part_2(source, boundary=(101, 103), seconds=10001) -> int | None:
+def part_2(source, boundary=(101, 103)) -> int | None:
     answer = 0
     robots: list[Robot] = parse(source, boundary)
 
-    seen = {}
+    seen = set()
     while True:
         answer += 1
         d = [[" " for _ in range(boundary[0])] for _ in range(boundary[1])]
@@ -150,9 +150,9 @@ def part_2(source, boundary=(101, 103), seconds=10001) -> int | None:
             d[r.py()][r.px()] = "#"
         picture = "\n".join(["".join(r) for r in d])
         if picture in seen:
-            print(f"image seen before at {seen[picture]} stopping...")
+            print(f"image seen before stopping {answer}...")
             break
-        seen[picture] = answer
+        seen.add(picture)
         if "##########" in picture:  # this is hopefully part of the tree
             print(f"Step {answer}\n")
             print(picture)
