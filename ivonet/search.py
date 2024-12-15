@@ -78,6 +78,8 @@ class Node(Generic[T]):
 
 
 def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]]) -> Optional[Node[T]]:
+    """Depth first search
+    """
     # frontier is where we've yet to go
     frontier: Stack[Node[T]] = Stack()
     frontier.push(Node(initial, None))
@@ -146,6 +148,11 @@ def astar(initial: T,
           heuristic: Callable[[T], float],
           cost: Callable[[T], int]) -> Optional[Node[T]]:
     """The A* (astar)
+
+    The A* (A-star) algorithm is a popular pathfinding and graph traversal algorithm used to find the
+    shortest path between a start node and a goal node. It combines the strengths of Dijkstra's algorithm
+    and Greedy Best-First-Search by using both the actual cost from the start node and a heuristic
+    `estimate of the cost to reach the goal.
 
     is a dfs but you can provide a cost callback function that can direct your search
     - see 2021/Day15 of the Advent of Code for an implementation example
