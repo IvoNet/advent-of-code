@@ -12,11 +12,13 @@ def timer(func):
 
     @functools.wraps(func)
     def wrapper_timer(*args, **kwargs):
-        start_time = time.perf_counter()  # 1
+        start_time = time.perf_counter()
         value = func(*args, **kwargs)
-        end_time = time.perf_counter()  # 2
-        run_time = end_time - start_time  # 3
-        print(f"Finished {func.__name__!r} in {run_time:.4f} secs")
+        end_time = time.perf_counter()
+        run_time = end_time - start_time
+        hours, rem = divmod(run_time, 3600)
+        minutes, seconds = divmod(rem, 60)
+        print(f"Finished {func.__name__!r} in {int(hours):02}:{int(minutes):02}:{seconds:.4f} (h:m:s)")
         return value
 
     return wrapper_timer
