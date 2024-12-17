@@ -164,35 +164,16 @@ class ChronospacialComputer:
             self.opcode[opcode](operand)
             self.instruction_pointer += self.instruction_pointer_advance
 
-    def copy_self_old(self, start_idx=0, stop_idx=-1) -> int | None:
-        idx = start_idx
-        print(f"Starting at {idx}, stopping at {stop_idx}")
-        while True:
-            idx += 1
-            self.reset(idx)
-            p("----------------------------------")
-            self.run()
-            if len(self.output) < len(self.program) and self.program[:len(self.output)] == self.output:
-                p("!!!!!!!!!!!!!!!!!!!!!!!!")
-            p(f"""
-Index               : {idx}            
-Register A          : {self.a}
-Register B          : {self.b}
-Register C.         : {self.c}
-Instruction Pointer : {self.instruction_pointer}
-Instructions (orig) : {self.program}
-Output              : {self.output}            
-----------------------------------
-""")
-            if idx % 100000 == 0:
-                print(f"Index: {idx}")
-            if self.output == self.program:
-                return idx
-            if idx == stop_idx:
-                print(f"Stopped at {idx}")
-                return None
-
     def copy_self(self):
+        """
+        Finds the minimum solution offset that, when used as the initial value of register A,
+        results in the program's output matching the last length elements of the program.
+
+        The method works by iterating through all possible offsets (0 to 7) for each solution
+        and checking if the output of the program matches the expected output. The offset solution
+        works because the program operates in a three-bit system, meaning the values are constrained
+        to a range of 0 to 7, allowing for efficient brute-force checking.
+        """
         solutions = [0]
         for length in range(1, len(self.program) + 1):
             output = []
@@ -205,6 +186,7 @@ Output              : {self.output}
                         output.append(solution_offset)
             solutions = output
         if solutions:
+            p(f"Solutions: {solutions}, min: {min(solutions)}")
             return min(solutions)
         return None
 
@@ -257,32 +239,6 @@ def part_2(source) -> int | None:
     answer = pc.copy_self()
     pyperclip.copy(str(answer))
     return answer
-
-
-# @debug
-# @timer
-# def part_2(source) -> int | None:
-#     """Brute force ---failed miserably"""
-#     answer = 0
-#     steps = 1000000
-#     with ThreadPoolExecutor(max_workers=8) as executor:
-#         idx = 100
-#         while True:
-#             futures = [executor.submit(run_computer, source, i * steps, i * steps + steps) for i in range(idx, idx + 8) ]
-#             idx += 8
-#             for future in concurrent.futures.as_completed(futures):
-#                 p(f"Future done: {future}")
-#                 result = future.result()
-#                 if result is not None:
-#                     answer = result
-#                     break
-#             if answer != 0:
-#                 break
-#     pyperclip.copy(str(answer))
-#     return answer
-# def run_computer(source, start_idx, stop_idx):
-#     pc = ChronospacialComputer(source)
-#     return pc.copy_self(start_idx, stop_idx)
 
 
 # noinspection DuplicatedCode
