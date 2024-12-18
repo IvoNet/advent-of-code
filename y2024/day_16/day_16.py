@@ -18,7 +18,6 @@ import sys
 import unittest
 from collections import abc, namedtuple
 from collections import defaultdict
-from collections import deque
 from pathlib import Path
 
 import pyperclip
@@ -51,10 +50,11 @@ Node = namedtuple('Node', ['cost', 'location', 'direction', 'path'])
 
 
 def visualize(grid, path):
-    for r, c in path:
-        grid[r][c] = "O"
-    for row in grid:
-        print("".join(row))
+    if DEBUG:
+        for r, c in path:
+            grid[r][c] = "O"
+        for row in grid:
+            print("".join(row))
 
 
 def parse(source):
@@ -70,68 +70,16 @@ def parse(source):
     return grid, start, end
 
 
-def dijkstra_1(grid, start, goal):
-    queue = []
-    seen = set()
-    distances = {}
-    heapq.heappush(queue, Node(0, start, 1, [start]))
-    while queue:
-        cost, loc, direction, path = heapq.heappop(queue)
-        if (loc, direction) not in distances:
-            distances[(loc, direction)] = cost
-        if loc == goal:
-            visualize(grid, path)
-            return cost, path
-        if (loc, direction) in seen:
-            continue
-        seen.add((loc, direction))
-        current_direction = DIRECTIONS[direction]
-        new_loc = loc + current_direction
-        if 0 <= new_loc.row < len(grid) and 0 <= new_loc.col < len(grid[0]) and grid[new_loc.row][new_loc.col] != '#':
-            heapq.heappush(queue, Node(cost + 1, new_loc, direction, path + [new_loc]))
-        heapq.heappush(queue, Node(cost + 1000, loc, (direction + 1) % 4, path))  # right
-        heapq.heappush(queue, Node(cost + 1000, loc, (direction + 3) % 4, path))  # left
-
-
 def dijkstra_with_bfs(grid, start, goal):
     """
     Implements a modified Dijkstra's algorithm combined with BFS to find all the paths with the lowest cost.
 
-    The function uses a priority queue to explore the grid, starting from the start location and aiming to reach the goal.
-    It keeps track of the lowest cost to reach each location and the direction from which it arrived.
-    The algorithm also backtracks to find all possible paths to the goal.
-
-    Args:
-        grid (list[list[str]]): The grid representing the map, where each cell can be a path or a wall.
-        start (Location): The starting location in the grid.
-        goal (Location): The goal location in the grid.
-
-    Returns:
-        tuple: A tuple containing the best cost to reach the goal and the number of unique locations visited.
-
-    The algorithm works as follows:
-    1. Initialize a priority queue with the starting node.
-    2. Use a defaultdict to keep track of the lowest cost to reach each location and direction.
-    3. Use a set to keep track of the end states (goal locations reached).
-    4. While the queue is not empty:
-        a. Pop the node with the lowest cost.
-        b. If the current cost is higher than the recorded lowest cost for this location and direction, skip it.
-        c. If the current location is the goal and the cost is higher than the best cost, break the loop.
-        d. Update the best cost and add the current location and direction to the end states.
-        e. For each possible move (forward, right, left):
-            i. Calculate the new cost, location, and direction.
-            ii. If the new location is within the grid bounds and not a wall:
-                - If the new cost is higher than the recorded lowest cost, skip it.
-                - If the new cost is lower, update the backtrack dictionary and the lowest cost.
-                - Add the new state to the priority queue.
-    5. Use a deque to backtrack from the end states to find all unique locations visited.
-    6. Return the best cost and the number of unique locations visited.
+     :return: the lowest cost and the number of paths entries that lead to the lowest cost
     """
     queue = []
     lowest_cost = defaultdict(lambda: float("inf"))
     best_cost = float("inf")
-    backtrack = {}
-    end_states = set()
+    best_paths = []
     heapq.heappush(queue, Node(0, start, 1, [start]))
     while queue:
         cost, loc, direction, path = heapq.heappop(queue)
@@ -141,8 +89,7 @@ def dijkstra_with_bfs(grid, start, goal):
             if cost > best_cost:
                 break
             best_cost = cost
-            end_states.add((loc, direction))
-
+            best_paths.append(path)
         for new_cost, new_loc, new_direction in [(cost + 1, loc + DIRECTIONS[direction], direction),  # forward
                                                  (cost + 1000, loc, (direction + 1) % 4),  # right
                                                  (cost + 1000, loc, (direction + 3) % 4)  # left
@@ -150,34 +97,26 @@ def dijkstra_with_bfs(grid, start, goal):
             if (0 <= new_loc.row < len(grid)
                     and 0 <= new_loc.col < len(grid[0])
                     and grid[new_loc.row][new_loc.col] != '#'):
-                lowest = lowest_cost.get((new_loc, new_direction), float("inf"))
+                lowest = lowest_cost[(new_loc, new_direction)]
                 if new_cost > lowest:
                     continue
                 if new_cost < lowest:
-                    backtrack[(new_loc, new_direction)] = set()
                     lowest_cost[(new_loc, new_direction)] = new_cost
-                backtrack[(new_loc, new_direction)].add((loc, direction))
                 heapq.heappush(queue, Node(new_cost, new_loc, new_direction, path + [new_loc]))
 
-    states = deque(end_states)
-    seen = set(end_states)
-
-    while states:
-        key = states.popleft()
-        for last in backtrack.get(key, []):
-            if last in seen:
-                continue
-            seen.add(last)
-            states.append(last)
-
-    return best_cost, len({loc for loc, _ in seen})
+    # at this point we should have found all the paths with the lowest cost
+    # now we just have to make all the locations in these paths unique
+    # we could also iterate over all the paths and set an "O" in the grid and then count the "O"s in the grid
+    # Which is what i did at first but that is not necessary
+    all_coords = {loc for path in best_paths for loc in path}
+    visualize(grid, all_coords)
+    return best_cost, len(all_coords)
 
 
 @debug
 @timer
 def part_1(source) -> int | None:
     grid, start, end = parse(source)
-    p(grid, start, end)
     answer, _ = dijkstra_with_bfs(grid, start, end)
     pyperclip.copy(str(answer))
     return answer
@@ -186,12 +125,8 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
     grid, start, end = parse(source)
-    p(grid, start, end)
-    cost, places = dijkstra_with_bfs(grid, start, end)
-    answer = places
-
+    _, answer = dijkstra_with_bfs(grid, start, end)
     pyperclip.copy(str(answer))
     return answer
 
