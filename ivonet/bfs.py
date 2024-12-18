@@ -40,27 +40,29 @@ def bfs_2(start, end, grid, wall="#"):
         return state == end
 
     """Breath first search """
-    frontier = deque([start, 0])
-    seen: set()
+    queue = deque([start, 0])
+    seen = set()
 
-    while not frontier.empty:
-        current_state, distance = frontier.pop()
+    while queue:
+        current_state, distance = queue.popleft()
         if is_goal(current_state):
             return current_state, distance
         for child in successors(current_state):
             if child in seen:
                 continue
             seen.add(child)
-            frontier.push((child, distance + 1))
+            queue.push((child, distance + 1))
     return None
 
 
 def bfs_3(start, end, grid, wall="#"):
+    height = len(grid)
+    width = len(grid[0])
     queue = deque([start, 0])  # start, distance
     seen = set()
 
     while queue:
-        current_state, distance = queue.pop()
+        current_state, distance = queue.popleft()
         if current_state == end:  # change this to your goal state
             return current_state, distance
         if current_state in seen:
@@ -69,7 +71,26 @@ def bfs_3(start, end, grid, wall="#"):
         r, c = current_state
         for dr, dc in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
             child = (rr, cc) = r + dr, c + dc
-            if 0 <= rr < 10 and 0 <= cc < 10 and grid[rr][cc] != wall:
-                seen.add(child)
+            if 0 <= rr < height and 0 <= cc < width and grid[rr][cc] != wall:
                 queue.append((child, distance + 1))
     return None
+
+
+def bfs_3(start, end, grid, wall="#"):
+    height = len(grid)
+    width = len(grid[0])
+    r, c = start
+    queue = deque([(r, c, 0)])  # start, distance
+    seen = set()
+
+    while queue:
+        r, c, distance = queue.popleft()
+        if (r, c) == end:  # change this to your goal state
+            return (r, c), distance
+        if (r, c) in seen:
+            continue
+        seen.add((r, c))
+        for dr, dc in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
+            rr, cc = r + dr, c + dc
+            if 0 <= rr < height and 0 <= cc < width and grid[rr][cc] != wall:
+                queue.append((rr, cc, distance + 1))

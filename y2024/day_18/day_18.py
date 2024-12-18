@@ -29,7 +29,7 @@ from ivonet.iter import ints
 collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = False
+DEBUG = True
 
 
 # noinspection DuplicatedCode
@@ -41,6 +41,7 @@ def p(*args, end="\n", sep=" "):
 def parse(source):
     """parsing coordinates from source and making sure the x,y is translated to row, column"""
     return [(r, c) for c, r in [ints(line) for line in source]]
+
 
 class MemorySpace:
     """
@@ -110,17 +111,18 @@ class MemorySpace:
                 self.memory[r][c] = "#"
 
             frontier = Queue()
-            frontier.push((0, self.start))
+            frontier.push((self.start, [self.start]))
             # explored is where we've been
             explored = set()
             # keep going while there is more to explore
             ok = False
             while not frontier.empty:
-                distance, current_state = frontier.pop()
+                current_state, path = frontier.pop()
                 # if we found the goal, we're done
                 if self.goal_test(current_state):
                     if i == togo and not part_2:
-                        return distance
+                        self.visualize(path)
+                        return len(path) - 1
                     ok = True
                     break
                 # check where we can go next and haven't explored
@@ -128,11 +130,19 @@ class MemorySpace:
                     if child in explored:  # skip children we already explored
                         continue
                     explored.add(child)
-                    frontier.push((distance + 1, child))
+                    frontier.push((child, path + [child]))
             if not ok:
                 # only if no path is found we return the coordinate
                 # and we should represent it again as x,y -> c,r
+                # Tripped me up a bit
                 return f'{c},{r}'
+
+    def visualize(self, path):
+        for r, c in path:
+            self.memory[r][c] = "O"
+        for r in self.memory:
+            print("".join(r))
+
 
 @debug
 @timer
