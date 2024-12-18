@@ -15,6 +15,7 @@ import collections
 import os
 import sys
 import unittest
+from collections import abc
 from pathlib import Path
 
 import pyperclip
@@ -25,10 +26,10 @@ from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
-collections.Callable = collections.abc.Callable  # type: ignore
+collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -41,16 +42,37 @@ def parse(source):
     """parsing coordinates from source and making sure the x,y is translated to row, column"""
     return [(r, c) for c, r in [ints(line) for line in source]]
 
-
 class MemorySpace:
-    def __init__(self, coordinates: list[tuple[int, int]], width=70, height=70):
-        self.side = width + 1
+    """
+    Represents The Memory Space which is about to be corrupted.
+    Let's see if we can find a path through it.
+    """
+
+    def __init__(self, coordinates: list[tuple[int, int]], side=70):
+        """
+        Initializes the MemorySpace with given coordinates and dimensions.
+
+        Args:
+            coordinates (list[tuple[int, int]]): List of coordinates representing obstacles.
+            width (int): Width of the memory grid.
+            height (int): Height of the memory grid.
+        """
+        self.side = side + 1
         self.coordinates = coordinates
-        self.memory = [["." for _ in range(width + 1)] for _ in range(height + 1)]
+        self.memory = [["." for _ in range(self.side)] for _ in range(self.side)]
         self.start: tuple[int, int] = (0, 0)
-        self.end: tuple[int, int] = (height, width)
+        self.end: tuple[int, int] = (side, side)
 
     def successors(self, loc: tuple[int, int]) -> list[tuple[int, int]]:
+        """
+        Generates the successor coordinates for a given location.
+
+        Args:
+            loc (tuple[int, int]): The current location.
+
+        Returns:
+            list[tuple[int, int]]: List of valid successor coordinates.
+        """
         ret = []
         r, c = loc
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
@@ -60,10 +82,27 @@ class MemorySpace:
         return ret
 
     def goal_test(self, loc) -> bool:
+        """
+        Checks if the given location is the goal.
+
+        Args:
+            loc (tuple[int, int]): The location to check.
+
+        Returns:
+            bool: True if the location is the goal, False otherwise.
+        """
         return loc == self.end
 
     def bfs(self, bytes, part_2=False):
-        """Breath first search
+        """
+        Performs a breadth-first search to find the shortest path.
+
+        Args:
+            bytes (int): Number of bytes to process.
+            part_2 (bool): Flag indicating if part 2 of the problem is being solved.
+
+        Returns:
+            int | str | None: The distance to the goal or a coordinate string if no path is found.
         """
         togo = bytes - 1
         for i, (r, c) in enumerate(self.coordinates):
@@ -73,7 +112,7 @@ class MemorySpace:
             frontier = Queue()
             frontier.push((0, self.start))
             # explored is where we've been
-            explored = {(0, self.start)}
+            explored = set()
             # keep going while there is more to explore
             ok = False
             while not frontier.empty:
@@ -91,14 +130,15 @@ class MemorySpace:
                     explored.add(child)
                     frontier.push((distance + 1, child))
             if not ok:
+                # only if no path is found we return the coordinate
+                # and we should represent it again as x,y -> c,r
                 return f'{c},{r}'
-
 
 @debug
 @timer
-def part_1(source, w=70, h=70, bytes=1024) -> int | None:
+def part_1(source, side=70, bytes=1024) -> int | None:
     coordinates = parse(source)
-    ms = MemorySpace(coordinates, w, h)
+    ms = MemorySpace(coordinates, side)
     answer = ms.bfs(bytes)
     p(answer)
     pyperclip.copy(str(answer))
@@ -107,9 +147,9 @@ def part_1(source, w=70, h=70, bytes=1024) -> int | None:
 
 @debug
 @timer
-def part_2(source, w=70, h=70) -> int | None:
+def part_2(source, side=70) -> str | None:
     coordinates = parse(source)
-    ms = MemorySpace(coordinates, w, h)
+    ms = MemorySpace(coordinates, side)
     answer: str = ms.bfs(len(coordinates), True)
     pyperclip.copy(str(answer))
     return answer
@@ -119,13 +159,13 @@ def part_2(source, w=70, h=70) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(22, part_1(self.test_source, 6, 6, 12))
+        self.assertEqual(22, part_1(self.test_source, 6, 12))
 
     def test_part_1(self) -> None:
         self.assertEqual(292, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual("6,1", part_2(self.test_source, 6, 6))
+        self.assertEqual("6,1", part_2(self.test_source, 6, ))
 
     def test_part_2(self) -> None:
         self.assertEqual("58,44", part_2(self.source))
