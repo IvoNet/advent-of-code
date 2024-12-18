@@ -157,6 +157,22 @@ class ChronospacialComputer:
         p(f"{self.instruction_pointer:2}: cdv: C -> A={self.a}, B={self.b}, c={self.c}, formula: a // 2 ** combo[{operand}]() -> {self.combo[operand]}")
 
     def run(self) -> None:
+        """
+        Executes the program loaded into the ChronospacialComputer.
+
+        This method iterates through the program instructions, executing each one based on the current
+        instruction pointer. The instruction pointer is advanced by a fixed amount after each instruction
+        unless modified by specific instructions (e.g., jnz).
+
+        The program consists of opcodes and operands:
+        - opcode: Determines the operation to be performed.
+        - operand: Provides additional data required for the operation.
+
+        The method uses the opcode to look up the corresponding function in the self.opcode dictionary
+        and executes it with the operand.
+
+        Debugging information is printed if the DEBUG flag is set.
+        """
         while self.instruction_pointer < len(self.program):
             opcode = self.program[self.instruction_pointer]
             operand = self.program[self.instruction_pointer + 1]
