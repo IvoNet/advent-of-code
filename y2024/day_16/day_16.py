@@ -16,19 +16,17 @@ import heapq
 import os
 import sys
 import unittest
+from collections import abc, namedtuple
 from pathlib import Path
-from typing import NamedTuple
 
 import pyperclip
-
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.grid import Location
 from ivonet.iter import ints
-from ivonet.search import astar
 
-collections.Callable = collections.abc.Callable  # type: ignore
+collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
 DEBUG = True
@@ -40,88 +38,59 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-DIRECTIONS = [Location(-1, 0), Location(0, 1), Location(1, 0),
-              Location(0, -1)]  # north (0), east (1), south (2), west (3)
+DIRECTIONS = [
+    Location(-1, 0),  # north
+    Location(0, 1),  # east
+    Location(1, 0),  # south
+    Location(0, -1)  # west
+]  # north (0), east (1), south (2), west (3)
+
+Node = namedtuple('Node', ['cost', 'location', 'direction'])
 
 
-class Node(NamedTuple):
-    cost: int
-    location: Location
-    direction: int
+def dijkstra(grid, start, goal):
+    queue = []
+    seen = set()
+    distances = {}
+    heapq.heappush(queue, (0, start, 1))
+    while queue:
+        cost, loc, direction = heapq.heappop(queue)
+        if (loc, direction) not in distances:
+            distances[(loc, direction)] = cost
+        if loc.row == goal.row and loc.col == goal.col:
+            return cost
+        if (loc, direction) in seen:
+            continue
+        seen.add((loc, direction))
+        current_direction = DIRECTIONS[direction]
+        new_loc = loc + current_direction
+        if 0 <= new_loc.row < len(grid) and 0 <= new_loc.col < len(grid[0]) and grid[new_loc.row][new_loc.col] != '#':
+            heapq.heappush(queue, (cost + 1, new_loc, direction))
+        heapq.heappush(queue, (cost + 1000, loc, (direction + 1) % 4))
+        heapq.heappush(queue, (cost + 1000, loc, (direction + 3) % 4))
 
 
-class Maze:
-
-    def __init__(self, source):
-        self.source = source
-        self.grid = []
-        self.start: Location
-        self.end: Location
-        self.direction = 1
-        self.cost = 0
-        self.parse_grid()
-
-    def parse_grid(self):
-        for r, line in enumerate(self.source):
-            for c, ch in enumerate(line):
-                if ch == 'S':
-                    self.start = Location(r, c)
-                if ch == 'E':
-                    self.end = Location(r, c)
-            self.grid.append(list(line))
-
-    def is_goal(self, given: Location):
-        return given == self.end
-
-    def successors(self, given: Node) -> list[Node]:
-        result = []
-        for nd in DIRECTIONS:
-            nloc = given + nd
-            if 0 <= nloc.row < len(self.grid) and 0 <= nloc.col < len(self.grid[0]) and self.grid[nloc.row][
-                nloc.col] != '#':
-                result.append(Node(nloc, given, ))
-        return
-
-    def dijkstra(self):
-        # initial: [int, int],
-        #          goal: Callable[[int, int], bool],
-        #          successors: Callable[[int, int], list[tuple[int, int]]],
-        #          cost: Callable[[int, int], int],
-        #          initial_cost: int = 0) -> int:
-        distance = {}
-        priority_queue = [Node(0, self.start, self.direction)]
-        visited = set()
-        best = None
-
-        while priority_queue:
-            node: Node = heapq.heappop(priority_queue)
-            if self.is_goal(node.location):
-                return node.cost
-            if (x, y) in visited:
-                continue
-            visited.add((x, y))
-            for nx, ny in successors(x, y):
-                if (nx, ny) in visited:
-                    continue
-                heapq.heappush(priority_queue, (current_cost + cost(nx, ny), nx, ny))
-
-        return -1
-
-
-
+def parse(source):
+    grid = []
+    start = None
+    end = None
+    for r, row in enumerate(source):
+        grid.append(list(row))
+        if "S" in row:
+            start = Location(r, row.index("S"))
+        if "E" in row:
+            end = Location(r, row.index("E"))
+    return grid, start, end
 
 
 @debug
 @timer
 def part_1(source) -> int | None:
-    maze = Maze(source)
-    answer = 0
-    solution = astar(maze.start,
-                     maze.goal_test,
-                     maze.successors,
-                     maze.manhatten_distance,
-                     maze.cost)
+    grid, start, end = parse(source)
+    p(grid, start, end)
+    answer = dijkstra(grid, start, end)
     pyperclip.copy(str(answer))
+    return answer
 
 
 @debug
@@ -139,11 +108,14 @@ class UnitTests(unittest.TestCase):
     def test_example_data_part_1(self) -> None:
         self.assertEqual(7036, part_1(self.test_source))
 
+    def test_example_data_part_1a(self) -> None:
+        self.assertEqual(11048, part_1(self.test_source_1))
+
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(92432, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(45, part_2(self.test_source))
 
     def test_part_2(self) -> None:
         self.assertEqual(None, part_2(self.source))
@@ -154,6 +126,7 @@ class UnitTests(unittest.TestCase):
         day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
         self.source = read_rows(f"{folder}/day_{day}.input")
         self.test_source = read_rows(f"{folder}/test_{day}.input")
+        self.test_source_1 = read_rows(f"{folder}/test_{day}_1.input")
 
 
 if __name__ == '__main__':
