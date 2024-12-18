@@ -72,9 +72,8 @@ def parse(source):
 
 def dijkstra_with_bfs(grid, start, goal):
     """
-    Implements a modified Dijkstra's algorithm combined with BFS to find all the paths with the lowest cost.
+    Modified Dijkstra to find all the paths with the lowest cost and not just the first one.
 
-     :return: the lowest cost and the number of paths entries that lead to the lowest cost
     """
     queue = []
     lowest_cost = defaultdict(lambda: float("inf"))
