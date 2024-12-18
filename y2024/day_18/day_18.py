@@ -43,13 +43,12 @@ def parse(source):
 
 
 class MemorySpace:
-    def __init__(self, coordinates: list[tuple[int, int]], width=70, height=70, bytes=1024):
+    def __init__(self, coordinates: list[tuple[int, int]], width=70, height=70):
         self.side = width + 1
         self.coordinates = coordinates
         self.memory = [["." for _ in range(width + 1)] for _ in range(height + 1)]
         self.start: tuple[int, int] = (0, 0)
         self.end: tuple[int, int] = (height, width)
-        self.bytes = bytes - 1
 
     def successors(self, loc: tuple[int, int]) -> list[tuple[int, int]]:
         ret = []
@@ -63,7 +62,7 @@ class MemorySpace:
     def goal_test(self, loc) -> bool:
         return loc == self.end
 
-    def bfs(self, bytes):
+    def bfs(self, bytes, part_2=False):
         """Breath first search
         """
         togo = bytes - 1
@@ -81,7 +80,7 @@ class MemorySpace:
                 distance, current_state = frontier.pop()
                 # if we found the goal, we're done
                 if self.goal_test(current_state):
-                    if i == togo:
+                    if i == togo and not part_2:
                         return distance
                     ok = True
                     break
@@ -92,15 +91,14 @@ class MemorySpace:
                     explored.add(child)
                     frontier.push((distance + 1, child))
             if not ok:
-                return f'{r},{c}'
+                return f'{c},{r}'
 
 
 @debug
 @timer
 def part_1(source, w=70, h=70, bytes=1024) -> int | None:
-    answer = 0
     coordinates = parse(source)
-    ms = MemorySpace(coordinates, w, h, bytes)
+    ms = MemorySpace(coordinates, w, h)
     answer = ms.bfs(bytes)
     p(answer)
     pyperclip.copy(str(answer))
@@ -109,8 +107,10 @@ def part_1(source, w=70, h=70, bytes=1024) -> int | None:
 
 @debug
 @timer
-def part_2(source) -> int | None:
-    answer = 0
+def part_2(source, w=70, h=70) -> int | None:
+    coordinates = parse(source)
+    ms = MemorySpace(coordinates, w, h)
+    answer: str = ms.bfs(len(coordinates), True)
     pyperclip.copy(str(answer))
     return answer
 
@@ -125,10 +125,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(292, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual("6,1", part_2(self.test_source, 6, 6))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual("58,44", part_2(self.source))
 
     def setUp(self) -> None:
         print()
