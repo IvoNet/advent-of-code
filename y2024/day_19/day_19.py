@@ -59,12 +59,7 @@ class Towels:
         return ans
 
     def part_1(self):
-        answer = 0
-        for design in self.designs:
-            good_design = self.valid_ways(design)
-            if good_design > 0:
-                answer += 1
-        return answer
+        return sum(1 for design in self.designs if self.valid_ways(design) > 0)
 
     def part_2(self):
         return sum(self.valid_ways(design) for design in self.designs)
@@ -82,6 +77,8 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
+    """Purely by accident I found out that I actually first found
+    the part 2 solution while solving part 1 so that helped :-)"""
     towel = Towels(source)
     answer = towel.part_2()
     pyperclip.copy(str(answer))
