@@ -35,41 +35,17 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
-class Stone:
-
-    def __init__(self, number: int):
-        self.number: int = number
-        self.blinks = 0
-
-    def blink(self):
-        self.blinks += 1
-        if self.number == 0:
-            self.number = 1
-            return
-        length = len(str(self.number))
-        if length > 0 and length % 2 == 0:
-            left = int(str(self.number)[:length // 2])
-            right = int(str(self.number)[length // 2:])
-            self.number = left
-            return Stone(right)  # right
-        self.number = self.number * 2024
-
-    def __repr__(self):
-        return f"Stone({self.number})"
-
-
-
 class Blinker:
 
     def __init__(self, source, times):
         self.stones = ints(source[0])
         self.times = times
-        self.states = {}
+        self.memoization = {} # This is the memoization cache and makes all the difference in speed
 
     def blink(self, number, steps):
-        """Recursively solve one number for the amount of steps needed"""
-        if (number, steps) in self.states:
-            return self.states[(number, steps)]
+        """Recursively blink one number for the amount of steps needed"""
+        if (number, steps) in self.memoization:
+            return self.memoization[(number, steps)]
         if steps == 0:
             ret = 1
         elif number == 0:
@@ -81,7 +57,7 @@ class Blinker:
             ret = self.blink(left, steps - 1) + self.blink(right, steps - 1)
         else:
             ret = self.blink(number * 2024, steps - 1)
-        self.states[(number, steps)] = ret
+        self.memoization[(number, steps)] = ret
         return ret
 
     def do_blinks(self):
@@ -91,21 +67,6 @@ class Blinker:
 @debug
 @timer
 def part_1(source) -> int | None:
-    # this was the first solution I came up with and it was perfectly fine for part_1
-    # The second solution is a recursive solution which is much faster for part_2 and also works for part_1
-    # answer = 0
-    # stones = [Stone(x) for x in ints(source[0])]
-    # stone_state = []
-    # for i in range(25):
-    #     for stone in stones:
-    #         split = stone.blink()
-    #         stone_state.append(stone)
-    #         if split:
-    #             stone_state.append(split)
-    #     answer = len(stone_state)
-    #     p(stone_state)
-    #     stones = stone_state.copy()
-    #     stone_state = []
     blinker = Blinker(source, 25)
     answer = blinker.do_blinks()
     pyperclip.copy(str(answer))
@@ -115,9 +76,6 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    """Hmm part_1 solution takes too long for part_2
-    Lets make it recursive and see if that helps
-    """
     b = Blinker(source, 75)
     answer = b.do_blinks()
     pyperclip.copy(str(answer))
