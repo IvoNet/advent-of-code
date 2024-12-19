@@ -91,19 +91,23 @@ class Blinker:
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = 0
-    stones = [Stone(x) for x in ints(source[0])]
-    stone_state = []
-    for i in range(25):
-        for stone in stones:
-            split = stone.blink()
-            stone_state.append(stone)
-            if split:
-                stone_state.append(split)
-        answer = len(stone_state)
-        p(stone_state)
-        stones = stone_state.copy()
-        stone_state = []
+    # this was the first solution I came up with and it was perfectly fine for part_1
+    # The second solution is a recursive solution which is much faster for part_2 and also works for part_1
+    # answer = 0
+    # stones = [Stone(x) for x in ints(source[0])]
+    # stone_state = []
+    # for i in range(25):
+    #     for stone in stones:
+    #         split = stone.blink()
+    #         stone_state.append(stone)
+    #         if split:
+    #             stone_state.append(split)
+    #     answer = len(stone_state)
+    #     p(stone_state)
+    #     stones = stone_state.copy()
+    #     stone_state = []
+    blinker = Blinker(source, 25)
+    answer = blinker.do_blinks()
     pyperclip.copy(str(answer))
     return answer
 
