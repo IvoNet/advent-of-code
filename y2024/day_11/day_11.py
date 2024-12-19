@@ -13,12 +13,11 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import os
+import sys
 import unittest
 from pathlib import Path
 
 import pyperclip
-import sys
-
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
@@ -34,6 +33,7 @@ DEBUG = False
 def p(*args, end="\n", sep=" "):
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
+
 
 class Stone:
 
@@ -51,18 +51,50 @@ class Stone:
             left = int(str(self.number)[:length // 2])
             right = int(str(self.number)[length // 2:])
             self.number = left
-            return Stone(right) # right
+            return Stone(right)  # right
         self.number = self.number * 2024
 
     def __repr__(self):
         return f"Stone({self.number})"
 
 
-def blinks(source, times):
+
+class Blinker:
+
+    def __init__(self, source, times):
+        self.stones = ints(source[0])
+        self.times = times
+        self.states = {}
+
+    def blink(self, number, steps):
+        """Recursively solve one number for the amount of steps needed"""
+        if (number, steps) in self.states:
+            return self.states[(number, steps)]
+        if steps == 0:
+            ret = 1
+        elif number == 0:
+            ret = self.blink(1, steps - 1)
+        elif len(str(number)) % 2 == 0:
+            str_number = str(number)
+            left = int(str_number[:len(str_number) // 2])
+            right = int(str_number[len(str_number) // 2:])
+            ret = self.blink(left, steps - 1) + self.blink(right, steps - 1)
+        else:
+            ret = self.blink(number * 2024, steps - 1)
+        self.states[(number, steps)] = ret
+        return ret
+
+    def do_blinks(self):
+        return sum(self.blink(stone, self.times) for stone in self.stones)
+
+
+@debug
+@timer
+def part_1(source) -> int | None:
     answer = 0
     stones = [Stone(x) for x in ints(source[0])]
     stone_state = []
-    for i in range(times):
+    for i in range(25):
         for stone in stones:
             split = stone.blink()
             stone_state.append(stone)
@@ -72,13 +104,6 @@ def blinks(source, times):
         p(stone_state)
         stones = stone_state.copy()
         stone_state = []
-    return answer
-
-
-@debug
-@timer
-def part_1(source) -> int | None:
-    answer = blinks(source, 25)
     pyperclip.copy(str(answer))
     return answer
 
@@ -86,7 +111,11 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = blinks(source, 75)
+    """Hmm part_1 solution takes too long for part_2
+    Lets make it recursive and see if that helps
+    """
+    b = Blinker(source, 75)
+    answer = b.do_blinks()
     pyperclip.copy(str(answer))
     return answer
 
@@ -101,7 +130,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(183248, part_1(self.source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(218811774248729, part_2(self.source))
 
     def setUp(self) -> None:
         print()
