@@ -15,6 +15,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+from collections import deque
 from typing import TypeVar, Iterable, Sequence, Generic, List, Callable, Any, Optional, Protocol
 
 from ivonet.collection import PriorityQueue, Stack, Queue
@@ -22,6 +23,12 @@ from ivonet.collection import PriorityQueue, Stack, Queue
 T = TypeVar('T')
 C = TypeVar("C", bound="Comparable")
 
+DIRECTIONS = [
+    (0, 1),  # right
+    (0, -1),  # left
+    (1, 0),  # down
+    (-1, 0)  # up
+]
 
 def linear_contains(iterable: Iterable[T], key: T) -> bool:
     for item in iterable:
@@ -142,6 +149,41 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], li
             frontier.push(Node(child, current_node))
     return None  # went through everything and never found goal
 
+
+def bfs_shortest(start, end, grid):
+    """fastest path from start to end
+    :returns: distance, path
+    """
+    q = deque([(start, 0, [start])])
+    seen = {start}
+    while q:
+        (r, c), dist, path = q.popleft()
+        if (r, c) == end:
+            return dist, path
+        for dr, dc in DIRECTIONS:
+            rr, cc = r + dr, c + dc
+            if 0 <= rr < len(grid) and 0 <= cc < len(grid[0]) and grid[rr][cc] != "#" and (rr, cc) not in seen:
+                seen.add((rr, cc))
+                q.append(((rr, cc), dist + 1, path + [(rr, cc)]))
+    return None, []
+
+
+def bfs_shortest_with_distance(start, end, grid):
+    """fastest path from start to end
+    :returns: distance, [(path, dist)]
+    """
+    q = deque([(start, 0, [(start, 0)])])
+    seen = {start}
+    while q:
+        (r, c), dist, path = q.popleft()
+        if (r, c) == end:
+            return dist, path
+        for dr, dc in DIRECTIONS:
+            rr, cc = r + dr, c + dc
+            if 0 <= rr < len(grid) and 0 <= cc < len(grid[0]) and grid[rr][cc] != "#" and (rr, cc) not in seen:
+                seen.add((rr, cc))
+                q.append(((rr, cc), dist + 1, path + [((rr, cc), dist + 1)]))
+    return None, []
 
 def astar(initial: T,
           goal_test: Callable[[T], bool],
