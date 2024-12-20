@@ -121,10 +121,10 @@ class CheatingRace:
                 cheats_needed = self.manhatten_distance((rs, cs), (re, ce))
                 if cheats_needed <= max_cheats:
                     total_distance = dist_start + cheats_needed + dist_end
-                    if self.exact:
+                    if self.exact:  # exact solution
                         if total_distance == optimal_distance:
                             answer += 1
-                    else:
+                    else:  # solution with less or equal to max_cheats
                         if total_distance <= optimal_distance:
                             answer += 1
         return answer
@@ -161,6 +161,10 @@ def part_1(source) -> int | None:
     I think so what would be a generic solution.
     What if I first calculate all distances from the start and from the end and then we can calculate stuff from there.
     Yup works but not really fast... Fast enough though
+
+    First try was to brute force remove 1 wall and see of the new shortest path is more than 100 less than before.
+    That worked for part 1 but not for part 2.
+    Now the solution I found works for both parts.
     """
     race = CheatingRace(source)
     answer = race.solve(2)
