@@ -11,22 +11,18 @@ code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
 """
 
-import collections
 import heapq
-import os
-import sys
 import unittest
-from collections import abc
 from collections import defaultdict
 from pathlib import Path
 
 import pyperclip
+import sys
 from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
 from ivonet.search import DIRECTIONS
 
-collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
 DEBUG = True
@@ -71,7 +67,6 @@ class CheatingRace:
                 end = (r, line.index("E"))
         return grid, start, end
 
-
     def adjacent(self, loc):
         """Generate adjacent points for a given loc."""
         r, c = loc
@@ -79,7 +74,6 @@ class CheatingRace:
             rr, cc = r + dr, c + dc
             if 0 <= rr < self.height and 0 <= cc < self.width and self.grid[rr][cc] in [".", "S", "E"]:
                 yield 1, (rr, cc)
-
 
     def distances(self, start):
         """
@@ -101,7 +95,6 @@ class CheatingRace:
                     dists[adj] = new_dist
                     heapq.heappush(queue, (new_dist, adj))
         return dists
-
 
     def solve(self, max_cheats):
         """
@@ -141,13 +134,13 @@ def part_0(source):
         race = CheatingRace(source, i, True)
         answer = race.solve(2)
         if answer > 0:
-            print(f"There are {"one" if answer == 1 else answer} cheats that save {i} picoseconds")
+            print("There are %s cheats that save %s picoseconds" % ("one" if answer == 1 else answer, i))
     print(80 * "-")
     for i in range(50, 77):
         race = CheatingRace(source, i, True)
         answer = race.solve(20)
         if answer > 0:
-            print(f"There are {"one" if answer == 1 else answer} cheats that save {i} picoseconds")
+            print("There are %s cheats that save %s picoseconds" % ("one" if answer == 1 else answer, i))
     return None
 
 
@@ -195,8 +188,8 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         print()
-        folder = os.path.dirname(os.path.realpath(__file__))
-        day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
+        folder = Path(__file__).resolve().parent
+        day = f"{ints(Path(__file__).stem)[0]:02}"
         self.source = read_rows(f"{folder}/day_{day}.input")
         self.test_source = read_rows(f"{folder}/test_{day}.input")
 

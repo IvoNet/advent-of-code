@@ -12,13 +12,11 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import collections
-import os
 import unittest
 from pathlib import Path
 
 import pyperclip
 import sys
-
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
@@ -69,8 +67,8 @@ class UnitTests(unittest.TestCase):
 
     def setUp(self) -> None:
         print()
-        folder = os.path.dirname(os.path.realpath(__file__))
-        day = f"{str(ints(Path(__file__).name)[0]).zfill(2)}"
+        folder = Path(__file__).resolve().parent
+        day = f"{ints(Path(__file__).stem)[0]:02}"
         self.source = read_rows(f"{folder}/day_{day}.input")
         self.test_source = read_rows(f"{folder}/test_{day}.input")
 
