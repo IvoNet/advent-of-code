@@ -8,7 +8,8 @@ from shutil import copyfile
 
 import requests
 from bs4 import BeautifulSoup
-
+import urllib3
+urllib3.disable_warnings()
 
 def read_session():
     if not Path(".session").is_file():
@@ -40,7 +41,7 @@ def create_folders(year, day):
 
 def get_web_page(year, day):
     # Get the puzzle input
-    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}", cookies={"session": read_session()})
+    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}", cookies={"session": read_session()}, verify=False)
     soup = BeautifulSoup(resp.text, "html.parser")
     text = ""
     for hit in soup.findAll(attrs={'class': 'day-desc'}):
@@ -77,7 +78,7 @@ def get_puzzle_description(year, day, filename):
 
 
 def get_puzzle_input(year, day, filename):
-    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies={"session": read_session()})
+    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies={"session": read_session()}, verify=False)
     print("Writing puzzle input     :", filename)
     with open(filename, "w") as fo:
         fo.write(resp.text)
