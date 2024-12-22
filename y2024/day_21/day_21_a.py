@@ -9,6 +9,9 @@ __doc__ = """
 If a part of the code is not part of the post it is probably 
 code I found reusable and I may have moved it to my 'ivonet' library.
 you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivonet
+
+
+NOTE!!! This one is NOT working correctly and it bugs me :-)
 """
 
 import collections

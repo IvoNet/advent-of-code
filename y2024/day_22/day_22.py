@@ -13,6 +13,7 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 
 import collections
 import unittest
+from collections import abc, defaultdict
 from pathlib import Path
 
 import pyperclip
@@ -22,7 +23,7 @@ from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
-collections.Callable = collections.abc.Callable  # type: ignore
+collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
 DEBUG = True
@@ -34,10 +35,61 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+def mix(left, right):
+    """bitwise XOR operation on two integers."""
+    return left ^ right
+
+
+def prune(value):
+    """Take the modulo 16777216 of the given value."""
+    return value % 16777216
+
+
+def secrets(value):
+    """Generate a list of 2000 values based on the given value."""
+    ans = [value]
+    for _ in range(2000):
+        value = prune(mix(value, 64 * value))
+        value = prune(mix(value, value // 32))
+        value = prune(mix(value, value * 2048))
+        ans.append(value)
+    return ans
+
+
+def prices(secrets):
+    return [x % 10 for x in secrets]
+
+
+def banana_score(prices):
+    """
+    - modulo 10
+    - compare given with former and calc the difference. negative is minus prices, positive is plus prices
+    - only the start is just a given as a reference point
+    """
+    answers = []
+    for i in range(1, len(prices)):
+        answers.append(prices[i] - prices[i - 1])
+    return answers
+
+
+def ranges(prices, bananas):
+    """ get all ranges of 4 bananas and the price after that
+    """
+    ret = {}
+    for i in range(len(bananas) - 3):
+        pattern = (bananas[i], bananas[i + 1], bananas[i + 2], bananas[i + 3])
+        if pattern not in ret:
+            ret[pattern] = prices[i + 4]
+    return ret
+
+
 @debug
 @timer
 def part_1(source) -> int | None:
     answer = 0
+    for line in source:
+        pr = secrets(int(line))
+        answer += pr[-1]
     pyperclip.copy(str(answer))
     return answer
 
@@ -45,7 +97,15 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
+    memory = defaultdict(int)  # init at 0
+    for line in source:
+        s = secrets(int(line))
+        p = prices(s)
+        b = banana_score(p)
+        r = ranges(p, b)
+        for k, v in r.items():
+            memory[k] += v
+    answer = max(memory.values())
     pyperclip.copy(str(answer))
     return answer
 
@@ -53,17 +113,27 @@ def part_2(source) -> int | None:
 # noinspection DuplicatedCode
 class UnitTests(unittest.TestCase):
 
+    def test_calculus(self):
+        self.assertEqual(37, 42 ^ 15)  # bitwise xor
+        self.assertEqual(16113920, 100000000 % 16777216)  # Prune
+        self.assertEqual(3, 11 // 3)  # round down to nearest integer
+        self.assertEqual(8685429, secrets(1)[-1])
+        self.assertEqual(4700978, secrets(10)[-1])
+        self.assertEqual(15273692, secrets(100)[-1])
+        self.assertEqual(8667524, secrets(2024)[-1])
+        self.assertEqual([-3, 6, -1, -1, 0, 2, -2, 0, -2], banana_score(prices(secrets(123))[:10]))
+
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(37327623, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(14623556510, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(23, part_2(self.test_source_1))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(1701, part_2(self.source))
 
     def setUp(self) -> None:
         print()
@@ -71,6 +141,7 @@ class UnitTests(unittest.TestCase):
         day = f"{ints(Path(__file__).stem)[0]:02}"
         self.source = read_rows(f"{folder}/day_{day}.input")
         self.test_source = read_rows(f"{folder}/test_{day}.input")
+        self.test_source_1 = read_rows(f"{folder}/test_{day}_1.input")
 
 
 if __name__ == '__main__':
