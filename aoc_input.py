@@ -11,6 +11,9 @@ from bs4 import BeautifulSoup
 import urllib3
 urllib3.disable_warnings()
 
+# Set to False if you don't want to verify the SSL certificate
+VERIFY = True
+
 def read_session():
     if not Path(".session").is_file():
         raise ValueError("Please create a '.session' file with the cookie in it (see readme)")
@@ -41,7 +44,7 @@ def create_folders(year, day):
 
 def get_web_page(year, day):
     # Get the puzzle input
-    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}", cookies={"session": read_session()}, verify=False)
+    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}", cookies={"session": read_session()}, verify=VERIFY)
     soup = BeautifulSoup(resp.text, "html.parser")
     text = ""
     for hit in soup.findAll(attrs={'class': 'day-desc'}):
@@ -78,7 +81,7 @@ def get_puzzle_description(year, day, filename):
 
 
 def get_puzzle_input(year, day, filename):
-    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies={"session": read_session()}, verify=False)
+    resp = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies={"session": read_session()}, verify=VERIFY)
     print("Writing puzzle input     :", filename)
     with open(filename, "w") as fo:
         fo.write(resp.text)

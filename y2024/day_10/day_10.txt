@@ -16,6 +16,7 @@ Perhaps you can help fill in the missing hiking trails?
 The topographic map indicates the height at each position using a scale from 0
 (lowest) to 9 (highest). For example:
 
+
 0123
 1234
 8765

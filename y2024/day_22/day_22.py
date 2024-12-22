@@ -46,7 +46,9 @@ def prune(value):
 
 
 def secrets(value):
-    """Generate a list of 2000 values based on the given value."""
+    """Generate a list of 2000 values based on the given value and provided formulae.
+    - every rule must be mixed and pruned
+    """
     ans = [value]
     for _ in range(2000):
         value = prune(mix(value, 64 * value))
@@ -86,6 +88,9 @@ def ranges(prices, bananas):
 @debug
 @timer
 def part_1(source) -> int | None:
+    """
+    This is a simple sum of the last value of the secrets list.
+    """
     answer = 0
     for line in source:
         pr = secrets(int(line))
@@ -97,6 +102,10 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
+    """
+    This is a bit more complex as we need to keep track of the ranges of 4 bananas and the price after that.
+    We need to keep track of the total score for each range and return the highest score.
+    """
     memory = defaultdict(int)  # init at 0
     for line in source:
         s = secrets(int(line))
