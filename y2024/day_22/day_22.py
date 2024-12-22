@@ -58,20 +58,21 @@ def secrets(value):
     return ans
 
 
-def prices(secrets):
-    return [x % 10 for x in secrets]
+def prices(secrets_list):
+    """Return a list of the modulo 10 of the given secrets list."""
+    return [x % 10 for x in secrets_list]
 
 
-def banana_score(prices):
+def banana_score(prices_list):
     """
-    - modulo 10
-    - compare given with former and calc the difference. negative is minus prices, positive is plus prices
-    - only the start is just a given as a reference point
+    Calculate the banana score for the given prices list.
+    - the banana score is the difference between the current price and the previous price.
     """
-    answers = []
-    for i in range(1, len(prices)):
-        answers.append(prices[i] - prices[i - 1])
-    return answers
+    return [prices_list[i] - prices_list[i - 1] for i in range(1, len(prices_list))]
+    # answers = []
+    # for i in range(1, len(prices_list)):
+    #     answers.append(prices_list[i] - prices_list[i - 1])
+    # return answers
 
 
 def ranges(prices, bananas):
@@ -105,6 +106,7 @@ def part_2(source) -> int | None:
     """
     This is a bit more complex as we need to keep track of the ranges of 4 bananas and the price after that.
     We need to keep track of the total score for each range and return the highest score.
+    Quite slow but it works.
     """
     memory = defaultdict(int)  # init at 0
     for line in source:
@@ -123,6 +125,7 @@ def part_2(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_calculus(self):
+        """tests from the text input"""
         self.assertEqual(37, 42 ^ 15)  # bitwise xor
         self.assertEqual(16113920, 100000000 % 16777216)  # Prune
         self.assertEqual(3, 11 // 3)  # round down to nearest integer
