@@ -56,6 +56,10 @@ class Graph(Generic[V]):
         self._edges: list[list[Edge | WeightedEdge]] = [[] for _ in self._vertices]
 
     @property
+    def vertices(self) -> list[V]:
+        return self._vertices
+
+    @property
     def vertex_count(self) -> int:
         return len(self._vertices)  # Number of vertices
 

@@ -18,9 +18,10 @@ It is for my understanding and fun :-)
 """
 
 import os
-import sys
 import unittest
 from pathlib import Path
+
+import sys
 
 from ivonet.files import read_rows
 from ivonet.graph import Graph
@@ -68,6 +69,7 @@ def build_graph(source) -> Graph[int]:
 
 def part_1(source):
     graph: Graph[int] = build_graph(source)
+    print(graph)
     return len(graph.connected_components(0))
 
 
