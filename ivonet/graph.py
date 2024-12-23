@@ -72,7 +72,6 @@ class Graph(Generic[V]):
     def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
         self._edges: list[list[Edge | WeightedEdge]] = [[] for _ in self._vertices]
-        self.longest_set = set()
         self.search_results = set()
 
     @property
@@ -127,11 +126,11 @@ class Graph(Generic[V]):
         return list(map(self.vertex_at, [e.v for e in self._edges[index]]))
 
     def neighbors_for_vertex(self, vertex: V) -> list[V]:
-        """Lookup a vertice's index and find its neighbors (convenience method)"""
+        """Lookup a vertex's index and find its neighbors (convenience method)"""
         return self.neighbors_for_index(self.index_of(vertex))
 
     def edges_for_index(self, index: int) -> list[Edge] | list[WeightedEdge]:
-        """Return all of the edges associated with a vertex at some index"""
+        """Return all the edges associated with a vertex at some index"""
         return self._edges[index]
 
     def edges_for_vertex(self, vertex: V) -> list[Edge] | list[WeightedEdge]:
@@ -166,6 +165,7 @@ class Graph(Generic[V]):
 
         Was needed for 2024 day 23.
         """
+        longest_set = set()
         stack = [(initial, {initial})]
         while stack:
             current_node, current_req = stack.pop()
@@ -173,8 +173,8 @@ class Graph(Generic[V]):
             if key in self.search_results:
                 continue
             self.search_results.add(key)
-            if len(current_req) > len(self.longest_set):
-                self.longest_set = current_req
+            if len(current_req) > len(longest_set):
+                longest_set = current_req
             for neighbor in self.neighbors_for_vertex(current_node):
                 if neighbor in current_req:
                     continue
@@ -182,12 +182,16 @@ class Graph(Generic[V]):
                     continue
                 stack.append((neighbor, {*current_req, neighbor}))
 
-        self.longest_set = sorted(self.longest_set)
+        return sorted(longest_set)
 
     def longest_connected_component(self) -> set[V]:
+        longest_set = set()
         for vertice in self.vertices:
-            self.search(vertice)
-        return self.longest_set
+            l = self.search(vertice)
+            if l and len(l) > len(longest_set):
+                longest_set = l
+        return longest_set
+
 
     def connected_groups(self):
         """Create groups of all separate connected_component groups"""
