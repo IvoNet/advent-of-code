@@ -51,9 +51,29 @@ class WeightedEdge(Edge):
 
 
 class Graph(Generic[V]):
+    """
+     A class representing an undirected graph.
+
+     This class provides methods to manage vertices and edges, including adding vertices and edges,
+     retrieving vertices and edges, and finding neighbors and connected components. It supports both
+     unweighted and weighted edges, and includes functionality for breadth-first search to find connected
+     components and groups.
+
+     Vertices (or nodes) are the fundamental units of a graph. They represent entities or points in the graph.
+     For example, in a social network graph, vertices could represent people.
+     Edges are the connections between vertices. They represent the relationships or links between the entities.
+     In a social network graph, edges could represent friendships or connections between people.
+
+     Attributes:
+         _vertices (list[V]): A list of vertices in the graph.
+         _edges (list[list[Edge | WeightedEdge]]): A list of lists where each sublist contains the edges for a vertex.
+     """
+
     def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
         self._edges: list[list[Edge | WeightedEdge]] = [[] for _ in self._vertices]
+        self.longest_set = set()
+        self.search_results = set()
 
     @property
     def vertices(self) -> list[V]:
@@ -140,6 +160,35 @@ class Graph(Generic[V]):
                 frontier.push(Node(child, current_node))
         return explored
 
+    def search(self, initial: V) -> list[V]:
+        """Perform a depth-first search to find all connected components starting from a
+        given node and keep track of the longest set found.
+
+        Was needed for 2024 day 23.
+        """
+        stack = [(initial, {initial})]
+        while stack:
+            current_node, current_req = stack.pop()
+            key = tuple(sorted(current_req))
+            if key in self.search_results:
+                continue
+            self.search_results.add(key)
+            if len(current_req) > len(self.longest_set):
+                self.longest_set = current_req
+            for neighbor in self.neighbors_for_vertex(current_node):
+                if neighbor in current_req:
+                    continue
+                if not set(current_req).issubset(self.neighbors_for_vertex(neighbor)):
+                    continue
+                stack.append((neighbor, {*current_req, neighbor}))
+
+        self.longest_set = sorted(self.longest_set)
+
+    def longest_connected_component(self) -> set[V]:
+        for vertice in self.vertices:
+            self.search(vertice)
+        return self.longest_set
+
     def connected_groups(self):
         """Create groups of all separate connected_component groups"""
         todo = deepcopy(self._vertices)
@@ -165,6 +214,7 @@ class WeightedGraph(Generic[V], Graph[V]):
     """
      See y2023/day_23 for a nice example of how to use this class.
     """
+
     def __init__(self, vertices: Optional[list[V]] = None) -> None:
         self._vertices: list[V] = [] if vertices is None else vertices
         self._edges: list[list[WeightedEdge]] = [[] for _ in self._vertices]

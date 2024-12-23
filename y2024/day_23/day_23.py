@@ -28,7 +28,7 @@ from ivonet.iter import ints
 collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 
 # noinspection DuplicatedCode
@@ -59,6 +59,9 @@ class LanParty:
 
     @property
     def sets_of_three(self) -> set:
+        """Find all unique sets of three vertices that form a triangle in the graph.
+        A triangle is formed if there are edges between all three vertices (x, y, z).
+        """
         ret = set()
         for x in self.graph.vertices:
             for y in self.graph.neighbors_for_vertex(x):
@@ -67,31 +70,11 @@ class LanParty:
                         ret.add(tuple(sorted([x, y, z])))
         return ret
 
-    def search(self, node: str, req: set) -> None:
-        stack = [(node, req)]
-        while stack:
-            current_node, current_req = stack.pop()
-            key = tuple(sorted(current_req))
-            if key in self.search_results:
-                continue
-            self.search_results.add(key)
-            if len(current_req) > len(self.longest_set):
-                self.longest_set = current_req
-            for neighbor in self.graph.neighbors_for_vertex(current_node):
-                if neighbor in current_req:
-                    continue
-                if not set(current_req).issubset(self.graph.neighbors_for_vertex(neighbor)):
-                    continue
-                stack.append((neighbor, {*current_req, neighbor}))
-        self.longest_set = sorted(self.longest_set)
-
     def part_1(self):
         return len([s for s in self.sets_of_three if any(connection.startswith("t") for connection in s)])
 
     def part_2(self):
-        for node in self.graph._vertices:
-            self.search(node, {node})
-        return ",".join(self.longest_set)
+        return ",".join(self.graph.longest_connected_component())
 
 
 @debug
