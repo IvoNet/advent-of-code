@@ -71,3 +71,31 @@ class PriorityQueue(Generic[T]):
 
     def __repr__(self) -> str:
         return repr(self._container)
+
+
+
+def max_k_subsequence(digits: str, k: int) -> str:
+    """Return the lexicographically largest subsequence of length k from the string of digits.
+
+    Uses a greedy stack algorithm: for each digit, pop smaller digits from the stack
+    while there are enough remaining digits to fill k, then push current digit.
+    Finally, take the first k digits from the stack.
+    see: 2025 day 3
+    """
+    n = len(digits)
+    if k >= n:
+        return digits
+    stack: list[str] = []
+    to_remove = n - k  # number of digits we can drop
+    for i, ch in enumerate(digits):
+        # While we can pop and current char is greater than last in stack, pop.
+        while stack and to_remove > 0 and stack[-1] < ch:
+            stack.pop()
+            to_remove -= 1
+        stack.append(ch)
+    # If still have removals left, drop from the end
+    if to_remove:
+        stack = stack[:-to_remove]
+    # Join and ensure length k
+    result = ''.join(stack[:k])
+    return result
