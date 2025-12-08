@@ -25,7 +25,7 @@ from ivonet.iter import ints
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
-DEBUG = True
+DEBUG = False
 
 STARTING_POS = 50
 
@@ -34,7 +34,7 @@ def p(*args, end="\n", sep=" "):
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
 
-def process(source):
+def process_p1(source):
     count = 0
     pos = 50
     for line in source:
@@ -42,12 +42,10 @@ def process(source):
         steps = ints(line)[0]
         if direction == "L":
             pos -= steps
-            if pos < 0:
-                pos += 100
         elif direction == "R":
             pos += steps
-            if pos > 99:
-                pos -= 100
+        pos %= 100
+        pos = abs(pos)
         if pos == 0:
             count += 1
         p(f"Direction: {direction} Steps: {steps} New pos: {pos}) Count: {count}")
@@ -56,18 +54,43 @@ def process(source):
 
 
 
+def process_p2(source):
+    count = 0
+    pos = 50
+    for line in source:
+        direction = line[0]
+        steps = ints(line)[0]
+        if direction == "L":
+            for _ in range(steps):
+                pos -= 1
+                pos %= 100
+                pos = abs(pos)
+                if pos == 0:
+                    count += 1
+        elif direction == "R":
+            for _ in range(steps):
+                pos += 1
+                pos %= 100
+                pos = abs(pos)
+                if pos == 0:
+                    count += 1
+        p(f"Direction: {direction} Steps: {steps:5} New pos: {pos:5} Count: {count}")
+
+    return count
+
+
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = process(source)
+    answer = process_p1(source)
     pyperclip.copy(str(answer))
     return answer
 
 
-@debug
+# @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
+    answer = process_p2(source)
     pyperclip.copy(str(answer))
     return answer
 
@@ -79,13 +102,13 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(284, part_1(self.source))
+        self.assertEqual(1152, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(6, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(6671, part_2(self.source))
 
     def setUp(self) -> None:
         print()
