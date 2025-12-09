@@ -138,7 +138,53 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
+
+    """
+    Continue connecting the closest pairs until all junction boxes are in one circuit.
+    Return the product of the X coordinates of the last two junction boxes that caused
+    all boxes to become connected.
+    """
+    boxes = [JunctionBox(*line) for line in source]
+    n = len(boxes)
+    # build all pairs (distance, i, j)
+    pairs = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            pairs.append((boxes[i].distance_to(boxes[j]), i, j))
+
+    pairs.sort(key=lambda x: x[0])
+
+    parent = list(range(n))
+    size = [1] * n
+
+    def find(a: int) -> int:
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def union(a: int, b: int) -> int:
+        ra = find(a)
+        rb = find(b)
+        if ra == rb:
+            return 0
+        if size[ra] < size[rb]:
+            ra, rb = rb, ra
+        parent[rb] = ra
+        size[ra] += size[rb]
+        return size[ra]
+
+    # iterate pairs until one component reaches size n
+    last_product = None
+    for _, i, j in pairs:
+        new_size = union(i, j)
+        if new_size == n:
+            # product of X coordinates of boxes i and j
+            last_product = boxes[i].x * boxes[j].x
+            break
+
+    answer = last_product
+    p(f"part_2 answer: {answer}")
     pyperclip.copy(str(answer))
     return answer
 
@@ -150,13 +196,14 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(40, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(97384, part_1(self.source))
+        self.assertEqual(None, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
+        # expected example result from puzzle description: 216 * 117 = 25272
         self.assertEqual(25272, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(9003685096, part_2(self.source))
 
     def test_distance(self) -> None:
         a = JunctionBox(0, 0, 0)
