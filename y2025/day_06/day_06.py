@@ -48,6 +48,8 @@ def transpose_fill(lists, fill=" "):
 
 
 def parse(source):
+    while source[-1].strip() == "":
+        source = source[:-1]
     data = list(transpose([ints(line) for line in source[:-1]]))
     operators = [x for x in source[-1].split() if x in ('+', '*',)]
     length = len(operators)
@@ -56,22 +58,6 @@ def parse(source):
         p(len(data), length)
         raise ValueError("Inconsistent number of operators and data columns")
     return operators, data
-
-
-@debug
-@timer
-def part_1(source) -> int | None:
-    answer = 0
-    operators, data = parse(source)
-    p(operators)
-    p(data)
-    for i, op in enumerate(operators):
-        if op == '+':
-            answer += sum(data[i])
-        elif op == '*':
-            answer += prod(data[i])
-    pyperclip.copy(str(answer))
-    return answer
 
 
 def parse_2(source):
@@ -100,6 +86,22 @@ def parse_2(source):
 
 @debug
 @timer
+def part_1(source) -> int | None:
+    answer = 0
+    operators, data = parse(source)
+    p(operators)
+    p(data)
+    for i, op in enumerate(operators):
+        if op == '+':
+            answer += sum(data[i])
+        elif op == '*':
+            answer += prod(data[i])
+    pyperclip.copy(str(answer))
+    return answer
+
+
+@debug
+@timer
 def part_2(source) -> int | None:
     answer = 0
     operators, data = parse_2(source)
@@ -109,7 +111,6 @@ def part_2(source) -> int | None:
             answer += sum(data[i])
         elif op == '*':
             answer += prod(data[i])
-
 
     pyperclip.copy(str(answer))
     return answer
