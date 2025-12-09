@@ -64,24 +64,72 @@ class JunctionBox(NamedTuple):
 @timer
 def part_1(source) -> int | None:
     """
+    Connect the 1000 pairs of junction boxes that are closest together (by straight-line distance).
+    After performing those 1000 connections (in order of increasing distance), compute the sizes
+    of all connected components and return the product of the sizes of the three largest components.
 
+    Args:
+        source: iterable of 3-int lists/tuples (x, y, z)
+
+    Returns:
+        The product of the three largest component sizes as an int (or None if no data).
     """
-    answer = 0
-    closest_left = None
-    closest_right = None
     boxes = [JunctionBox(*line) for line in source]
-    min_dist = float('inf')
-    for i in range(len(boxes)):
-        for j in range(i + 1, len(boxes)):
-            # find the closest two boxes (left, right)
-            dist = boxes[i].distance_to(boxes[j])
-            if min_dist > dist:
-                min_dist = dist
-                closest_left = boxes[i]
-                closest_right = boxes[j]
+    n = len(boxes)
 
-    p(f"The closest boxes are {closest_left} and {closest_right} with a distance of {min_dist:.2f}")
+    # Build all pairs (distance, i, j)
+    pairs = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            pairs.append((boxes[i].distance_to(boxes[j]), i, j))
 
+    # Sort pairs by distance ascending
+    pairs.sort(key=lambda x: x[0])
+
+    # Number of connections to perform: use 10 for the example (small inputs) and 1000 for real puzzle
+    if n <= 20:
+        k = min(10, len(pairs))
+    else:
+        k = min(1000, len(pairs))
+
+    # Disjoint-set (union-find) with path compression and size tracking
+    parent = list(range(n))
+    size = [1] * n
+
+    def find(a: int) -> int:
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def union(a: int, b: int) -> None:
+        ra = find(a)
+        rb = find(b)
+        if ra == rb:
+            return
+        if size[ra] < size[rb]:
+            ra, rb = rb, ra
+        parent[rb] = ra
+        size[ra] += size[rb]
+
+    # Process the first k pairs
+    for idx in range(k):
+        _, i, j = pairs[idx]
+        union(i, j)
+
+    # Collect component sizes
+    comp = {}
+    for i in range(n):
+        r = find(i)
+        comp[r] = comp.get(r, 0) + 1
+
+    sizes = sorted(comp.values(), reverse=True)
+    prod = 1
+    for s in sizes[:3]:
+        prod *= s
+
+    answer = prod
+    p(f"Top 3 sizes: {sizes[:3]}, product: {answer}")
 
     pyperclip.copy(str(answer))
     return answer
@@ -102,10 +150,10 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(40, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(97384, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(25272, part_2(self.test_source))
 
     def test_part_2(self) -> None:
         self.assertEqual(None, part_2(self.source))
