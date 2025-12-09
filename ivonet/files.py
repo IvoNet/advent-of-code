@@ -12,7 +12,7 @@ import sys
 import urllib.request
 from io import StringIO
 
-from ivonet.iter import lmap
+from ivonet.iter import lmap, ints
 
 
 def open_anything(source: any):
@@ -64,6 +64,10 @@ def read_rows(infile: str, raw=False) -> list[str]:
 def read_ints(infile: str, delimiter: str = "\n") -> list[int]:
     """Read the infile and parse it into a list of ints based on the delimiter"""
     return list(map(int, read_data(infile).strip().split(delimiter)))
+
+def read_int_rows(infile: str) -> list[list[int]]:
+    """Read the infile and parse each row into an int"""
+    return [ints(x) for x in read_rows(infile)]
 
 
 def read_int_matrix(infile: str) -> list[list[int]]:
