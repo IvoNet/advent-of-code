@@ -20,9 +20,8 @@ import sys
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
-from ivonet.grid import Location, manhattan_distance
+from ivonet.grid import Location
 from ivonet.iter import ints
-from y2018.day_06.day_06 import manhatten_distance
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
@@ -39,40 +38,35 @@ def p(*args, end="\n", sep=" "):
 @debug
 @timer
 def part_1(source) -> int | None:
-    # Find the largest rectangle area that can be formed using any two red tiles as opposite corners.
-    coordinats = [Location(*ints(line)) for line in source]
+    """
+    Find the largest rectangle area that can be formed using any two red tiles as opposite corners.
 
-    if not coordinats:
+    Simply iterate all pairs of coordinates and compute the rectangle area for each pair.
+    The area is (|Δrow| + 1) × (|Δcol| + 1) since tiles are inclusive.
+    """
+    coordinates = [Location(*ints(line)) for line in source]
+
+    if not coordinates:
         pyperclip.copy(str(None))
         return None
 
-    # Keep track of the pair with the largest Manhattan distance (for logging), but compute max area across all pairs.
-    longest_manhattan_distance = 0
-    corner_l = None
-    corner_r = None
     max_area = 0
+    best_pair = None
 
-    # Iterate all pairs (O(n^2)); n ~ 500 so this is fine.
-    for i, left in enumerate(coordinats):
-        mh = manhattan_distance(left)
-        for right in coordinats[i + 1:]:
-            # Manhattan bookkeeping
-            dist = mh(right)
-            if dist > longest_manhattan_distance:
-                longest_manhattan_distance = dist
-                corner_l = left
-                corner_r = right
-
+    # Iterate all pairs (O(n²)); n ~ 500 so this is fine.
+    for i, left in enumerate(coordinates):
+        for right in coordinates[i + 1:]:
             # Rectangle area: inclusive tiles between coordinates
-            # Location is (row, col) but the product of deltas is symmetric so ordering doesn't matter.
             height = abs(left.row - right.row) + 1
             width = abs(left.col - right.col) + 1
             area = width * height
             if area > max_area:
                 max_area = area
+                best_pair = (left, right)
 
-    p(f"Longest manhatten distance is {longest_manhattan_distance} between {corner_l} and {corner_r}")
     p(f"Maximum rectangle area found: {max_area}")
+    if best_pair:
+        p(f"Best pair: {best_pair}")
 
     pyperclip.copy(str(max_area))
     return max_area
@@ -83,14 +77,34 @@ def part_1(source) -> int | None:
 def part_2(source) -> int | None:
     """
     Part 2: Find largest rectangle with red corners that only contains red/green tiles.
-    Red tiles are connected by green tiles forming a closed polygon.
-    Green tiles are the boundary lines AND all tiles inside the polygon.
 
-    Optimization: Instead of checking every tile, we check if any polygon edge
-    crosses into the rectangle interior. A rectangle is valid if all its tiles
-    are inside or on the polygon boundary.
+    Problem Overview:
+    - Two red tiles must serve as opposite corners of the rectangle
+    - All tiles within the rectangle must be either red or green
+    - Red tiles form a closed polygon (connecting first to last)
+    - Green tiles fill the lines between consecutive red tiles AND the interior of the polygon
+
+    Key Optimization Insight:
+    Instead of materializing every single tile (which would be billions for coordinates
+    up to ~98000), we work directly with the polygon edges. A rectangle is valid if no
+    polygon edge "cuts through" its interior, which would leave non-green/non-red tiles inside.
+
+    Algorithm:
+    1. Build edge list connecting consecutive red tiles (wrapping last to first)
+    2. For each candidate rectangle, check if any polygon edge cuts through its interior:
+       - A horizontal edge cuts the rectangle if it lies strictly between top/bottom rows
+         and overlaps the column range
+       - A vertical edge cuts the rectangle if it lies strictly between left/right columns
+         and overlaps the row range
+    3. Sort pairs by area descending for early termination - once we find a valid rectangle,
+       all remaining pairs have smaller areas
+
+    Time Complexity:
+    - O(n²) to generate all pairs of red tiles (~500 tiles = ~125,000 pairs)
+    - O(n² log n²) for sorting
+    - O(n) per validity check (checking ~500 edges)
+    - With early termination, actual runtime is much faster in practice (~2.8 seconds)
     """
-    # Parse coordinates - these form a closed polygon in order
     coordinates = [Location(*ints(line)) for line in source]
 
     if not coordinates:
@@ -98,7 +112,6 @@ def part_2(source) -> int | None:
         return None
 
     n = len(coordinates)
-    red_tiles = set(coordinates)
 
     # Build edge list for the polygon (each edge is axis-aligned)
     edges = []
@@ -150,7 +163,6 @@ def part_2(source) -> int | None:
                     if edge_min_r < max_r and edge_max_r > min_r:
                         # This edge cuts vertically through the rectangle
                         return False
-
         return True
 
     # Now find the largest rectangle with red corners where all tiles are valid
