@@ -19,7 +19,6 @@ import pyperclip
 import sys
 from itertools import zip_longest
 from ivonet.calc import prod
-from ivonet.collection import Stack
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
@@ -37,9 +36,11 @@ def p(*args, end="\n", sep=" "):
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
 
+
 def transpose_strict(lists):
     """Transpose when all inner lists have the same length."""
     return [list(col) for col in zip(*lists)]
+
 
 def transpose_fill(lists, fill=" "):
     """Transpose even if inner lists differ in length; missing values are `fill`."""
@@ -73,15 +74,15 @@ def part_1(source) -> int | None:
     return answer
 
 
-@debug
-@timer
-def part_2(source) -> int | None:
-    answer = 0
+def parse_2(source):
+    while source[-1].strip() == "":
+        source = source[:-1]
     operators = [x for x in source[-1].split() if x in ('+', '*',)]
-    length = len(operators)
-    data = transpose_fill([list(line) for line in source[:-1]])
-    ll = []
+    source = source[:-1]
+    data = list(transpose_fill([list(line) for line in source]))
+    nr_of_operators = len(operators)
     group = []
+    ll = []
     for n in data:
         nr_str = "".join(str(x) for x in n if x != ' ')
         if not nr_str:
@@ -91,11 +92,23 @@ def part_2(source) -> int | None:
         nr = int(nr_str)
         group.append(nr)
     ll.append(group)
+    p(operators, nr_of_operators, data)
+    if len(ll) != nr_of_operators:
+        raise ValueError("Inconsistent number of operators ({}) and data columns ({})".format(nr_of_operators,  len(ll)))
+    return operators, ll
+
+
+@debug
+@timer
+def part_2(source) -> int | None:
+    answer = 0
+    operators, data = parse_2(source)
+
     for i, op in enumerate(operators):
         if op == '+':
-            answer += sum(ll[i])
+            answer += sum(data[i])
         elif op == '*':
-            answer += prod(ll[i])
+            answer += prod(data[i])
 
 
     pyperclip.copy(str(answer))
@@ -115,14 +128,14 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(3263827, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(10153315705125, part_2(self.source))
 
     def setUp(self) -> None:
         print()
         folder = Path(__file__).resolve().parent
         day = f"{ints(Path(__file__).stem)[0]:02}"
-        self.source = read_rows(f"{folder}/day_{day}.input")
-        self.test_source = read_rows(f"{folder}/test_{day}.input")
+        self.source = read_rows(f"{folder}/day_{day}.input", True)
+        self.test_source = read_rows(f"{folder}/test_{day}.input", True)
 
 
 if __name__ == '__main__':
