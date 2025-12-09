@@ -12,6 +12,7 @@ you can find that here: https://github.com/IvoNet/advent-of-code/tree/master/ivo
 """
 
 import collections
+from collections import abc, defaultdict
 import unittest
 from pathlib import Path
 
@@ -22,7 +23,7 @@ from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
 
-collections.Callable = collections.abc.Callable  # type: ignore
+collections.Callable = abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
 DEBUG = True
@@ -32,6 +33,32 @@ DEBUG = True
 def p(*args, end="\n", sep=" "):
     if DEBUG:
         print(sep.join(str(x) for x in args), end=end)
+
+
+def init_grid(source) -> tuple[list[list[str]], int, int, int, int]:
+    rows: list[str] = list(source)
+    height = len(rows)
+    width = len(rows[0])
+
+    # Build grid as list of list for indexing, keep original row lengths
+    grid: list[list[str]] = [list(r) for r in rows]
+
+    # Find start position 'S'
+    start_col, start_row = find_start(rows)
+    return grid, height, start_col, start_row, width
+
+
+def find_start(rows: list[str]) -> tuple[int, int]:
+    start_row = None
+    start_col = None
+    for ridx, line in enumerate(rows):
+        if 'S' in line:
+            start_row = ridx
+            start_col = line.index('S')
+            break
+    if start_row is None or start_col is None:
+        raise ValueError("Start position 'S' not found in input")
+    return start_col, start_row
 
 
 @debug
@@ -45,23 +72,7 @@ def part_1(source) -> int | None:
     Do not count beams that are started by other splits.
     """
     # Normalize source to a list of strings and determine dimensions
-    rows: list[str] = list(source)
-    height = len(rows)
-    width = len(rows[0])
-
-    # Build grid as list of list for indexing, keep original row lengths
-    grid: list[list[str]] = [list(r) for r in rows]
-
-    # Find start position 'S'
-    start_row = None
-    start_col = None
-    for ridx, line in enumerate(rows):
-        if 'S' in line:
-            start_row = ridx
-            start_col = line.index('S')
-            break
-    if start_row is None or start_col is None:
-        raise ValueError("Start position 'S' not found in input")
+    grid, height, start_col, start_row, width = init_grid(source)
 
     # Set of active beam columns at the current row (start one row below S)
     active_cols: set[int] = {start_col}
@@ -97,7 +108,44 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
+    """Part 2: many-worlds quantum splitting.
+    Instead of counting split events, a single particle takes both left and right
+    paths at every splitter, creating timelines. We need to count the total number
+    of timelines after the particle completes all possible journeys.
+
+    Implementation: keep a counter per column for the active timelines at that
+    row. When a splitter is encountered at column c with count n, those n timelines
+    branch into left and right (if in bounds). Otherwise, timelines at column c
+    continue downward.
+    """
+    grid, height, start_col, start_row, width = init_grid(source)
+
+    # active timelines per column (start one row below S)
+    active: dict[int, int] = {start_col: 1}
+    # Process each row downward; after the last row the remaining timelines are final
+    for r in range(start_row + 1, height):
+        next_active: dict[int, int] = defaultdict(int)
+        for c, count in active.items():
+            if c < 0 or c >= width:
+                # out of horizontal bounds -> timelines are lost
+                continue
+            cell = grid[r][c]
+            if cell == '^':
+                left = c - 1
+                right = c + 1
+                if 0 <= left < width:
+                    next_active[left] += count
+                if 0 <= right < width:
+                    next_active[right] += count
+            else:
+                next_active[c] += count
+        active = next_active
+        if not active:
+            break
+
+    # total timelines is the sum of counts remaining after processing the last row
+    answer = sum(active.values())
+    # Copy to clipboard for convenience
     pyperclip.copy(str(answer))
     return answer
 
@@ -115,7 +163,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(40, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(9897897326778, part_2(self.source))
 
     def setUp(self) -> None:
         print()
