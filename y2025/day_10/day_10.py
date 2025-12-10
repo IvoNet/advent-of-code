@@ -128,7 +128,27 @@ class Machine:
 
 
     def match_joltages_z3(self):
-        """Z3 solver for finding the minimum number of button presses to match the joltages."""
+        """Z3 solver for finding the minimum number of button presses to match the joltages.
+
+        This method uses the Z3 theorem prover to solve an integer linear programming problem
+        that determines the minimum number of button presses required to achieve the target joltages
+        starting from all zeros. Each button press increments the joltages at the indices specified
+        by the button.
+
+        Steps performed:
+        1. Create a fresh Z3 context to isolate this optimization from others.
+        2. Define integer variables for each button, representing the number of times each button is pressed.
+           Variables are constrained to be non-negative.
+        3. For each joltage index, create a constraint that the sum of presses for buttons affecting
+           that index equals the target joltage value. If no buttons affect an index, add a constraint
+           that the target is 0 (though this should not occur in valid inputs).
+        4. Set the objective to minimize the total number of button presses (sum of all variables).
+        5. Check if the constraints are satisfiable. If yes, extract the model and compute the total
+           presses from the variable values. If not, return None (indicating impossible).
+
+        Returns:
+            int or None: The minimum total number of button presses if solvable, else None.
+        """
         ctx = Context()
         num_buttons = len(self.buttons)
         counts = [Int(f'c{i}', ctx) for i in range(num_buttons)]
@@ -167,9 +187,7 @@ def part_1(source) -> int | None:
 @timer
 def part_2(source) -> int | None:
     machines = [Machine(line) for line in source]
-    results = [machine.part_2() for machine in machines]
-    print("Part 2 results:", results)
-    answer = sum(results)
+    answer = sum([machine.part_2() for machine in machines])
     pyperclip.copy(str(answer))
     return answer
 
