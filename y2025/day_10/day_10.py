@@ -129,14 +129,19 @@ class Machine:
 
     def match_joltages_z3(self):
         """Z3 solver for finding the minimum number of button presses to match the joltages."""
+        ctx = Context()
         num_buttons = len(self.buttons)
-        counts = [Int(f'c{i}') for i in range(num_buttons)]
-        opt = Optimize()
+        counts = [Int(f'c{i}', ctx) for i in range(num_buttons)]
+        opt = Optimize(ctx=ctx)
         for c in counts:
             opt.add(c >= 0)
         for j in range(len(self.joltages)):
-            opt.add(Sum([counts[i] for i, button in enumerate(self.buttons) if j in button]) == self.joltages[j])
-        opt.minimize(Sum(counts))
+            expr_list = [counts[i] for i, button in enumerate(self.buttons) if j in button]
+            if expr_list:
+                opt.add(Sum(*expr_list) == self.joltages[j])
+            else:
+                opt.add(0 == self.joltages[j])
+        opt.minimize(Sum(*counts))
         if opt.check() == sat:
             model = opt.model()
             total = sum(model[c].as_long() for c in counts)
@@ -162,7 +167,9 @@ def part_1(source) -> int | None:
 @timer
 def part_2(source) -> int | None:
     machines = [Machine(line) for line in source]
-    answer = sum(machine.part_2() for machine in machines)
+    results = [machine.part_2() for machine in machines]
+    print("Part 2 results:", results)
+    answer = sum(results)
     pyperclip.copy(str(answer))
     return answer
 
