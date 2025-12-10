@@ -34,10 +34,108 @@ def p(*args, end="\n", sep=" "):
         print(sep.join(str(x) for x in args), end=end)
 
 
+class Machine:
+    ON = "#"
+    OFF = "."
+
+    def __init__(self, data: str) -> None:
+        self.data = data
+        self.indicator_lights = []
+        self.light_diagram = []
+        self.buttons = []
+        self.joltages = []
+
+        self.__parse()
+
+    def state(self):
+        return self.state
+
+    def __parse(self):
+        indicator_lights, rest = self.data.split("]")
+        indicator_lights = indicator_lights.replace("[", "")
+        self.indicator_lights = [True if x == self.ON else False for x in indicator_lights]
+        buttons, rest = rest.strip().split("{")
+        buttons = buttons.split("(")
+        self.buttons = [ints(x) for x in buttons if x]
+        self.joltages = ints(rest.strip())
+        self.joltages_state = [0] * len(self.joltages) # +1 for every indexed press of button
+
+    def __repr__(self):
+        return f"Machine(indicator_lights: [{''.join([self.ON if x else self.OFF for x in self.indicator_lights])}], buttons: {str(self.buttons):}, joltages: {str(self.joltages)}] )"
+
+    def match_state_bfs(self):
+        from ivonet.search import bfs
+
+        def goal_test(state: list[bool]) -> bool:
+            return state == self.indicator_lights
+
+        def successors(state: list[bool]) -> list[list[bool]]:
+            result = []
+            for button in self.buttons:
+                new_state = state[:]
+                for index in button:
+                    new_state[index] = not new_state[index]
+                result.append(new_state)
+            return result
+
+        initial_state = [False] * len(self.indicator_lights)
+        result_node = bfs(initial_state, goal_test, successors)
+        if result_node:
+            path = []
+            node = result_node
+            while node:
+                path.append(node.state)
+                node = node.parent
+            path.reverse()
+            return path
+        return []
+
+    def part_1(self):
+        path = self.match_state_bfs()
+        return len(path) - 1
+
+    def match_joltages_bfs(self):
+        """Bfs search for matching the joltages_state to the joltages using the buttons presses.
+        every button press increases the joltages_state by one at the indexes defined by the button.
+        """
+        from ivonet.search import bfs
+
+        def goal_test(state: list[int]) -> bool:
+            return state == self.joltages
+
+        def successors(state: list[int]) -> list[list[int]]:
+            result = []
+            for button in self.buttons:
+                new_state = state[:]
+                for index in button:
+                    new_state[index] += 1
+                result.append(new_state)
+            return result
+
+        initial_state = [0] * len(self.joltages)
+        result_node = bfs(initial_state, goal_test, successors)
+        p(result_node)
+        if result_node:
+            path = []
+            node = result_node
+            while node:
+                path.append(node.state)
+                node = node.parent
+            path.reverse()
+            return path
+        return []
+
+    def part_2(self):
+        path = self.match_joltages_bfs()
+        return len(path) - 1
+
+
+
 @debug
 @timer
 def part_1(source) -> int | None:
-    answer = 0
+    machines = [Machine(line) for line in source]
+    answer = sum(machine.part_1() for machine in machines)
     pyperclip.copy(str(answer))
     return answer
 
@@ -45,7 +143,8 @@ def part_1(source) -> int | None:
 @debug
 @timer
 def part_2(source) -> int | None:
-    answer = 0
+    machines = [Machine(line) for line in source]
+    answer = sum(machine.part_2() for machine in machines)
     pyperclip.copy(str(answer))
     return answer
 
@@ -54,13 +153,13 @@ def part_2(source) -> int | None:
 class UnitTests(unittest.TestCase):
 
     def test_example_data_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.test_source))
+        self.assertEqual(7, part_1(self.test_source))
 
     def test_part_1(self) -> None:
-        self.assertEqual(None, part_1(self.source))
+        self.assertEqual(550, part_1(self.source))
 
     def test_example_data_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.test_source))
+        self.assertEqual(33, part_2(self.test_source))
 
     def test_part_2(self) -> None:
         self.assertEqual(None, part_2(self.source))

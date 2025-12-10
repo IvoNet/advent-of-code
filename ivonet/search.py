@@ -84,14 +84,41 @@ class Node(Generic[T]):
         return f"state[{self.state}] - cost_calculator[{self.cost}] - parent[None]"
 
 
+def _state_key(state: Any) -> Any:
+    """Return a hashable key for a state, converting common unhashable types.
+
+    - lists -> tuples (recursively)
+    - tuples -> tuples (with recursive conversion of elements)
+    - dicts -> tuple of sorted (key, value_key)
+    - sets -> tuple of sorted element keys
+    - otherwise: return the state itself if hashable, else repr(state)
+    """
+    try:
+        hash(state)
+        return state
+    except TypeError:
+        # handle common container types
+        if isinstance(state, list):
+            return tuple(_state_key(x) for x in state)
+        if isinstance(state, tuple):
+            return tuple(_state_key(x) for x in state)
+        if isinstance(state, dict):
+            # sort items to produce a deterministic key
+            return tuple((k, _state_key(v)) for k, v in sorted(state.items()))
+        if isinstance(state, set):
+            return tuple(sorted(_state_key(x) for x in state))
+        # last resort: use repr (deterministic for immutable contents)
+        return repr(state)
+
+
 def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]]) -> Optional[Node[T]]:
     """Depth first search
     """
     # frontier is where we've yet to go
     frontier: Stack[Node[T]] = Stack()
     frontier.push(Node(initial, None))
-    # explored is where we've been
-    explored: set[T] = {initial}
+    # explored is where we've been (store keys)
+    explored: set[Any] = {_state_key(initial)}
 
     # keep going while there is more to explore
     while not frontier.empty:
@@ -102,9 +129,10 @@ def dfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], li
             return current_node
         # check where we can go next and haven't explored
         for child in successors(current_state):
-            if child in explored:  # skip children we already explored
+            k = _state_key(child)
+            if k in explored:  # skip children we already explored
                 continue
-            explored.add(child)
+            explored.add(k)
             frontier.push(Node(child, current_node))
     return None  # went through everything and never found goal
 
@@ -131,8 +159,8 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], li
     # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
     frontier.push(Node(initial, None))
-    # explored is where we've been
-    explored: set[T] = {initial}
+    # explored is where we've been (store keys)
+    explored: set[Any] = {_state_key(initial)}
 
     # keep going while there is more to explore
     while not frontier.empty:
@@ -143,9 +171,10 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], li
             return current_node
         # check where we can go next and haven't explored
         for child in successors(current_state):
-            if child in explored:  # skip children we already explored
+            k = _state_key(child)
+            if k in explored:  # skip children we already explored
                 continue
-            explored.add(child)
+            explored.add(k)
             frontier.push(Node(child, current_node))
     return None  # went through everything and never found goal
 
@@ -204,8 +233,8 @@ def astar(initial: T,
     # frontier is where we've yet to go
     frontier: PriorityQueue[Node[T]] = PriorityQueue()
     frontier.push(Node(initial, None, 0.0, heuristic(initial)))
-    # explored is where we've been
-    explored: dict[T, float] = {initial: 0.0}
+    # explored is where we've been (store keys -> cost)
+    explored: dict[Any, float] = {_state_key(initial): 0.0}
 
     # keep going while there is more to explore
     while not frontier.empty:
@@ -217,9 +246,10 @@ def astar(initial: T,
         # check where we can go next and haven't explored
         for nb in successors(current_state):
             new_cost: float = current_node.cost + cost(nb)
+            k = _state_key(nb)
 
-            if nb not in explored or explored[nb] > new_cost:
-                explored[nb] = new_cost
+            if k not in explored or explored[k] > new_cost:
+                explored[k] = new_cost
                 frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
     return None  # went through everything and never found goal
 
