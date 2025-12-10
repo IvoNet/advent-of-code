@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 
 import pyperclip
-import sys
+from z3 import *
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
@@ -97,6 +97,7 @@ class Machine:
     def match_joltages_bfs(self):
         """Bfs search for matching the joltages_state to the joltages using the buttons presses.
         every button press increases the joltages_state by one at the indexes defined by the button.
+        deprecated in favor of z3 solver as this one is much too slow for larger inputs.
         """
         from ivonet.search import bfs
 
@@ -125,9 +126,26 @@ class Machine:
             return path
         return []
 
+
+    def match_joltages_z3(self):
+        """Z3 solver for finding the minimum number of button presses to match the joltages."""
+        num_buttons = len(self.buttons)
+        counts = [Int(f'c{i}') for i in range(num_buttons)]
+        opt = Optimize()
+        for c in counts:
+            opt.add(c >= 0)
+        for j in range(len(self.joltages)):
+            opt.add(Sum([counts[i] for i, button in enumerate(self.buttons) if j in button]) == self.joltages[j])
+        opt.minimize(Sum(counts))
+        if opt.check() == sat:
+            model = opt.model()
+            total = sum(model[c].as_long() for c in counts)
+            return total
+        else:
+            return None
+
     def part_2(self):
-        path = self.match_joltages_bfs()
-        return len(path) - 1
+        return self.match_joltages_z3()
 
 
 
@@ -162,7 +180,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(33, part_2(self.test_source))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(20042, part_2(self.source))
 
     def setUp(self) -> None:
         print()
