@@ -40,10 +40,10 @@ class Machine:
 
     def __init__(self, data: str) -> None:
         self.data = data
-        self.indicator_lights = []
-        self.light_diagram = []
-        self.buttons = []
-        self.joltages = []
+        self.indicator_lights: list[bool] = []
+        self.light_diagram: list[list[bool]] = []
+        self.buttons: list[list[int]] = []
+        self.joltages: list[int] = []
 
         self.__parse()
 

@@ -155,6 +155,7 @@ def bfs(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], li
     - Year 2022 day 12
     - Year 2023 day 10
     - year 2024 day 18 - Twist with a new blockage every step
+    - year 2025 day 10 - part 1 twist with not being a grid
     """
     # frontier is where we've yet to go
     frontier: Queue[Node[T]] = Queue()
