@@ -47,6 +47,7 @@ def parse_devices(source: list[str]) -> dict[str, list[str]]:
 
 
 def find_paths(devices: dict[str, list[str]], current_device: str, end_device: str, visited: set[str]) -> int:
+    """"""
     if current_device == end_device:
         return 1
     path_count = 0
@@ -70,6 +71,24 @@ def find_paths_with_mandatory(devices: dict[str, list[str]], current_device: str
             visited.remove(next_device)
     return path_count
 
+
+def find_paths_memo(devices: dict[str, list[str]], node: str, mask: int, memo: dict) -> int:
+    if node == "out":
+        return 1 if mask == 3 else 0
+    key = (node, mask)
+    if key in memo:
+        return memo[key]
+    count = 0
+    for next_node in devices.get(node, []):
+        new_mask = mask
+        if next_node == "dac":
+            new_mask |= 1
+        elif next_node == "fft":
+            new_mask |= 2
+        count += find_paths_memo(devices, next_node, new_mask, memo)
+    memo[key] = count
+    return count
+
 @debug
 @timer
 def part_1(source) -> int | None:
@@ -80,11 +99,9 @@ def part_1(source) -> int | None:
     Goal is to find all the paths from `you` to `out` and count them.
 
     """
-    END_DEVICE_NAME = "out"
-    START_DEVICE_LABEL = "you"
-
     devices = parse_devices(source)
-    answer = find_paths(devices, START_DEVICE_LABEL, END_DEVICE_NAME, {START_DEVICE_LABEL})
+
+    answer = find_paths_with_mandatory(devices, "you", "out", {"you"}, set())
     pyperclip.copy(str(answer))
     return answer
 
@@ -99,11 +116,10 @@ def part_2(source) -> int | None:
     A path needs to visit `dac` and `fft` at least once before reaching `out` in any order to be counted.
     Goal is to find all the paths from `svr` to `out` and count them.
 
-    :param source:
-    :return:
     """
     devices = parse_devices(source)
-    answer = find_paths_with_mandatory(devices, "svr", "out", {"svr"}, {"dac", "fft"})
+    memo = {}
+    answer = find_paths_memo(devices, "svr", 0, memo)
     pyperclip.copy(str(answer))
     return answer
 
@@ -121,7 +137,7 @@ class UnitTests(unittest.TestCase):
         self.assertEqual(2, part_2(self.test_source_2))
 
     def test_part_2(self) -> None:
-        self.assertEqual(None, part_2(self.source))
+        self.assertEqual(362956369749210, part_2(self.source))
 
     def setUp(self) -> None:
         print()

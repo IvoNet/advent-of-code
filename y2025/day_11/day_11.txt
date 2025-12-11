@@ -22,36 +22,17 @@ puzzle input).
 For example:
 
 
-aaa:
+aaa: you hhh
+you: bbb ccc
+bbb: ddd eee
+ccc: ddd eee fff
+ddd: ggg
+eee: out
+fff: out
+ggg: out
+hhh: ccc fff iii
+iii: out
 
- you hhh
-you:
-
- bbb ccc
-bbb:
-
- ddd eee
-ccc:
-
- ddd eee fff
-ddd:
-
- ggg
-eee:
-
- out
-fff:
-
- out
-ggg:
-
- out
-hhh:
-
- ccc fff iii
-iii:
-
- out
 
 Each line gives the name of a device followed by a list of the devices to which
 its outputs are attached. So, bbb:
@@ -101,45 +82,20 @@ find must all also visit both dac and fft (in any order).
 For example:
 
 
-svr:
+svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out
 
- aaa bbb
-aaa:
-
- fft
-fft:
-
- ccc
-bbb:
-
- tty
-tty:
-
- ccc
-ccc:
-
- ddd eee
-ddd:
-
- hub
-hub:
-
- fff
-eee:
-
- dac
-dac:
-
- fff
-fff:
-
- ggg hhh
-ggg:
-
- out
-hhh:
-
- out
 
 This new list of devices contains many paths from svr to out:
 
