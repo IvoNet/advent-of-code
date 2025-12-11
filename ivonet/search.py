@@ -254,6 +254,24 @@ def astar(initial: T,
                 frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
     return None  # went through everything and never found goal
 
+def all_the_paths_from_start_end(start, end, grid) -> list[list[tuple[int, int]]]:
+    """all paths from start to end
+    :returns: list of paths
+    """
+    paths = []
+    q = deque([(start, [start])])
+    seen = {start}
+    while q:
+        (r, c), path = q.popleft()
+        if (r, c) == end:
+            paths.append(path)
+            continue
+        for dr, dc in DIRECTIONS:
+            rr, cc = r + dr, c + dc
+            if 0 <= rr < len(grid) and 0 <= cc < len(grid[0]) and grid[rr][cc] != "#" and (rr, cc) not in seen:
+                seen.add((rr, cc))
+                q.append(((rr, cc), path + [(rr, cc)]))
+    return paths
 
 if __name__ == "__main__":
     print(linear_contains([1, 5, 15, 15, 15, 15, 20], 5))  # True
