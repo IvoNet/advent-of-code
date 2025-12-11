@@ -9,6 +9,7 @@ from ivonet.cdll import CircularDoublyLinkedList
 from ivonet.hexa import number_as_word
 from ivonet.iter import consecutive_element_pairing
 from ivonet.roman_numerals import roman
+from ivonet.search import count_paths_with_mandatory_dag
 from ivonet.str import sort_str, is_sorted, letters, OpenCloseTags, TagError
 
 TAG_ERROR = "Should have raised a TagError"
@@ -221,6 +222,62 @@ class CircularDoublyLinkedListTests(TestCase):
         self.assertEqual(3, len(self.cdll))
         self.cdll.previous()
         self.assertEqual(3, self.cdll.get())
+
+
+class TestSearch(TestCase):
+    def test_count_paths_no_mandatory(self):
+        graph = {'A': ['B'], 'B': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        mandatory = frozenset()
+        result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
+        self.assertEqual(1, result)
+
+    def test_count_paths_with_mandatory(self):
+        graph = {'A': ['B', 'D'], 'B': ['C'], 'D': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        mandatory = frozenset(['B'])
+        result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
+        self.assertEqual(1, result)
+
+    def test_count_paths_multiple_mandatory_no_path(self):
+        graph = {'A': ['B', 'D'], 'B': ['C'], 'D': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        mandatory = frozenset(['B', 'D'])
+        result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
+        self.assertEqual(0, result)
+
+    def test_count_paths_mandatory_on_path(self):
+        graph = {'A': ['B'], 'B': ['C'], 'C': ['D'], 'D': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'D'
+        successors = lambda x: graph[x]
+        mandatory = frozenset(['B', 'C'])
+        result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
+        self.assertEqual(1, result)
+
+    def test_count_paths_no_path_due_to_mandatory(self):
+        graph = {'A': ['B'], 'B': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'B'
+        successors = lambda x: graph[x]
+        mandatory = frozenset(['C'])
+        result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
+        self.assertEqual(0, result)
+
+    def test_count_paths_multiple_paths_no_mandatory(self):
+        graph = {'A': ['B', 'C'], 'B': ['D'], 'C': ['D'], 'D': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'D'
+        successors = lambda x: graph[x]
+        mandatory = frozenset()
+        result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
+        self.assertEqual(2, result)
 
 
 if __name__ == "__main__":

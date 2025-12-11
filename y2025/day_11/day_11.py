@@ -22,13 +22,12 @@ from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.search import count_paths_with_mandatory_dag
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
 DEBUG = True
-
-
 
 # noinspection DuplicatedCode
 def p(*args, end="\n", sep=" "):
@@ -45,7 +44,7 @@ def parse_devices(source: list[str]) -> dict[str, list[str]]:
         devices[dev.strip()] = [d.strip() for d in outputs.split(" ") if d.strip()]
     return devices
 
-
+# first implementatiion for part_1 and works fine
 def find_paths(devices: dict[str, list[str]], current_device: str, end_device: str, visited: set[str]) -> int:
     """
     Counts the number of simple paths from the current_device to the end_device in a directed graph,
@@ -86,6 +85,7 @@ def find_paths(devices: dict[str, list[str]], current_device: str, end_device: s
             visited.remove(next_device)
     return path_count
 
+# first attempt for part_2 that works but is inefficient and tooo slow for large inputs
 def find_paths_with_mandatory(devices: dict[str, list[str]], current_device: str, end_device: str, visited: set[str],
                               mandatory: set[str]) -> int:
     """
@@ -129,7 +129,7 @@ def find_paths_with_mandatory(devices: dict[str, list[str]], current_device: str
             visited.remove(next_device)
     return path_count
 
-
+# Final working version for all parts but now generified in ivonet.search!
 def find_paths_memo(devices: dict[str, list[str]], node: str, mandatory: frozenset[str], end_device: str, memo: dict) -> int:
     """
     Counts the number of paths from the given node to end_device that have visited all mandatory devices,
@@ -180,11 +180,13 @@ def part_1(source) -> int | None:
     A connection is one way only.
     The start device is the device called `you` and the end device is the device called `out`.
     Goal is to find all the paths from `you` to `out` and count them.
-
     """
     devices = parse_devices(source)
-
-    answer= find_paths(devices, "you", "out", {"you"})
+    successors = lambda node: devices.get(node, [])
+    goal_test = lambda node: node == "out"
+    answer = count_paths_with_mandatory_dag("you", goal_test, successors)
+    # Original working versions:
+    # answer= find_paths(devices, "you", "out", {"you"})
     # answer = find_paths_with_mandatory(devices, "you", "out", {"you"}, set())
     # answer = find_paths_memo(devices, "you", frozenset(), "out", {})
     pyperclip.copy(str(answer))
@@ -203,8 +205,12 @@ def part_2(source) -> int | None:
 
     """
     devices = parse_devices(source)
-    memo = {}
-    answer = find_paths_memo(devices, "svr", frozenset({"dac", "fft"}), "out", memo)
+    successors = lambda node: devices.get(node, [])
+    goal_test = lambda node: node == "out"
+    mandatory = frozenset({"dac", "fft"})
+    answer = count_paths_with_mandatory_dag("svr", goal_test, successors, mandatory)
+
+    # answer = find_paths_memo(devices, "svr", frozenset({"dac", "fft"}), "out", {}) # Original working version
     pyperclip.copy(str(answer))
     return answer
 

@@ -273,6 +273,53 @@ def all_the_paths_from_start_end(start, end, grid) -> list[list[tuple[int, int]]
                 q.append(((rr, cc), path + [(rr, cc)]))
     return paths
 
+def count_paths_with_mandatory_dag(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]], mandatory: frozenset[T] = frozenset(), memo: dict = None) -> int:
+    """
+    Counts the number of paths from the initial node to a goal node that visit all mandatory nodes,
+    using memoization. Assumes the graph is a Directed Acyclic Graph (DAG) with no cycles.
+
+    This function recursively explores paths from the initial node, ensuring all nodes in the mandatory
+    set are visited before reaching a goal node. Memoization is used to cache results based on the
+    current node and the remaining mandatory nodes to visit, optimizing for DAGs.
+
+    Args:
+        initial (T): The starting node.
+        goal_test (Callable[[T], bool]): A function that returns True if the node is a goal.
+        successors (Callable[[T], list[T]]): A function that returns the list of successor nodes for a given node.
+        mandatory (frozenset[T]): A frozenset (hashable so good for memo keys) of nodes that must be visited in the path.
+        memo (dict, optional): A dictionary for memoization. If None, a new dict is created.
+
+    Returns:
+        int: The number of paths from initial to a goal node that visit all mandatory nodes.
+
+    Note:
+        Assumes no cycles in the graph; infinite recursion may occur otherwise.
+
+    See also:
+        - y2025/day_11
+    """
+    if memo is None:
+        memo = {}
+
+    if mandatory is None:
+        mandatory = frozenset()
+
+    def recurse(current: T, remaining: frozenset[T]) -> int:
+        if goal_test(current):
+            return 1 if not remaining else 0
+        key = (current, remaining)
+        if key in memo:
+            return memo[key]
+        count = 0
+        for next_node in successors(current):
+            new_remaining = remaining - {next_node} if next_node in remaining else remaining
+            count += recurse(next_node, new_remaining)
+        memo[key] = count
+        return count
+
+    return recurse(initial, mandatory)
+
+
 if __name__ == "__main__":
     print(linear_contains([1, 5, 15, 15, 15, 15, 20], 5))  # True
     print(binary_contains(["a", "d", "e", "f", "z"], "f"))  # True
