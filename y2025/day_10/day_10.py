@@ -16,11 +16,12 @@ import unittest
 from pathlib import Path
 
 import pyperclip
-from z3 import *
 from ivonet.decorators import debug
 from ivonet.decorators import timer
 from ivonet.files import read_rows
 from ivonet.iter import ints
+from ivonet.search import node_to_path
+from z3 import *
 
 collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
@@ -58,7 +59,7 @@ class Machine:
         buttons = buttons.split("(")
         self.buttons = [ints(x) for x in buttons if x]
         self.joltages = ints(rest.strip())
-        self.joltages_state = [0] * len(self.joltages) # +1 for every indexed press of button
+        self.joltages_state = [0] * len(self.joltages)  # +1 for every indexed press of button
 
     def __repr__(self):
         return f"Machine(indicator_lights: [{''.join([self.ON if x else self.OFF for x in self.indicator_lights])}], buttons: {str(self.buttons):}, joltages: {str(self.joltages)}] )"
@@ -116,16 +117,7 @@ class Machine:
         initial_state = [0] * len(self.joltages)
         result_node = bfs(initial_state, goal_test, successors)
         p(result_node)
-        if result_node:
-            path = []
-            node = result_node
-            while node:
-                path.append(node.state)
-                node = node.parent
-            path.reverse()
-            return path
-        return []
-
+        return node_to_path(result_node)
 
     def match_joltages_z3(self):
         """Z3 solver for finding the minimum number of button presses to match the joltages.
@@ -171,7 +163,6 @@ class Machine:
 
     def part_2(self):
         return self.match_joltages_z3()
-
 
 
 @debug
