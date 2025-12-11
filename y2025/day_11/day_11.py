@@ -130,50 +130,45 @@ def find_paths_with_mandatory(devices: dict[str, list[str]], current_device: str
     return path_count
 
 
-def find_paths_memo(devices: dict[str, list[str]], node: str, mask: int, memo: dict) -> int:
+def find_paths_memo(devices: dict[str, list[str]], node: str, mandatory: frozenset[str], end_device: str, memo: dict) -> int:
     """
-    Counts the number of paths from the given node to "out" that have visited the mandatory devices
-    indicated by the mask, using memoization. Assumes the graph is a Directed Acyclic Graph (DAG) (no cycles).
+    Counts the number of paths from the given node to end_device that have visited all mandatory devices,
+    using memoization. Assumes the graph is a Directed Acyclic Graph (DAG) (no cycles).
 
-    This function optimizes path counting by memoizing results based on the current node and the
-    bitmask representing the visitation status of mandatory devices ("dac" and "fft"). It recursively
-    explores paths, updating the mask when mandatory devices are encountered, and only counts paths
-    that reach "out" with the mask indicating both mandatory devices have been visited (mask == 3).
+    This function optimizes path counting by memoizing results based on the current node and the set of
+    remaining mandatory devices to visit. It recursively explores paths, updating the mandatory set when
+    devices are encountered, and only counts paths that reach end_device with all mandatory devices visited.
 
     Args:
         devices (dict[str, list[str]]): A dictionary where keys are device names and values are lists
             of devices they connect to (outputs).
         node (str): The current device in the path.
-        mask (int): A bitmask where bit 0 indicates if "dac" has been visited, and bit 1 for "fft".
-            0: none, 1: dac, 2: fft, 3: both.
-        memo (dict): A dictionary for memoization, mapping (node, mask) tuples to computed counts.
+        mandatory (frozenset[str]): A frozenset of devices that must be visited in the path.
+        end_device (str): The target device to reach.
+        memo (dict): A dictionary for memoization, mapping (node, mandatory) tuples to computed counts.
 
     Returns:
-        int: The number of paths from node to "out" with the required mandatory visits.
+        int: The number of paths from node to end_device with all mandatory devices visited.
 
     Strengths:
-        - Efficient for DAGs due to memoization, reducing redundant computations and achieving
-          polynomial time in the number of nodes and states.
+        - Efficient for DAGs due to memoization, reducing redundant computations.
+        - Generalizable to any set of mandatory devices and end device.
         - Simple and fast for acyclic graphs.
 
     Weaknesses:
-        - Assumes no cycles; if cycles exist, it will cause infinite recursion and stack overflow.
-        - Limited to specific mandatory devices ("dac" and "fft"); not generalizable without code changes.
-        - Memoization dictionary can grow large if there are many nodes.
+        - Assumes no cycles; if cycles exist, it will cause infinite recursion.
+        - Memoization dictionary can grow large with many nodes or mandatory devices.
+        - Frozenset operations are efficient but may be slower than bitmasks for small sets.
     """
-    if node == "out":
-        return 1 if mask == 3 else 0
-    key = (node, mask)
+    if node == end_device:
+        return 1 if not mandatory else 0
+    key = (node, mandatory)
     if key in memo:
         return memo[key]
     count = 0
     for next_node in devices.get(node, []):
-        new_mask = mask
-        if next_node == "dac":
-            new_mask |= 1
-        elif next_node == "fft":
-            new_mask |= 2
-        count += find_paths_memo(devices, next_node, new_mask, memo)
+        new_mandatory = mandatory - {next_node} if next_node in mandatory else mandatory # create new frozenset (hashable)
+        count += find_paths_memo(devices, next_node, new_mandatory, end_device, memo)
     memo[key] = count
     return count
 
@@ -189,7 +184,9 @@ def part_1(source) -> int | None:
     """
     devices = parse_devices(source)
 
-    answer = find_paths_with_mandatory(devices, "you", "out", {"you"}, set())
+    answer= find_paths(devices, "you", "out", {"you"})
+    # answer = find_paths_with_mandatory(devices, "you", "out", {"you"}, set())
+    # answer = find_paths_memo(devices, "you", frozenset(), "out", {})
     pyperclip.copy(str(answer))
     return answer
 
@@ -207,7 +204,7 @@ def part_2(source) -> int | None:
     """
     devices = parse_devices(source)
     memo = {}
-    answer = find_paths_memo(devices, "svr", 0, memo)
+    answer = find_paths_memo(devices, "svr", frozenset({"dac", "fft"}), "out", memo)
     pyperclip.copy(str(answer))
     return answer
 
