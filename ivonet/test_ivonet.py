@@ -9,7 +9,7 @@ from ivonet.cdll import CircularDoublyLinkedList
 from ivonet.hexa import number_as_word
 from ivonet.iter import consecutive_element_pairing
 from ivonet.roman_numerals import roman
-from ivonet.search import count_paths_with_mandatory_dag
+from ivonet.search import count_paths_with_mandatory_dag, astar, node_to_path, bfs, dfs
 from ivonet.str import sort_str, is_sorted, letters, OpenCloseTags, TagError
 
 TAG_ERROR = "Should have raised a TagError"
@@ -278,6 +278,158 @@ class TestSearch(TestCase):
         mandatory = frozenset()
         result = count_paths_with_mandatory_dag(initial, goal_test, successors, mandatory)
         self.assertEqual(2, result)
+
+    def test_astar_simple_path(self):
+        graph = {'A': ['B'], 'B': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        heuristic = {'A': 2, 'B': 1, 'C': 0}
+        cost = lambda x: 1
+        node = astar(initial, goal_test, successors, lambda x: heuristic[x], cost)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A', 'B', 'C'], path)
+        self.assertEqual(2, node.cost)
+
+    def test_astar_multiple_paths(self):
+        graph = {'A': ['B', 'D'], 'B': ['C'], 'D': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        heuristic = {'A': 3, 'B': 1, 'D': 2, 'C': 0}
+        cost = lambda x: 1 if x != 'D' else 2  # higher cost for D
+        node = astar(initial, goal_test, successors, lambda x: heuristic[x], cost)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A', 'B', 'C'], path)  # should choose the cheaper path
+        self.assertEqual(2, node.cost)
+
+    def test_astar_no_path(self):
+        graph = {'A': ['B'], 'B': [], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        heuristic = {'A': 1, 'B': 0, 'C': 0}
+        cost = lambda x: 1
+        node = astar(initial, goal_test, successors, lambda x: heuristic[x], cost)
+        self.assertIsNone(node)
+
+    def test_astar_start_is_goal(self):
+        graph = {'A': ['B'], 'B': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'A'
+        successors = lambda x: graph[x]
+        heuristic = {'A': 0, 'B': 1}
+        cost = lambda x: 1
+        node = astar(initial, goal_test, successors, lambda x: heuristic[x], cost)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A'], path)
+        self.assertEqual(0, node.cost)
+
+    def test_bfs_simple_path(self):
+        graph = {'A': ['B'], 'B': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        node = bfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A', 'B', 'C'], path)
+        self.assertEqual(0, node.cost)  # BFS doesn't set cost
+
+    def test_bfs_multiple_paths(self):
+        graph = {'A': ['B', 'D'], 'B': ['C'], 'D': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        node = bfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        # BFS may find either path, but both have same length
+        self.assertIn(path, [['A', 'B', 'C'], ['A', 'D', 'C']])
+        self.assertEqual(0, node.cost)
+
+    def test_bfs_no_path(self):
+        graph = {'A': ['B'], 'B': [], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        node = bfs(initial, goal_test, successors)
+        self.assertIsNone(node)
+
+    def test_bfs_start_is_goal(self):
+        graph = {'A': ['B'], 'B': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'A'
+        successors = lambda x: graph[x]
+        node = bfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A'], path)
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_simple_path(self):
+        graph = {'A': ['B'], 'B': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A', 'B', 'C'], path)
+        self.assertEqual(0, node.cost)  # DFS doesn't set cost
+
+    def test_dfs_multiple_paths(self):
+        graph = {'A': ['B', 'D'], 'B': ['C'], 'D': ['C'], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        # DFS explores deep, so finds A-D-C first
+        self.assertEqual(['A', 'D', 'C'], path)
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_no_path(self):
+        graph = {'A': ['B'], 'B': [], 'C': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'C'
+        successors = lambda x: graph[x]
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNone(node)
+
+    def test_dfs_start_is_goal(self):
+        graph = {'A': ['B'], 'B': []}
+        initial = 'A'
+        goal_test = lambda x: x == 'A'
+        successors = lambda x: graph[x]
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(['A'], path)
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_with_list_states(self):
+        # Test DFS with unhashable states (lists) to cover _state_key usage
+        initial = [0, 0]
+        goal_test = lambda x: x == [2, 2]
+        def successors(state):
+            x, y = state
+            succ = []
+            if x < 2:
+                succ.append([x + 1, y])
+            if y < 2:
+                succ.append([x, y + 1])
+            return succ
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        # DFS may find different paths, but should reach [2,2]
+        self.assertEqual(path[-1], [2, 2])
+        self.assertEqual(0, node.cost)
 
 
 if __name__ == "__main__":

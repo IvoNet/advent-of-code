@@ -30,6 +30,7 @@ DIRECTIONS = [
     (-1, 0)  # up
 ]
 
+
 def linear_contains(iterable: Iterable[T], key: T) -> bool:
     for item in iterable:
         if item == key:
@@ -215,6 +216,7 @@ def bfs_shortest_with_distance(start, end, grid):
                 q.append(((rr, cc), dist + 1, path + [((rr, cc), dist + 1)]))
     return None, []
 
+
 def astar(initial: T,
           goal_test: Callable[[T], bool],
           successors: Callable[[T], list[T]],
@@ -254,6 +256,7 @@ def astar(initial: T,
                 frontier.push(Node(nb, current_node, new_cost, heuristic(nb)))
     return None  # went through everything and never found goal
 
+
 def all_the_paths_from_start_end(start, end, grid) -> list[list[tuple[int, int]]]:
     """all paths from start to end
     :returns: list of paths
@@ -273,7 +276,13 @@ def all_the_paths_from_start_end(start, end, grid) -> list[list[tuple[int, int]]
                 q.append(((rr, cc), path + [(rr, cc)]))
     return paths
 
-def count_paths_with_mandatory_dag(initial: T, goal_test: Callable[[T], bool], successors: Callable[[T], list[T]], mandatory: frozenset[T] = frozenset(), memo: dict = None) -> int:
+
+def count_paths_with_mandatory_dag(initial: T,
+                                   goal_test: Callable[[T], bool],
+                                   successors: Callable[[T], list[T]],
+                                   mandatory: frozenset[T] = frozenset(),
+                                   memo: dict = None
+                                   ) -> int:
     """
     Counts the number of paths from the initial node to a goal node that visit all mandatory nodes,
     using memoization. Assumes the graph is a Directed Acyclic Graph (DAG) with no cycles.
@@ -296,6 +305,7 @@ def count_paths_with_mandatory_dag(initial: T, goal_test: Callable[[T], bool], s
         Assumes no cycles in the graph; infinite recursion may occur otherwise.
 
     See also:
+        - unittests for examples
         - y2025/day_11
     """
     if memo is None:
@@ -318,9 +328,3 @@ def count_paths_with_mandatory_dag(initial: T, goal_test: Callable[[T], bool], s
         return count
 
     return recurse(initial, mandatory)
-
-
-if __name__ == "__main__":
-    print(linear_contains([1, 5, 15, 15, 15, 15, 20], 5))  # True
-    print(binary_contains(["a", "d", "e", "f", "z"], "f"))  # True
-    print(binary_contains(["john", "mark", "ronald", "sarah"], "sheila"))  # False
