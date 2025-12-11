@@ -431,6 +431,98 @@ class TestSearch(TestCase):
         self.assertEqual(path[-1], [2, 2])
         self.assertEqual(0, node.cost)
 
+    def test_dfs_with_dict_states(self):
+        # Test DFS with dict states to cover _state_key for dicts
+        initial = {'x': 0, 'y': 0}
+        goal_test = lambda s: s['x'] == 2 and s['y'] == 2
+        def successors(state):
+            x, y = state['x'], state['y']
+            succ = []
+            if x < 2:
+                succ.append({'x': x + 1, 'y': y})
+            if y < 2:
+                succ.append({'x': x, 'y': y + 1})
+            return succ
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(path[-1], {'x': 2, 'y': 2})
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_with_nested_states(self):
+        # Test DFS with nested unhashable states to cover recursive _state_key
+        initial = {'pos': [0, 0], 'visited': set()}
+        goal_test = lambda s: s['pos'] == [2, 2]
+        def successors(state):
+            x, y = state['pos']
+            visited = state['visited']
+            succ = []
+            if x < 2 and (x+1, y) not in visited:
+                new_visited = visited | {(x+1, y)}
+                succ.append({'pos': [x+1, y], 'visited': new_visited})
+            if y < 2 and (x, y+1) not in visited:
+                new_visited = visited | {(x, y+1)}
+                succ.append({'pos': [x, y+1], 'visited': new_visited})
+            return succ
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(path[-1]['pos'], [2, 2])
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_with_tuple_states(self):
+        # Test DFS with tuple states containing unhashable elements to cover _state_key for tuples
+        initial = (0, {'y': 0})
+        goal_test = lambda s: s[0] == 2 and s[1]['y'] == 2
+        def successors(state):
+            x, d = state
+            succ = []
+            if x < 2:
+                succ.append((x + 1, d))
+            if d['y'] < 2:
+                new_d = d.copy()
+                new_d['y'] += 1
+                succ.append((x, new_d))
+            return succ
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(path[-1], (2, {'y': 2}))
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_with_custom_unhashable_states(self):
+        # Test DFS with custom unhashable states to cover _state_key fallback to repr
+        class UnhashableClass:
+            def __init__(self, value):
+                self.value = value
+            def __repr__(self):
+                return f"UnhashableClass({self.value})"
+            def __hash__(self):
+                raise TypeError("unhashable")
+            def __eq__(self, other):
+                return isinstance(other, UnhashableClass) and self.value == other.value
+
+        initial = UnhashableClass(0)
+        goal_test = lambda x: x.value == 2
+        successors = lambda x: [UnhashableClass(x.value + 1)] if x.value < 2 else []
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(path[-1].value, 2)
+        self.assertEqual(0, node.cost)
+
+    def test_dfs_with_cycles(self):
+        # Test DFS with cycles to cover the explored check (line 135)
+        graph = {0: [1], 1: [2, 0], 2: []}
+        initial = 0
+        goal_test = lambda x: x == 2
+        successors = lambda x: graph[x]
+        node = dfs(initial, goal_test, successors)
+        self.assertIsNotNone(node)
+        path = node_to_path(node)
+        self.assertEqual(path, [0, 1, 2])
+        self.assertEqual(0, node.cost)
+
 
 if __name__ == "__main__":
     main()
