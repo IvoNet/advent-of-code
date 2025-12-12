@@ -26,7 +26,7 @@ collections.Callable = collections.abc.Callable  # type: ignore
 sys.dont_write_bytecode = True
 
 DEBUG = True
-
+ENABLE_PCOPY = False
 
 # noinspection DuplicatedCode
 def p(*args, end="\n", sep=" "):
@@ -38,7 +38,8 @@ def p(*args, end="\n", sep=" "):
 @timer
 def part_1(source) -> int | None:
     answer = 0
-    pyperclip.copy(str(answer))
+    if ENABLE_PCOPY:
+        pyperclip.copy(str(answer))
     return answer
 
 
@@ -46,7 +47,8 @@ def part_1(source) -> int | None:
 @timer
 def part_2(source) -> int | None:
     answer = 0
-    pyperclip.copy(str(answer))
+    if ENABLE_PCOPY:
+        pyperclip.copy(str(answer))
     return answer
 
 

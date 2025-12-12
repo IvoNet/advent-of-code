@@ -145,10 +145,10 @@ class Region:
             shape_transforms[int(shape.name)] = self._shape_transformations(shape)
         # Quick area check
         total_area = sum((shape_transforms[i][0]['area'] if shape_transforms.get(i) else 0) * counts[i] for i in range(len(counts)))
-        if DEBUG:
+        if verbose:
             print(f"Region {self.name} {self.width}x{self.height} counts={counts} total_area={total_area}")
         if total_area > self.width * self.height:
-            if DEBUG:
+            if verbose:
                 print(' quick area reject')
             return False
 
@@ -165,11 +165,11 @@ class Region:
                         for row_idx in range(t['height']):
                             row_masks[oy + row_idx] = t['row_masks'][row_idx] << ox
                         placements[i].append(tuple(row_masks))
-            if DEBUG:
+            if verbose:
                 print(f' shape {i} placements={len(placements[i])}')
             if not placements[i] and counts[i] > 0:
                 # shape cannot be placed at all but required
-                if DEBUG:
+                if verbose:
                     print(f' shape {i} cannot be placed but required')
                 return False
 
@@ -193,7 +193,7 @@ class Region:
 
         def backtrack(grid_rows: list[int]) -> bool:
             if all(v == 0 for v in remaining.values()):
-                if DEBUG:
+                if verbose:
                     print(' success: all placed')
                 return True
             # simple pruning
@@ -202,13 +202,13 @@ class Region:
                 free += bin(full_mask ^ r).count('1')
             rem_area = sum(remaining[i] * (shape_transforms[i][0]['area'] if shape_transforms.get(i) else 0) for i in range(len(counts)))
             if rem_area > free:
-                if DEBUG:
+                if verbose:
                     print(' prune by area', rem_area, free)
                 return False
             i = choose_shape()
             if i is None:
                 return False
-            if DEBUG:
+            if verbose:
                 print(f'trying shape {i} remaining {remaining[i]} placements {len(placements[i])}')
             # Try placements
             for p in placements[i]:
@@ -228,13 +228,13 @@ class Region:
                 remaining[i] += 1
                 for row_idx in range(self.height):
                     grid_rows[row_idx] ^= p[row_idx]
-            if DEBUG:
+            if verbose:
                 print(f' backtrack fail for shape {i} at this branch')
             return False
 
         grid_rows = [0] * self.height
         res = backtrack(grid_rows)
-        if DEBUG:
+        if verbose:
             print('final result', res)
         # if this solver found a solution, return True, otherwise continue to other strategies
         if res:
@@ -253,7 +253,7 @@ class Region:
             # backtrack choosing the piece (index in piece_list) with fewest valid placements
             def backtrack_pieces(grid_rows: list[int], remaining_counts: dict[int,int]) -> bool:
                 if all(v == 0 for v in remaining_counts.values()):
-                    if DEBUG:
+                    if verbose:
                         print(' success: all placed (pieces)')
                     return True
                 # compute valid placements count per shape
@@ -278,7 +278,7 @@ class Region:
                         best_shape = shape_idx
                 if best_shape is None or not best_options:
                     return False
-                if DEBUG:
+                if verbose:
                     print(f' choose shape {best_shape} with {len(best_options)} options remaining_counts={remaining_counts}')
                 for p in best_options:
                     # place
@@ -296,7 +296,7 @@ class Region:
             if backtrack_pieces(grid_rows, dict(remaining)):
                 return True
             # fallthrough to general solver if small-case backtrack fails
-            if DEBUG:
+            if verbose:
                 print(' small-piece solver failed, falling back to general')
 
         # If small instance, build exact cover matrix and solve with Algorithm X
@@ -337,7 +337,7 @@ class Region:
                         for c in covered:
                             col_rows[c].add(row_id)
                         row_id += 1
-            if DEBUG:
+            if verbose:
                 print('Exact cover columns', len(cols), 'rows', len(rows))
             # Algorithm X
             def solve(selected_rows: list[int], col_rows_map: dict, rows_map: dict) -> bool:
@@ -383,15 +383,15 @@ class Region:
             rows_copy = {k: set(v) for k, v in rows.items()}
             try:
                 ok = solve([], col_rows_copy, rows_copy)
-                if DEBUG:
+                if verbose:
                     print('exact cover result', ok)
                 if ok:
                     return True
             except RecursionError:
-                if DEBUG:
+                if verbose:
                     print('exact cover recursion error')
             # fall through to general solver
-            if DEBUG:
+            if verbose:
                 print(' exact cover failed, continue to general backtracker')
 
         # As final attempt for small instances, use explicit boolean grid DFS
